@@ -1,0 +1,90 @@
+<?php
+// This file is made for Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Library of interface functions and constants for module checkmarkreport
+ *
+ * All the core Moodle functions, neeeded to allow the module to work
+ * integrated in Moodle should be placed here.
+ * All the checkmarkreport specific functions, needed to implement all the module
+ * logic, should go to locallib.php. This will help to save some memory when
+ * Moodle is performing actions across all modules.
+ *
+ * @package       local_checkmarkreport
+ * @author        Philipp Hager (e0803285@gmail.com)
+ * @copyright     2013 onwards TSC TU Vienna
+ * @since         Moodle 2.5.3
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+define('CHECKMARKREPORT_GODMODE', true);
+
+require_once $CFG->dirroot.'/local/checkmarkreport/checkmarkreport.class.php';
+
+/*******************************************************************************
+ * Moodle core API                                                             *
+ *******************************************************************************/
+
+function local_checkmarkreport_extends_navigation(global_navigation $navigation) {
+    return;
+}
+
+function local_checkmarkreport_extends_settings_navigation(settings_navigation $setnav, $context) {
+    global $CFG, $PAGE, $USER;
+
+    // Only add this settings item on non-site course pages.
+    if (!$PAGE->course or $PAGE->course->id == 1) {
+        return;
+    }
+
+    // Only let users with the appropriate capability see this settings item.
+    if (!has_capability('local/checkmarkreport:view', context_course::instance($PAGE->course->id), $USER->id, CHECKMARKREPORT_GODMODE)) {
+        return;
+    }
+    $checkmarks = get_all_instances_in_course('checkmark', $PAGE->course);
+    //add link only if checkmarks are available in course
+    if (empty($checkmarks)) {
+        return;
+    }
+    //prepare our node
+    $url = new moodle_url('/local/checkmarkreport/index.php', array('id'=>$PAGE->course->id));
+    $icon = new pix_icon('i/report', get_string('pluginname', 'local_checkmarkreport'));
+    $node = $setnav->create(get_string('pluginname', 'local_checkmarkreport'),
+                                       $url,
+                                       navigation_node::TYPE_CUSTOM,
+                                       get_string('pluginname', 'local_checkmarkreport'),
+                                       'checkmarkreport',
+                                       $icon);
+    //find courseadmin
+    $courseadmin = $setnav->get('courseadmin');
+
+    $iterator = $courseadmin->children->getIterator();
+
+    //find child grades
+    while ($iterator->valid() && ($iterator->current()->key != 'grades')) {
+        //var_dump($iterator->current());
+        $iterator->next();
+    }
+    $iterator->next();
+    $key = $iterator->current()->key;
+    
+    //add before!
+    $courseadmin->children->add($node, $key);
+    
+    return;
+}

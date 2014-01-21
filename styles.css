@@ -1,0 +1,73 @@
+/*
+// This file is made for Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+ * CSS for checkmarkreport
+ *
+ * @package       local_checkmarkreport
+ * @author        Philipp Hager (e0803285@gmail.com)
+ * @copyright     2013 onwards TSC TU Vienna
+ * @since         Moodle 2.5.3
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/** General Styles **/
+div.columns {
+    padding-top:2em;
+    padding-bottom:2em;
+    white-space:nowrap;
+}
+div.columns fieldset {
+    margin:0px;
+    display:inline;
+    width:25%;
+    margin:0px;
+    vertical-align:top;
+}
+
+div.columns fieldset .felement {
+    margin-left:40% !important;
+}
+
+div.scrollforced {
+    width:100%;
+    overflow-x:scroll;
+}
+
+span.downloadlink {
+    margin-left:1em;
+    margin-right:1em;
+    margin-bottom:2em;
+}
+
+table.coloredrows .hidden .hidecol,
+table.coloredrows .showcol,
+table.coloredrows .hidden .content {
+    display:none;
+}
+
+table.coloredrows .hidden .showcol,
+table.coloredrows .hidecol,
+table.coloredrows .content {
+    display:block;
+    display:inline;
+    white-space:nowrap;
+}
+
+table.coloredrows .hidecol {
+    margin-left:3px;
+}
