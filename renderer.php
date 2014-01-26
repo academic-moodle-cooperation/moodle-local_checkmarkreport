@@ -33,6 +33,114 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
     function __construct($id) {
         parent::__construct($id);
     }
+
+    function get_table() {
+        global $CFG, $DB;
+        
+        $data = $this->get_coursedata();
+        
+        $showgrade = get_user_preferences('checkmarkreport_showgrade');
+        $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrel = get_user_preferences('checkmarkreport_sumrel');
+        $showpoints = get_user_preferences('checkmarkreport_showpoints');
+        
+        $table = new html_table();
+        if (!isset($table->attributes)) {
+            $table->attributes = array('class' => 'coloredrows');
+        } else if (!isset($table->attributes['class'])) {
+            $table->attributes['class'] = 'coloredrows';
+        } else {
+            $table->attributes['class'] .= ' coloredrows';
+        }
+
+        $tabledata = array();
+        $row = array();
+        
+        $cellwidth = array();
+        $columnformat = array();
+        $tableheaders = array();
+        $tablecolumns = array();
+        $table->colgroups = array();
+        $useridentity = explode(',', $CFG->showuseridentity);
+
+        $tableheaders['fullnameuser'] = new html_table_cell(get_string('fullnameuser'));
+        $tableheaders['fullnameuser']->header = true;
+        $tableheaders['fullnameuser']->rowspan = 2;
+        $tableheaders2['fullnameuser'] = null;
+        $tablecolumns[] = 'fullnameuser';
+        $table->colgroups[] = array('span' => '1',
+                                    'class' => 'fullnameuser');
+        $table->colclasses['fullnameuser'] = 'fullnameuser';
+
+        foreach ($useridentity as $cur) {
+            $tableheaders[$cur] = new html_table_cell(($cur=='phone1') ? get_string('phone') : get_string($cur));
+            $tableheaders[$cur]->header = true;
+            $tableheaders[$cur]->rowspan = 2;
+            $tableheaders2[$cur] = null;
+            $tablecolumns[] = $cur;
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => $cur);
+            $table->colclasses[$cur] = $cur;
+        }
+        
+        $instances = $this->get_instances();
+        foreach($instances as $instance) {
+            $span = 0;
+            $tableheaders['instance'.$instance->id] = new html_table_cell($instance->name);
+            $tableheaders['instance'.$instance->id]->header = true;
+            $tableheaders['instance'.$instance->id]->scope = 'colgroup';
+            $table->colclasses['instance'.$instance->id] = 'instance'.$instance->id;
+            // Dynamically add examples!
+            // get example data
+            if (!isset($examplenames[$instance->id])) {
+                $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
+            }
+            foreach ($examplenames[$instance->id] as $key => $example) {
+                $span++;
+                $tableheaders2['example'.$key] = new html_table_cell($example->name." (".$example->grade.'P)');
+                $tableheaders2['example'.$key]->header = true;
+                $tablecolumns[] = 'example'.$key;
+                $table->colclasses['example'.$key] = 'instance'.$instance->id.' example'.$key;
+            }
+            for($i=1;$i<$span;$i++) {
+                //insert empty cells for the colspan
+                $tableheaders[] = null;
+            }
+            $tableheaders['instance'.$instance->id]->colspan = $span;
+            $table->colgroups[] = array('span' => $span,
+                                        'class' => 'instancegroup');
+        }
+        $table->head = array();
+        $table->head[0] = new html_table_row();
+        $table->head[0]->cells = $tableheaders;
+        $table->head[1] = new html_table_row();
+        $table->head[1]->cells = $tableheaders2;
+
+        foreach ($data as $userid => $curuser) {
+            $row = array();
+            $row['fullnameuser'] = new html_table_cell(fullname($curuser));
+            foreach ($useridentity as $cur) {
+                $row[$cur] = new html_table_cell($curuser->$cur);
+            }
+            
+            $instances = $this->get_instances();
+            foreach($instances as $instance) {
+                // Dynamically add examples!
+                foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
+                    if (empty($showpoints)) {
+                        $row['example'.$key] = new html_table_cell($example ? "☒" : "☐");
+                    } else {
+                        $row['example'.$key] = new html_table_cell($example ? $examplenames[$instance->id][$key]->grade : "0");
+                    }
+                }
+            }
+            $table->data[$userid] = new html_table_row();
+            $table->data[$userid]->cells = $row;
+        }
+        return $table;
+    }
+            // Dynamically add examples!
+            // get example data
 }
 
 class checkmarkreport_useroverview extends checkmarkreport implements renderable {
@@ -48,18 +156,53 @@ class checkmarkreport_userview extends checkmarkreport implements renderable {
 }
 
 class local_checkmarkreport_renderer extends plugin_renderer_base {
- 
-    protected function render_checkmarkreport_overview(checkmarkreport_overview $report) {
-        $data = $report->get_coursedata();
 
-        /*$out  = $this->output->heading(format_string($submission->title), 2);
-        $out .= $this->output->container(format_string($submission->authorname), 'author');
-        $out .= $this->output->container(format_text($submission->content, FORMAT_HTML), 'content');*/
-        
+    protected function render_checkmarkreport_overview(checkmarkreport_overview $report) {
+        global $CFG, $DB;
+
+        //Render download links
+//        http_build_query()
+        $data = array('id'         => $report->get_courseid(),
+                      'showgrade'  => false,
+                      'showabs'    => false,
+                      'showrel'    => false,
+                      'showpoints' => false,
+                      'sesskey'    => sesskey(),
+                      'format'     => checkmarkreport::FORMAT_XLSX);
+        $groups = array(0);
+        $users = array(0);
+        $checkmarks = array(0);
+        $arrays = http_build_query(array('groups'     => $groups,
+                                         'users'      => $users,
+                                         'checkmarks' => $checkmarks));
+        $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
+        $downloadlinks = get_string('exportas', 'local_checkmarkreport');
+        $downloadlinks .= html_writer::tag('span',
+                                           html_writer::link($uri, 'XLSX'),
+                                           array('class'=>'downloadlink'));
+        $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_XLS));
+        $downloadlinks .= html_writer::tag('span',
+                                           html_writer::link($uri, 'XLS'),
+                                           array('class'=>'downloadlink'));
+        $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_ODS));
+        $downloadlinks .= html_writer::tag('span',
+                                           html_writer::link($uri, 'ODS'),
+                                           array('class'=>'downloadlink'));
+        $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_XML));
+        $downloadlinks .= html_writer::tag('span',
+                                           html_writer::link($uri, 'XML'),
+                                           array('class'=>'downloadlink'));
+        $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_TXT));
+        $downloadlinks .= html_writer::tag('span',
+                                           html_writer::link($uri, 'TXT'),
+                                           array('class'=>'downloadlink'));
+        $out = html_writer::tag('div', $downloadlinks, array('class'=>'download'));
         
         // Render the table!
-        
-        $out = 'is nothing';
+        $table = $report->get_table();
+
+        $out .= html_writer::tag('div', $this->table($table, $report),
+                                array('class'=>'scrollforced'));
 
         return $this->output->container($out, 'submission');
     }
@@ -200,7 +343,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                         $heading->text = $headingtext;
                         $heading->header = true;
                     }
-
+                    if ($heading->text == null) {
+                        $idx++;
+                        continue;
+                    }
                     if ($heading->header !== false) {
                         $heading->header = true;
                     }
@@ -235,7 +381,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                     if ($heading->header === true) {
                         $tagtype = 'th';
                     }
-                    $classes = explode(' ', $table->colclasses[$key]);
+
                     if (!$nohide && ($report->column_is_hidden($key) || $report->column_is_hidden($classes))) {
                         $attributes['class'] .= ' hidden';
                     }
