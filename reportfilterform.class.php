@@ -116,21 +116,21 @@ class reportfilterform extends moodleform {
         }
 
         // Additional columns
-        //$mform->closeHeaderBefore('addcolheader');
         $mform->closeHeaderBefore('grade');
-        //$mform->addElement('static', 'addcolheader', html_writer::tag('div', get_string('additional_columns', 'local_checkmarkreport')));
         //grade
         $mform->addElement('advcheckbox', 'grade', get_string('additional_columns', 'local_checkmarkreport'), get_string('showgrade', 'local_checkmarkreport'));
+        $mform->setDefault('grade', get_user_preferences('checkmarkreport_showgrade'));
         //x/y ex
         $mform->addElement('advcheckbox', 'sumabs', null, get_string('summary_abs', 'checkmark'));
+        $mform->setDefault('sumabs', get_user_preferences('checkmarkreport_sumabs'));
         //% ex
         $mform->addElement('advcheckbox', 'sumrel', null, get_string('summary_rel', 'checkmark'));
-        
+        $mform->setDefault('sumrel', get_user_preferences('checkmarkreport_sumrel'));
+
         // Additional settings ?? don't need them...
-        //$mform->closeHeaderBefore('addsettheader');
         $mform->closeHeaderBefore('showpoints');
-        //$mform->addElement('static', 'addsettheader', html_writer::tag('div', get_string('additional_settings', 'local_checkmarkreport')));
         $mform->addElement('advcheckbox', 'showpoints', get_string('additional_settings', 'local_checkmarkreport'), get_string('showpoints', 'local_checkmarkreport'));
+        $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
 
         $mform->addElement('html', html_writer::end_tag('div'));
 

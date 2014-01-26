@@ -83,6 +83,42 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             $table->colclasses[$cur] = $cur;
         }
         
+        //coursesum of course grade
+        if (!empty($showgrade)) {
+            $tableheaders['grade'] = new html_table_cell('Σ '.get_string('grade'));
+            $tableheaders['grade']->header = true;
+            $tableheaders['grade']->rowspan = 2;
+            $tableheaders2['grade'] = null;
+            $tablecolumns[] = 'grade';
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => 'grade');
+            $table->colclasses['grade'] = 'grade';
+        }
+
+        //coursesum of course examples
+        if (!empty($showabs)) {
+            $tableheaders['examples'] = new html_table_cell('Σ '.get_string('examples', 'local_checkmarkreport'));
+            $tableheaders['examples']->header = true;
+            $tableheaders['examples']->rowspan = 2;
+            $tableheaders2['examples'] = null;
+            $tablecolumns[] = 'examples';
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => 'examples');
+            $table->colclasses['examples'] = 'examples';
+        }
+        
+        if (!empty($showrel)) {
+            //percent of course examples
+            $tableheaders['percentex'] = new html_table_cell('Σ % '.get_string('examples', 'local_checkmarkreport'));
+            $tableheaders['percentex']->header = true;
+            $tableheaders['percentex']->rowspan = 2;
+            $tableheaders2['percentex'] = null;
+            $tablecolumns[] = 'percentex';
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => 'percentex');
+            $table->colclasses['percentex'] = 'percentex';
+        }
+        
         $instances = $this->get_instances();
         foreach($instances as $instance) {
             $span = 0;
@@ -90,6 +126,32 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             $tableheaders['instance'.$instance->id]->header = true;
             $tableheaders['instance'.$instance->id]->scope = 'colgroup';
             $table->colclasses['instance'.$instance->id] = 'instance'.$instance->id;
+            //coursesum of course grade
+            if (!empty($showgrade)) {
+                $span++;
+                $tableheaders2['grade'.$instance->id] = new html_table_cell(get_string('grade'));
+                $tableheaders2['grade'.$instance->id]->header = true;
+                $tablecolumns[] = 'grade'.$instance->id;
+                $table->colclasses['grade'.$instance->id] = 'instance'.$instance->id.' grade'.$instance->id;
+            }
+
+            //coursesum of course examples
+            if (!empty($showabs)) {
+                $span++;
+                $tableheaders2['examples'.$instance->id] = new html_table_cell(get_string('examples', 'local_checkmarkreport'));
+                $tableheaders2['examples'.$instance->id]->header = true;
+                $tablecolumns[] = 'examples';
+                $table->colclasses['examples'.$instance->id] = 'instance'.$instance->id.' examples'.$instance->id;
+            }
+
+            //percent of course examples
+            if (!empty($showrel)) {
+                $span++;
+                $tableheaders2['percentex'.$instance->id] = new html_table_cell('% '.get_string('examples', 'local_checkmarkreport'));
+                $tableheaders2['percentex'.$instance->id]->header = true;
+                $tablecolumns[] = 'percentex'.$instance->id;
+                $table->colclasses['percentex'.$instance->id] = 'instance'.$instance->id.' percentex'.$instance->id;
+            }
             // Dynamically add examples!
             // get example data
             if (!isset($examplenames[$instance->id])) {
@@ -123,8 +185,37 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
                 $row[$cur] = new html_table_cell($curuser->$cur);
             }
             
+            //coursesum of course grade
+            if (!empty($showgrade)) {
+                $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ? 0 : $curuser->checkgrade).' / '.$curuser->maxgrade);
+            }
+            //coursesum of course examples
+            if (!empty($showabs)) {
+                $row['examples'] = new html_table_cell($curuser->checks.' / '.$curuser->maxchecks);
+            }
+            //percent of course examples
+            if (!empty($showrel)) {
+                $percgrade = empty($curuser->percentgrade) ? 0 : $curuser->percentgrade;
+                $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.round($percgrade, 2).' %)');
+            }
+            
             $instances = $this->get_instances();
             foreach($instances as $instance) {
+                //coursesum of course grade
+                if (!empty($showgrade)) {
+                    $grade = empty($curuser->instancedata[$instance->id]->grade) ? 0 : $curuser->instancedata[$instance->id]->grade;
+                    $row['grade'.$instance->id] = new html_table_cell($grade.' / '.$curuser->instancedata[$instance->id]->maxgrade);
+                }
+                //coursesum of course examples
+                if (!empty($showabs)) {
+                    $row['examples'.$instance->id] = new html_table_cell($curuser->instancedata[$instance->id]->checked.' / '.$curuser->instancedata[$instance->id]->maxchecked);
+                }
+                //percent of course examples
+                if (!empty($showrel)) {
+                    $perccheck = empty($curuser->instancedata[$instance->id]->percentchecked) ? 0 : $curuser->instancedata[$instance->id]->percentchecked;
+                    $percgrade = empty($curuser->instancedata[$instance->id]->percentgrade) ? 0 : $curuser->instancedata[$instance->id]->percentgrade;
+                    $row['percentex'.$instance->id] = new html_table_cell(round($perccheck, 2).'% ('.round($percgrade, 2).' %)');
+                }
                 // Dynamically add examples!
                 foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
                     if (empty($showpoints)) {

@@ -118,12 +118,26 @@ if (! $checkmarks = get_all_instances_in_course('checkmark', $course)) {
 switch($tab) {
     case 'overview':
         $checkmarkreport = new checkmarkreport_overview($id);
-        $mform = new reportfilterform(null, array('courseid' => $id));
+        $mform = new reportfilterform($PAGE->url, array('courseid'   => $id,
+                                                        'hidegroups' => true));
+        if ($data = $mform->get_data()) {
+            set_user_preference('checkmarkreport_showgrade', $data->grade);
+            set_user_preference('checkmarkreport_sumabs', $data->sumabs);
+            set_user_preference('checkmarkreport_sumrel', $data->sumrel);
+            set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+        }
         $mform->display();
     break;
     case 'useroverview':
         $checkmarkreport = new checkmarkreport_useroverview($id);
-        $mform = new reportfilterform(null, array('courseid' => $id));
+        $mform = new reportfilterform($PAGE->url, array('courseid'   => $id,
+                                                        'hideinstances' => true));
+        if ($data = $mform->get_data()) {
+            set_user_preference('checkmarkreport_showgrade', $data->grade);
+            set_user_preference('checkmarkreport_sumabs', $data->sumabs);
+            set_user_preference('checkmarkreport_sumrel', $data->sumrel);
+            set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+        }
         $mform->display();
     break;
     case 'userview':

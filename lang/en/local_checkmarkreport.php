@@ -34,6 +34,8 @@ $string['pluginname'] = 'Checkmark report';
 $string['pluginname_help'] = 'Checkmark reports extend the functionality of mod_checkmark by making convenient course-overview reports for all checkmarks available.';
 $string['pluginnameplural'] = 'Checkmark reports';
 
+$string['additional_columns'] = 'Additional columns';
+$string['additional_settings'] = 'Additional settings';
 $string['examples'] = 'Examples';
 $string['filter'] = 'Filter';
 $string['noaccess'] = 'You have no access to this module. You\'re missing the required capabilities to view this content.';
