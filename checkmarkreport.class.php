@@ -35,25 +35,20 @@ class checkmarkreport {
     const FORMAT_TXT = 4;
     
     protected $data = null;
+    protected $users = array(0);
 
-    function __construct($id) {
+    function __construct($id, $users=array(0), $instances=array(0)) {
         $this->courseid = $id;
+        $this->users = $users;
         $this->init_hidden();
     }
     
-    public function get_coursedata($courseid = 0) {
+    public function get_coursedata() {
         global $PAGE, $DB;
 
-        if ($courseid == 0) {
-            $course = $DB->get_record('course', array('id'=>$this->courseid), '*', MUST_EXIST);
-        } else {
-            $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
-        }
+        $course = $DB->get_record('course', array('id'=>$this->courseid), '*', MUST_EXIST);
 
         $context = context_course::instance($course->id);
-        
-        //get all users @TODO filter by group, user, etc.
-        $users = get_enrolled_users($context, '', 0, 'u.*', 'lastname ASC');
         
         //get all checkmarkinstances in course
         $checkmarks = get_all_instances_in_course('checkmark', $course);
@@ -69,6 +64,11 @@ class checkmarkreport {
         $sql = 'SELECT u.id FROM {user} u '.
                'LEFT JOIN ('.$esql.') eu ON eu.id=u.id '.
                'WHERE u.deleted = 0 AND eu.id=u.id ';
+        if (!in_array(0, $this->users)) {
+            list($insql, $inparams) = $DB->get_in_or_equal($this->users, SQL_PARAMS_NAMED, 'user');
+            $sql .= ' AND u.id '.$insql;
+            $params = array_merge($params, $inparams);
+        }
 
         $users = $DB->get_fieldset_sql($sql, $params);
 

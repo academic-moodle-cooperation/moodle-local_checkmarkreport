@@ -29,6 +29,9 @@ require_once $CFG->dirroot.'/local/checkmarkreport/lib.php';
 
 $id = required_param('id', PARAM_INT);   // Course.
 
+$groups = optional_param_array('groups', array(0), PARAM_INT);
+$users = optional_param_array('users', array(0), PARAM_INT);
+$instances = optional_param_array('checkmarks', array(0), PARAM_INT);
 $showgrade = optional_param('showgrade', true, PARAM_BOOL);
 $showabs = optional_param('showabs', true, PARAM_BOOL);
 $showrel = optional_param('showrel', true, PARAM_BOOL);
@@ -46,6 +49,9 @@ require_capability('local/checkmarkreport:view', $coursecontext, $USER->id, CHEC
 add_to_log($course->id, 'checkmarkreport', 'view', 'index.php?id='.$course->id, '');
 
 $PAGE->set_pagelayout('popup');
+$arrays = http_build_query(array('groups'    => $groups,
+                                 'users'     => $users,
+                                 'instances' => $instances));
 $PAGE->set_url('/local/checkmarkreport/download.php?'.$arrays,
                array('id'         => $id,
                      'showgrade'  => $showgrade,
@@ -102,13 +108,13 @@ if (count($tabs) > 1) {
 $output = $PAGE->get_renderer('local_checkmarkreport');
 switch($tab) {
     case 'overview':
-        $report = new checkmarkreport_overview($id);
+        $report = new checkmarkreport_overview($id, $groups, $instances);
     break;
     case 'useroverview':
-        $report = new checkmarkreport_useroverview($id);
+        $report = new checkmarkreport_useroverview($id, $groups, $users);
     break;
     case 'userview':
-        $report = new checkmarkreport_userview($id);
+        $report = new checkmarkreport_userview($id, array(0), $USER->id);
     break;
     case 'noaccess':
         $notification = $output->notification(get_string('noaccess', 'local_checkmarkreport'), 'notifyproblem');

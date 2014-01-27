@@ -44,6 +44,7 @@ $string['overview'] = 'Overview';
 $string['overview_alt'] = 'View checkmark coursereport';
 $string['showgrade'] = 'Show grade';
 $string['showpoints'] = 'Show points';
+$string['update'] = 'Update';
 $string['useroverview'] = 'Student Overview';
 $string['useroverview_alt'] = 'View checkmark userreport';
 $string['userview'] = 'Userview';

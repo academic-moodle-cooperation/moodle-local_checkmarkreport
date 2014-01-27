@@ -117,19 +117,28 @@ if (! $checkmarks = get_all_instances_in_course('checkmark', $course)) {
 
 switch($tab) {
     case 'overview':
-        $checkmarkreport = new checkmarkreport_overview($id);
         $mform = new reportfilterform($PAGE->url, array('courseid'   => $id,
-                                                        'hidegroups' => true));
+                                                        'hideusers' => true));
         if ($data = $mform->get_data()) {
             set_user_preference('checkmarkreport_showgrade', $data->grade);
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
             set_user_preference('checkmarkreport_sumrel', $data->sumrel);
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+            $groups = $data->groups;
+            $instances = $data->instances;
+        } else {
+            $groups = optional_param_array('groups', array(0), PARAM_INT);
+            $instances = optional_param_array('instances', array(0), PARAM_INT);
+            $mform->set_data(array('groups' => $groups,
+                                  'instances' => $instances));
         }
+        $arrays = http_build_query(array('groups'     => $groups,
+                                         'checkmarks' => $instances));
+        $PAGE->set_url($PAGE->url.'&'.$arrays);
         $mform->display();
+        $checkmarkreport = new checkmarkreport_overview($id, $groups, $instances);
     break;
     case 'useroverview':
-        $checkmarkreport = new checkmarkreport_useroverview($id);
         $mform = new reportfilterform($PAGE->url, array('courseid'   => $id,
                                                         'hideinstances' => true));
         if ($data = $mform->get_data()) {
@@ -139,6 +148,7 @@ switch($tab) {
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
         }
         $mform->display();
+        $checkmarkreport = new checkmarkreport_useroverview($id);
     break;
     case 'userview':
         $checkmarkreport = new checkmarkreport_userview($id);

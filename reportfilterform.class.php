@@ -136,6 +136,6 @@ class reportfilterform extends moodleform {
 
         $mform->closeHeaderBefore('submitbutton');
 
-        $mform->addElement('submit', 'submitbutton', get_string('filter', 'local_checkmarkreport'));
+        $mform->addElement('submit', 'submitbutton', get_string('update', 'local_checkmarkreport'));
     }
 }

@@ -637,11 +637,9 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                       'showpoints' => false,
                       'sesskey'    => sesskey(),
                       'format'     => checkmarkreport::FORMAT_XLSX);
-        $groups = array(0);
-        $users = array(0);
-        $checkmarks = array(0);
+        $groups = optional_param_array('groups', array(0), PARAM_INT);
+        $checkmarks = optional_param_array('instances', array(0), PARAM_INT);
         $arrays = http_build_query(array('groups'     => $groups,
-                                         'users'      => $users,
                                          'checkmarks' => $checkmarks));
         $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
         $downloadlinks = get_string('exportas', 'local_checkmarkreport');
@@ -982,25 +980,25 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
     }
     
     protected function get_toggle_links($column = '', $columnstring = '', checkmarkreport $report = null) {
+        global $PAGE;
         $html = '';
         if (empty($report)) {
             return '';
         }
-        $url = new moodle_url('/local/checkmarkreport/index.php', array('id' => $report->get_courseid()));
         $showicon = html_writer::empty_tag('img', array('src' => $this->output->pix_url('t/switch_plus'),
                                                         'alt' => get_string('show')));
         $hideicon = html_writer::empty_tag('img', array('src' => $this->output->pix_url('t/switch_minus'),
                                                         'alt' => get_string('hide')));
         if ($report->column_is_hidden($column)) {
             //show link
-            $html = html_writer::link(new moodle_url($url, array('tshow' => $column)),
+            $html = html_writer::link(new moodle_url($PAGE->url, array('tshow' => $column)),
                                       $showicon,
                                       array('class' => $column.' showcol',
                                             'title' => get_string('show').
                                                        ' '.$columnstring));
         } else {
             //hide link
-            $html = html_writer::link(new moodle_url($url, array('thide' => $column)),
+            $html = html_writer::link(new moodle_url($PAGE->url, array('thide' => $column)),
                                       $hideicon,
                                       array('class' => $column.' hidecol',
                                             'title' => get_string('hide').
