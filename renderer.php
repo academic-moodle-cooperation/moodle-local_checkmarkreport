@@ -230,8 +230,385 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         }
         return $table;
     }
+    
+    public function get_xml() {
+        global $CFG, $DB;
+        $data = $this->get_coursedata();
+        $course = $DB->get_record('course', array('id'=>$this->courseid));
+        $xml = '';
+        $examplenames = array();
+        $instances = $this->get_instances();
+        foreach($data as $userid => $row) {
+            $xml .= "\t".html_writer::start_tag('user')."\n".
+                    "\t\t".html_writer::tag('id', $userid)."\n".
+                    "\t\t".html_writer::tag('fullname', fullname($row))."\n";
+            foreach ($row->userdata as $key => $cur) {
+                $xml .= "\t\t".html_writer::tag($key, $cur)."\n";
+            }
+            $xml .= "\t\t".html_writer::tag('checkedgrade',
+                                     empty($row->checkgrade) ? 0 : $row->checkgrade)."\n";
+            $xml .= "\t\t".html_writer::tag('maxgrade',
+                                     empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
+            $xml .= "\t\t".html_writer::tag('checks', $row->checks)."\n";
+            $xml .= "\t\t".html_writer::tag('maxchecks', $row->maxchecks)."\n";
+            
+            $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
+            $xml .= "\t\t".html_writer::tag('percentchecked', $row->percentchecked.'%')."\n";
+            $xml .= "\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
+            $xml .= "\t\t".html_writer::start_tag('instances')."\n";
+            foreach ($instances as $instance) {
+                if (!isset($examplenames[$instance->id])) {
+                    $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
+                }
+                $instancedata = $row->instancedata[$instance->id];
+                $xml .= "\t\t\t".html_writer::start_tag('instance')."\n";
+                $xml .= "\t\t\t\t".html_writer::tag('name', $instance->name)."\n";
+                $xml .= "\t\t\t\t".html_writer::tag('checkedgrade',
+                                         empty($instancedata->grade) ? 0 : $instancedata->grade)."\n";
+                $xml .= "\t\t\t\t".html_writer::tag('maxgrade',
+                                         empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade)."\n";
+                $xml .= "\t\t\t\t".html_writer::tag('checks', $instancedata->checked)."\n";
+                $xml .= "\t\t\t\t".html_writer::tag('maxchecks', $instancedata->maxchecked)."\n";
+                
+                $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
+                $xml .= "\t\t\t\t".html_writer::tag('percentchecked', $instancedata->percentchecked.'%')."\n";
+                $xml .= "\t\t\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
+                $xml .= "\t\t\t\t".html_writer::start_tag('examples')."\n";
+                foreach ($instancedata->examples as $key => $example) {
+                    $xml .= "\t\t\t\t\t".html_writer::start_tag('example')."\n";
+                    $xml .= "\t\t\t\t\t\t".html_writer::tag('name', $examplenames[$instance->id][$key]->name)."\n";
+                    $xml .= "\t\t\t\t\t\t".html_writer::tag('state', $example ? 1 : 0)."\n";
+                    $xml .= "\t\t\t\t\t\t".html_writer::tag('statesymbol', $example ? "☒" : "☐")."\n";
+                    $xml .= "\t\t\t\t\t".html_writer::end_tag('example')."\n";
+                }
+                $xml .= "\t\t\t\t".html_writer::end_tag('examples')."\n";
+                $xml .= "\t\t\t".html_writer::end_tag('instance')."\n";
+            }
+            $xml .= "\t\t".html_writer::end_tag('instances')."\n";
+            $xml .= "\t".html_writer::end_tag('user')."\n";
+        }
+        
+        $xml = '<?xml version="1.0"  encoding="utf-8" ?>'."\n".html_writer::tag('report', "\n".$xml);
+        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.
+                    $course->shortname.'_'.userdate(time());
+        header("Content-type: application/xml; charset=utf-8");
+        header('Content-Length: ' . strlen($xml));
+        header('Content-Disposition: attachment;filename="'.$filename.'.xml";'.
+                                               'filename*="'.rawurlencode($filename).'.xml"');
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Encoding: utf-8');
+        echo $xml;
+    }
+    public function get_txt() {
+        global $CFG, $DB;
+        $data = $this->get_coursedata();
+        $course = $DB->get_record('course', array('id'=>$this->courseid));
+        $txt = '';
+        $examplenames = array();
+        $instances = $this->get_instances();
+        $course = $DB->get_record('course', array('id'=>$this->courseid));
+        //Header
+        $txt .= get_string('pluginname', 'local_checkmarkreport').': '.$course->fullname."\n";
+        //Title
+        $txt .= get_string('fullname');
+        $useridentity = explode(',', $CFG->showuseridentity);
+        foreach ($useridentity as $cur) {
+            $txt .= "\t".(($cur=='phone1') ? get_string('phone') : get_string($cur));
+        }
+        $txt .= "\tΣ ".get_string('grade');
+        $txt .= "\tΣ ".get_string('examples', 'local_checkmarkreport');
+        $txt .= "\tΣ % ".get_string('examples', 'local_checkmarkreport');
+        
+        $instances = $this->get_instances();
+        foreach($instances as $instance) {
+            $txt .= "\t".$instance->name.' '.get_string('grade');
+            $txt .= "\t".$instance->name.' '.get_string('examples', 'local_checkmarkreport');
+            $txt .= "\t".$instance->name.' % '.get_string('examples', 'local_checkmarkreport');
             // Dynamically add examples!
             // get example data
+            if (!isset($examplenames[$instance->id])) {
+                $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
+            }
+            foreach ($examplenames[$instance->id] as $key => $example) {
+                $txt .= "\t".$instance->name.' '.$example->name." (".$example->grade.'P)';
+            }
+        }
+        $txt .= "\n";
+        
+        //Data
+        foreach($data as $userid => $row) {
+            $txt .= fullname($row);
+            foreach ($row->userdata as $key => $cur) {
+                $txt .= "\t".html_writer::tag($key, $cur);
+            }
+            $txt .= "\t".(empty($row->checkgrade) ? 0 : $row->checkgrade);
+            $txt .= "\t".(empty($row->maxgrade) ? 0 : $row->maxgrade);
+            $txt .= "\t".$row->checks;
+            $txt .= "\t".$row->maxchecks;
+            
+            $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
+            $txt .= "\t".$row->percentchecked.'%';
+            $txt .= "\t".$percgrade.'%';
+            foreach ($instances as $instance) {
+                if (!isset($examplenames[$instance->id])) {
+                    $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
+                }
+                $instancedata = $row->instancedata[$instance->id];
+                $txt .= "\t".(empty($instancedata->grade) ? 0 : $instancedata->grade);
+                $txt .= "\t".(empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
+                $txt .= "\t".$instancedata->checked;
+                $txt .= "\t".$instancedata->maxchecked;
+                
+                $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
+                $txt .= "\t".$instancedata->percentchecked.'%';
+                $txt .= "\t".$percgrade.'%';
+                foreach ($instancedata->examples as $key => $example) {
+                    $txt .= "\t".($example ? "☒" : "☐");
+                }
+            }
+            $txt .= "\n";
+        }
+        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.
+                    $course->shortname.'_'.userdate(time());
+        header("Content-type: text/txt; charset=utf-8");
+        header('Content-Length: ' . strlen($txt));
+        header('Content-Disposition: attachment;filename="'.$filename.'.txt";'.
+                                               'filename*="'.rawurlencode($filename).'.txt"');
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Encoding: utf-8');
+        echo $txt;
+    }
+
+    public function get_ods() {
+        global $CFG, $DB;
+
+        require_once($CFG->libdir . "/odslib.class.php");
+
+        $workbook = new MoodleODSWorkbook("-");
+
+        $this->fill_workbook($workbook);
+        
+        $course = $DB->get_record('course', array('id'=>$this->courseid));
+        
+        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
+        $workbook->send($filename.'.ods');
+        $workbook->close();
+    }
+
+    public function get_xls() {
+        global $CFG, $DB;
+    
+        require_once($CFG->libdir . "/excellib.class.php");
+        
+        $workbook = new MoodleExcelWorkbook("-",'excel5');
+    
+        $this->fill_workbook($workbook);
+        
+        $course = $DB->get_record('course', array('id'=>$this->courseid));
+        
+        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;    
+        $workbook->send($filename.'.xls');
+        $workbook->close();
+    }
+
+    public function get_xlsx() {
+        global $CFG, $DB;
+
+        require_once($CFG->libdir . "/excellib.class.php");
+
+        $workbook = new MoodleExcelWorkbook("-", 'Excel2007');
+    
+        $this->fill_workbook($workbook);
+        
+        $course = $DB->get_record('course', array('id'=>$this->courseid));
+        
+        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
+        $workbook->send($filename);
+        $workbook->close();
+    }
+
+    public function fill_workbook($workbook) {
+        $x = $y = 0;
+        
+        // We start with the html_table-Object
+        $table = $this->get_table();
+        
+        $worksheet = $workbook->add_worksheet(time());
+        
+        // prepare table data and populate missing properties with reasonable defaults
+        if (!empty($table->align)) {
+            foreach ($table->align as $key => $aa) {
+                if ($aa) {
+                    $table->align[$key] = fix_align_rtl($aa);  // Fix for RTL languages
+                } else {
+                    $table->align[$key] = null;
+                }
+            }
+        }
+        if (!empty($table->size)) {
+            foreach ($table->size as $key => $ss) {
+                if ($ss) {
+                    $table->size[$key] = $ss;
+                } else {
+                    $table->size[$key] = null;
+                }
+            }
+        }
+
+        if (!empty($table->head)) {
+            foreach ($table->head as $key => $val) {
+                if (!isset($table->align[$key])) {
+                    $table->align[$key] = null;
+                }
+                if (!isset($table->size[$key])) {
+                    $table->size[$key] = null;
+                }
+            }
+        }
+
+        $countcols = 0;
+
+        if (!empty($table->head)) {
+            $countrows = count($table->head);
+
+            foreach($table->head as $headrow) {
+                $x = 0;
+                $keys = array_keys($headrow->cells);
+                $lastkey = end($keys);
+                $countcols = count($headrow->cells);
+
+                foreach ($headrow->cells as $key => $heading) {
+                    // Convert plain string headings into html_table_cell objects
+                    if (!($heading instanceof html_table_cell)) {
+                        $headingtext = $heading;
+                        $heading = new html_table_cell();
+                        $heading->text = $headingtext;
+                        $heading->header = true;
+                    }
+                    
+                    if($heading->text == null) {
+                        //$worksheet->write_blank($y, $x);
+                        $x++;
+                        continue;
+                    }
+
+                    if ($heading->header !== false) {
+                        $heading->header = true;
+                    }
+
+/*                    if (isset($heading->colspan) && $heading->colspan > 1) {
+                        $countcols += $heading->colspan - 1;
+                    }*/
+
+                    $heading->attributes['class'] = trim($heading->attributes['class']);
+                    $attributes = array_merge($heading->attributes, array(
+                            'style'     => $heading->style,
+                            'scope'     => $heading->scope,
+                            'colspan'   => $heading->colspan,
+                            'rowspan'   => $heading->rowspan
+                        ));
+                    $worksheet->write_string($y, $x, $heading->text/*, $headline_format*/);
+                    $x++;
+                }
+                $y++;
+            }
+        }
+        if (!empty($table->data)) {
+            $oddeven    = 1;
+            $keys       = array_keys($table->data);
+            $lastrowkey = end($keys);
+
+            foreach ($table->data as $key => $row) {
+                $x=0;
+                if (($row === 'hr') && ($countcols)) {
+                    //$output .= html_writer::tag('td', html_writer::tag('div', '', array('class' => 'tabledivider')), array('colspan' => $countcols));
+                } else {
+                    // Convert array rows to html_table_rows and cell strings to html_table_cell objects
+                    if (!($row instanceof html_table_row)) {
+                        $newrow = new html_table_row();
+
+                        foreach ($row as $cell) {
+                            if (!($cell instanceof html_table_cell)) {
+                                $cell = new html_table_cell($cell);
+                            }
+                            $newrow->cells[] = $cell;
+                        }
+                        $row = $newrow;
+                    }
+
+                    $oddeven = $oddeven ? 0 : 1;
+                    if (isset($table->rowclasses[$key])) {
+                        $row->attributes['class'] .= ' ' . $table->rowclasses[$key];
+                    }
+
+                    $row->attributes['class'] .= ' r' . $oddeven;
+                    if ($key == $lastrowkey) {
+                        $row->attributes['class'] .= ' lastrow';
+                    }
+
+                    //$output .= html_writer::start_tag('tr', array('class' => trim($row->attributes['class']), 'style' => $row->style, 'id' => $row->id)) . "\n";
+                    $keys2 = array_keys($row->cells);
+                    $lastkey = end($keys2);
+
+                    $gotlastkey = false; //flag for sanity checking
+                    foreach ($row->cells as $key => $cell) {
+                        if ($gotlastkey) {
+                            //This should never happen. Why do we have a cell after the last cell?
+                            mtrace("A cell with key ($key) was found after the last key ($lastkey)");
+                        }
+                        
+                        if ($cell == null) {
+                            $x++;
+                            continue;
+                        }
+
+                        if (!($cell instanceof html_table_cell)) {
+                            $mycell = new html_table_cell();
+                            $mycell->text = $cell;
+                            $cell = $mycell;
+                        }
+
+                        if (($cell->header === true) && empty($cell->scope)) {
+                            $cell->scope = 'row';
+                        }
+
+                        if (isset($table->colclasses[$key])) {
+                            $cell->attributes['class'] .= ' ' . $table->colclasses[$key];
+                        }
+
+                        $cell->attributes['class'] .= ' cell c' . $key;
+                        if ($key == $lastkey) {
+                            $cell->attributes['class'] .= ' lastcol';
+                            $gotlastkey = true;
+                        }
+                        $tdstyle = '';
+                        $tdstyle .= isset($table->align[$key]) ? $table->align[$key] : '';
+                        $tdstyle .= isset($table->size[$key]) ? $table->size[$key] : '';
+                        $tdstyle .= isset($table->wrap[$key]) ? $table->wrap[$key] : '';
+                        $cell->attributes['class'] = trim($cell->attributes['class']);
+                        $tdattributes = array_merge($cell->attributes, array(
+                                'style' => $tdstyle . $cell->style,
+                                'colspan' => $cell->colspan,
+                                'rowspan' => $cell->rowspan,
+                                'id' => $cell->id,
+                                'abbr' => $cell->abbr,
+                                'scope' => $cell->scope,
+                            ));
+                        $tagtype = 'td';
+                        if ($cell->header === true) {
+                            $tagtype = 'th';
+                        }
+                        $worksheet->write_string($y, $x, $cell->text);
+                        $worksheet->merge_cells($y, $x, $y+$cell->rowspan, $x+$cell->colspan);
+                        //$output .= html_writer::tag($tagtype, $cell->text, $tdattributes) . "\n";
+                        $x++;
+                    }
+                }
+                //$output .= html_writer::end_tag('tr') . "\n";
+                $y++;
+            }
+        }
+    }
 }
 
 class checkmarkreport_useroverview extends checkmarkreport implements renderable {

@@ -27,3 +27,118 @@
 require_once dirname(dirname(dirname(__FILE__))).'/config.php';
 require_once $CFG->dirroot.'/local/checkmarkreport/lib.php';
 
+$id = required_param('id', PARAM_INT);   // Course.
+
+$showgrade = optional_param('showgrade', true, PARAM_BOOL);
+$showabs = optional_param('showabs', true, PARAM_BOOL);
+$showrel = optional_param('showrel', true, PARAM_BOOL);
+$showpoints = optional_param('showpoints', false, PARAM_BOOL);
+$format = optional_param('format', checkmarkreport::FORMAT_XLSX, PARAM_INT);
+
+$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+
+require_course_login($course);
+
+$coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
+
+require_capability('local/checkmarkreport:view', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE);
+
+add_to_log($course->id, 'checkmarkreport', 'view', 'index.php?id='.$course->id, '');
+
+$PAGE->set_pagelayout('popup');
+$PAGE->set_url('/local/checkmarkreport/download.php?'.$arrays,
+               array('id'         => $id,
+                     'showgrade'  => $showgrade,
+                     'showabs'    => $showabs,
+                     'showrel'    => $showrel,
+                     'showpoints' => $showpoints,
+                     'format'     => $format));
+
+// Get Tabs according to capabilities
+$tabs = array();
+$available_tabs = array();
+if (has_capability('local/checkmarkreport:view_courseoverview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
+    $tabs[] = new tabobject('overview',
+                           $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
+                           '&amp;tab=overview',
+                           get_string('overview', 'local_checkmarkreport'),
+                           get_string('overview_alt', 'local_checkmarkreport'),
+                           false);
+    $available_tabs[] = 'overview';
+}
+
+if (has_capability('local/checkmarkreport:view_students_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
+    $tabs[] = new tabobject('useroverview',
+                           $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
+                           '&amp;tab=useroverview',
+                           get_string('useroverview', 'local_checkmarkreport'),
+                           get_string('useroverview_alt', 'local_checkmarkreport'),
+                           false);
+    $available_tabs[] = 'useroverview';
+}
+
+if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
+    $tabs[] = new tabobject('userview',
+                           $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
+                           '&amp;tab=userview',
+                           get_string('userview', 'local_checkmarkreport'),
+                           get_string('userview_alt', 'local_checkmarkreport'),
+                           false);
+    $available_tabs[] = 'userview';
+}
+
+if (count($tabs) > 1) {
+    $new_tab = optional_param('tab', null, PARAM_ALPHAEXT);
+    if (!empty($new_tab)) {
+        $tab = $new_tab;
+    } else if (!isset($tab)) {
+        $tab = current($available_tabs);
+    }
+} else if (count($tabs) == 1) {
+    $tab = current($available_tabs);
+} else {
+    $tab = 'noaccess';
+}
+$output = $PAGE->get_renderer('local_checkmarkreport');
+switch($tab) {
+    case 'overview':
+        $report = new checkmarkreport_overview($id);
+    break;
+    case 'useroverview':
+        $report = new checkmarkreport_useroverview($id);
+    break;
+    case 'userview':
+        $report = new checkmarkreport_userview($id);
+    break;
+    case 'noaccess':
+        $notification = $output->notification(get_string('noaccess', 'local_checkmarkreport'), 'notifyproblem');
+        echo $output->box($notification, 'generalbox centered');
+        echo $output->footer();
+        die;
+    break;
+    default:
+        $notification = $output->notification(get_string('incorrect_tab', 'local_checkmarkreport'),
+                                              'notifyproblem');
+        echo $output->box($notification, 'generalbox centered');
+        echo $output->footer();
+        die;
+}
+
+switch($format) {
+    case checkmarkreport::FORMAT_XML:
+        $report->get_xml();
+    break;
+    case checkmarkreport::FORMAT_TXT:
+        $report->get_txt();
+    break;
+    case checkmarkreport::FORMAT_ODS:
+        $report->get_ods();
+    break;
+    case checkmarkreport::FORMAT_XLS:
+        $report->get_xls();
+    break;
+    default:
+    case checkmarkreport::FORMAT_XLSX:
+        $report->get_xlsx();
+    break;
+}

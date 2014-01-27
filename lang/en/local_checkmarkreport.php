@@ -37,6 +37,7 @@ $string['pluginnameplural'] = 'Checkmark reports';
 $string['additional_columns'] = 'Additional columns';
 $string['additional_settings'] = 'Additional settings';
 $string['examples'] = 'Examples';
+$string['exportas'] = 'Export as';
 $string['filter'] = 'Filter';
 $string['noaccess'] = 'You have no access to this module. You\'re missing the required capabilities to view this content.';
 $string['overview'] = 'Overview';
