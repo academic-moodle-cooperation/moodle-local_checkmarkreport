@@ -30,8 +30,15 @@ require_once $CFG->dirroot.'/local/checkmarkreport/checkmarkreport.class.php';
 require_once $CFG->dirroot.'/local/checkmarkreport/reportfilterform.class.php';
 
 class checkmarkreport_overview extends checkmarkreport implements renderable {
-    function __construct($id) {
-        parent::__construct($id);
+    function __construct($id, $groups=array(0), $instances=array(0)) {
+        global $DB;
+        if (!in_array(0, $groups)) {
+            list($insql, $params) = $DB->get_in_or_equal($groups);
+            $users = $DB->get_fieldset_select('groups_members', 'DISTINCT userid', 'groupid '.$insql, $params);
+        } else {
+            $users = array(0);
+        }
+        parent::__construct($id, $users, $instances);
     }
 
     function get_table() {

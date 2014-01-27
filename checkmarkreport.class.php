@@ -36,10 +36,12 @@ class checkmarkreport {
     
     protected $data = null;
     protected $users = array(0);
+    protected $instances = array(0);
 
     function __construct($id, $users=array(0), $instances=array(0)) {
         $this->courseid = $id;
         $this->users = $users;
+        $this->instances = $instances;
         $this->init_hidden();
     }
     
@@ -52,6 +54,13 @@ class checkmarkreport {
         
         //get all checkmarkinstances in course
         $checkmarks = get_all_instances_in_course('checkmark', $course);
+        if (!in_array(0, $this->instances)) {
+            foreach($checkmarks as $key => $inst) {
+                if (!in_array($inst->id, $this->instances)) {
+                    unset($checkmarks[$key]);
+                }
+            }
+        }
         
         $data = array();
         
@@ -72,7 +81,7 @@ class checkmarkreport {
 
         $users = $DB->get_fieldset_sql($sql, $params);
 
-        $data = $this->get_general_data($course, $users);
+        $data = $this->get_general_data($course, $users, $this->instances);
 
         // Get examples states for user and instance!
         foreach($checkmarks as $checkmark) {
@@ -90,7 +99,7 @@ class checkmarkreport {
      * 
      *
      */
-    public function get_general_data($course = null, $userids=0) {
+    public function get_general_data($course = null, $userids=0, $instances = array(0)) {
         global $DB, $COURSE, $CFG;
 
         $summary_abs = get_user_preferences('checkmark_sumabs', 1);
@@ -120,9 +129,12 @@ class checkmarkreport {
         $checkmarks = get_all_instances_in_course('checkmark', $course);
         $checkmarkids = array();
         $cmids = array();
+        $noinstancefilter = in_array(0, $instances);
         foreach($checkmarks as $checkmark) {
-            $checkmarkids[] = $checkmark->id;
-            $cmids[$checkmark->id] = $checkmark->coursemodule;
+            if ($noinstancefilter || in_array($checkmark->id, $instances)) {
+                $checkmarkids[] = $checkmark->id;
+                $cmids[$checkmark->id] = $checkmark->coursemodule;
+            }
         }
         
         if (!empty($userids) && !empty($checkmarkids)) {
@@ -256,7 +268,15 @@ class checkmarkreport {
         global $DB;
         if (!empty($this->courseid)) {
             $course = $DB->get_record('course', array('id'=>$this->courseid), '*', MUST_EXIST);
-            return get_all_instances_in_course('checkmark', $course);
+            $instances = get_all_instances_in_course('checkmark', $course);
+            if(!in_array(0, $this->instances)) {
+                foreach ($instances as $key => $inst) {
+                    if (!in_array($inst->id, $this->instances)) {
+                        unset($instances[$key]);
+                    }
+                }
+            }
+            return $instances;
         } else {
             return null;
         }
