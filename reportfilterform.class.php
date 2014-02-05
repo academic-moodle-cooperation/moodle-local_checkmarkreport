@@ -77,23 +77,46 @@ class reportfilterform extends moodleform {
         // Groups filter
         if (empty($this->_customdata['hidegroups'])) {
             $groups = groups_get_all_groups($COURSE->id);
-            $groupselects = array(get_string('all').' '.get_string('groups'));
+            $groupsel = $mform->createElement('select', 'groups', get_string('groups'));
+            //$groupselects = array(get_string('all').' '.get_string('groups'));
+            $groupsel->addOption(get_string('all').' '.get_string('groups'), 0);
             if(count($groups)) {
+                list($grpssql, $grpsparams) = $DB->get_in_or_equal(array_keys($groups));
+                $groupmembers = $DB->get_fieldset_sql("
+                SELECT COUNT(DISTINCT userid)
+                  FROM {groups_members}
+                 WHERE groupid ".$grpssql."
+              GROUP BY groupid", $grpsparams);
                 foreach($groups as $group) {
-                    $groupselects[$group->id] = $group->name;
+                    //$groupselects[$group->id] = $group->name;
+                    if (empty($groupmembers[$group->id])) {
+                        $disabled = array('disabled'=>'disabled');
+                    } else {
+                        $disabled = array();
+                    }
+                    if (strlen($group->name) > 27) {
+                        $name = substr($group->name, 0, 22).'...'.substr($group->name, -2);
+                    } else {
+                        $name = $group->name;
+                    }
+                    $groupsel->addOption($name, $group->id, $disabled);
                 }
             }
-            $groups = $mform->addElement('select', 'groups', get_string('groups'), $groupselects);
+            $groups = $mform->addElement($groupsel);
             $groups->setMultiple(true);
+            $mform->addHelpButton('groups', 'groups', 'local_checkmarkreport');
         }
 
         // User filter
         if (empty($this->_customdata['hideusers'])) {
             $mform->closeHeaderBefore('users');
             $userselects = array(get_string('all').' '.get_string('user'));
-            $users = get_enrolled_users($context, '', 0, 'u.*', 'lastname ASC');
-            foreach($users as $user) {
-                $userselects[$user->id] = fullname($user);
+            $groups = optional_param_array('groups', array(0), PARAM_INT);
+            foreach($groups as $curgrp) {
+                $users = get_enrolled_users($context, '', $curgrp, 'u.*', 'lastname ASC');
+                foreach($users as $user) {
+                    $userselects[$user->id] = fullname($user);
+                }
             }
             $users = $mform->addElement('select', 'users', get_string('users'), $userselects);
             $users->setMultiple(true);
@@ -121,10 +144,10 @@ class reportfilterform extends moodleform {
         $mform->addElement('advcheckbox', 'grade', get_string('additional_information', 'local_checkmarkreport'), get_string('showgrade', 'local_checkmarkreport'));
         $mform->setDefault('grade', get_user_preferences('checkmarkreport_showgrade'));
         //x/y ex
-        $mform->addElement('advcheckbox', 'sumabs', null, get_string('summary_abs', 'checkmark'));
+        $mform->addElement('advcheckbox', 'sumabs', null, get_string('sumabs', 'local_checkmarkreport'));
         $mform->setDefault('sumabs', get_user_preferences('checkmarkreport_sumabs'));
         //% ex
-        $mform->addElement('advcheckbox', 'sumrel', null, get_string('summary_rel', 'checkmark'));
+        $mform->addElement('advcheckbox', 'sumrel', null, get_string('sumrel', 'local_checkmarkreport'));
         $mform->setDefault('sumrel', get_user_preferences('checkmarkreport_sumrel'));
 
         // Additional settings ?? don't need them...

@@ -68,6 +68,15 @@ table.coloredrows .content {
     white-space:nowrap;
 }
 
+table.coloredrows .hidden {
+    margin:0px;
+    padding:0px;
+}
+
 table.coloredrows .hidecol {
     margin-left:3px;
+}
+
+table.coloredrows.userview th.cell {
+    text-align:center;
 }

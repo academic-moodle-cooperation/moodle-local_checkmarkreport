@@ -35,16 +35,30 @@ class checkmarkreport {
     const FORMAT_TXT = 4;
     
     protected $data = null;
+    protected $groups = array(0);
     protected $users = array(0);
     protected $instances = array(0);
 
-    function __construct($id, $users=array(0), $instances=array(0)) {
+    function __construct($id, $groups=array(0), $users=array(0), $instances=array(0)) {
         $this->courseid = $id;
+        $this->groups = $groups;
         $this->users = $users;
         $this->instances = $instances;
         $this->init_hidden();
     }
-    
+
+    public function get_instances() {
+        return $this->instances;
+    }
+
+    public function get_user() {
+        return $this->users;
+    }
+
+    public function get_groups() {
+        return $this->groups;
+    }
+
     public function get_coursedata() {
         global $PAGE, $DB;
 
@@ -73,7 +87,7 @@ class checkmarkreport {
         $sql = 'SELECT u.id FROM {user} u '.
                'LEFT JOIN ('.$esql.') eu ON eu.id=u.id '.
                'WHERE u.deleted = 0 AND eu.id=u.id ';
-        if (!in_array(0, $this->users)) {
+        if (!empty($this->users) && !in_array(0, $this->users)) {
             list($insql, $inparams) = $DB->get_in_or_equal($this->users, SQL_PARAMS_NAMED, 'user');
             $sql .= ' AND u.id '.$insql;
             $params = array_merge($params, $inparams);
@@ -270,7 +284,7 @@ class checkmarkreport {
         return $DB->get_records_sql_menu($sql, $params);
     }
     
-    public function get_instances() {
+    public function get_courseinstances() {
         global $DB;
         if (!empty($this->courseid)) {
             $course = $DB->get_record('course', array('id'=>$this->courseid), '*', MUST_EXIST);
