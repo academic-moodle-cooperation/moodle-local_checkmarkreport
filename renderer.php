@@ -38,7 +38,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         } else {
             $users = array(0);
         }
-        parent::__construct($id, $users, $instances);
+        parent::__construct($id, array(0), $users, $instances);
     }
 
     function get_table() {
@@ -60,6 +60,8 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             $table->attributes['class'] .= ' coloredrows';
         }
 
+        $table->tablealign = 'center';
+        
         $tabledata = array();
         $row = array();
         
@@ -116,7 +118,9 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         
         if (!empty($showrel)) {
             //percent of course examples
-            $tableheaders['percentex'] = new html_table_cell('Σ % '.get_string('examples', 'local_checkmarkreport'));
+            $tableheaders['percentex'] = new html_table_cell('Σ % '.
+                                                             get_string('examples', 'local_checkmarkreport').
+                                                             '/'.get_string('grade'));
             $tableheaders['percentex']->header = true;
             $tableheaders['percentex']->rowspan = 2;
             $tableheaders2['percentex'] = null;
@@ -126,7 +130,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             $table->colclasses['percentex'] = 'percentex';
         }
         
-        $instances = $this->get_instances();
+        $instances = $this->get_courseinstances();
         foreach($instances as $instance) {
             $span = 0;
             $tableheaders['instance'.$instance->id] = new html_table_cell($instance->name);
@@ -154,7 +158,8 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             //percent of course examples
             if (!empty($showrel)) {
                 $span++;
-                $tableheaders2['percentex'.$instance->id] = new html_table_cell('% '.get_string('examples', 'local_checkmarkreport'));
+                $title = '% '.get_string('examples', 'local_checkmarkreport').'/'.get_string('grade');
+                $tableheaders2['percentex'.$instance->id] = new html_table_cell($title);
                 $tableheaders2['percentex'.$instance->id]->header = true;
                 $tablecolumns[] = 'percentex'.$instance->id;
                 $table->colclasses['percentex'.$instance->id] = 'instance'.$instance->id.' percentex'.$instance->id;
@@ -206,7 +211,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
                 $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.round($percgrade, 2).' %)');
             }
             
-            $instances = $this->get_instances();
+            $instances = $this->get_courseinstances();
             foreach($instances as $instance) {
                 //coursesum of course grade
                 if (!empty($showgrade)) {
@@ -244,7 +249,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $course = $DB->get_record('course', array('id'=>$this->courseid));
         $xml = '';
         $examplenames = array();
-        $instances = $this->get_instances();
+        $instances = $this->get_courseinstances();
         foreach($data as $userid => $row) {
             $xml .= "\t".html_writer::start_tag('user')."\n".
                     "\t\t".html_writer::tag('id', $userid)."\n".
@@ -313,7 +318,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $course = $DB->get_record('course', array('id'=>$this->courseid));
         $txt = '';
         $examplenames = array();
-        $instances = $this->get_instances();
+        $instances = $this->get_courseinstances();
         $course = $DB->get_record('course', array('id'=>$this->courseid));
         //Header
         $txt .= get_string('pluginname', 'local_checkmarkreport').': '.$course->fullname."\n";
@@ -327,7 +332,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $txt .= "\tΣ ".get_string('examples', 'local_checkmarkreport');
         $txt .= "\tΣ % ".get_string('examples', 'local_checkmarkreport');
         
-        $instances = $this->get_instances();
+        $instances = $this->get_courseinstances();
         foreach($instances as $instance) {
             $txt .= "\t".$instance->name.' '.get_string('grade');
             $txt .= "\t".$instance->name.' '.get_string('examples', 'local_checkmarkreport');
@@ -515,6 +520,13 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
                             'colspan'   => $heading->colspan,
                             'rowspan'   => $heading->rowspan
                         ));
+                    if (!isset($heading->colspan)) {
+                        $heading->colspan = 1;
+                    }
+                    if (!isset($heading->rowspan)) {
+                        $heading->rowspan = 1;
+                    }
+                    $worksheet->merge_cells($y, $x, $y+$heading->rowspan-1, $x+$heading->colspan-1);
                     $worksheet->write_string($y, $x, $heading->text/*, $headline_format*/);
                     $x++;
                 }
@@ -606,8 +618,14 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
                         if ($cell->header === true) {
                             $tagtype = 'th';
                         }
+                        if (!isset($cell->rowspan)) {
+                            $cell->rowspan = 1;
+                        }
+                        if (!isset($cell->colspan)) {
+                            $cell->colspan = 1;
+                        }
                         $worksheet->write_string($y, $x, $cell->text);
-                        $worksheet->merge_cells($y, $x, $y+$cell->rowspan, $x+$cell->colspan);
+                        $worksheet->merge_cells($y, $x, $y+$cell->rowspan-1, $x+$cell->colspan-1);
                         //$output .= html_writer::tag($tagtype, $cell->text, $tdattributes) . "\n";
                         $x++;
                     }
@@ -1260,9 +1278,9 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                       'sesskey'    => sesskey(),
                       'format'     => checkmarkreport::FORMAT_XLSX);
         $groups = optional_param_array('groups', array(0), PARAM_INT);
-        $checkmarks = optional_param_array('instances', array(0), PARAM_INT);
-        $arrays = http_build_query(array('groups'     => $groups,
-                                         'checkmarks' => $checkmarks));
+        $users = optional_param_array('users', array(0), PARAM_INT);
+        $arrays = http_build_query(array('groups' => $groups,
+                                         'users'  => $users));
         $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
         $downloadlinks = get_string('exportas', 'local_checkmarkreport');
         $downloadlinks .= html_writer::tag('span',
@@ -1321,6 +1339,84 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $out = $this->render_checkmarkreport_useroverview($report, true);
 
         return $this->output->container($out, 'submission');
+    }
+
+    /**
+     * Internal implementation of singlecheckbox rendering
+     *
+     * @param single_select $select
+     * @return string HTML fragment
+     */
+    protected function render_checkmarkreport_single_checkbox(checkmarkreport_single_checkbox $checkbox) {
+        $checkbox = clone($checkbox);
+        if (empty($checkbox->formid)) {
+            $checkbox->formid = html_writer::random_id('single_checkbox_f');
+        }
+
+        $output = '';
+        $params = $checkbox->url->params();
+        if ($checkbox->method === 'post') {
+            $params['sesskey'] = sesskey();
+        }
+        foreach ($params as $name=>$value) {
+            $output .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>$name, 'value'=>$value));
+        }
+
+        if (empty($checkbox->attributes['id'])) {
+            $checkbox->attributes['id'] = html_writer::random_id('single_checkbox');
+        }
+
+        if ($checkbox->disabled) {
+            $checkbox->attributes['disabled'] = 'disabled';
+        }
+
+        if ($checkbox->tooltip) {
+            $checkbox->attributes['title'] = $checkbox->tooltip;
+        }
+
+        $checkbox->attributes['class'] = 'autosubmit';
+        if ($checkbox->class) {
+            $checkbox->attributes['class'] .= ' ' . $checkbox->class;
+        }
+
+        if ($checkbox->label) {
+            $output .= html_writer::label($checkbox->label, $checkbox->attributes['id'], false, $checkbox->labelattributes);
+        }
+
+        if ($checkbox->helpicon instanceof help_icon) {
+            $output .= $this->render($checkbox->helpicon);
+        }
+        
+        foreach ($checkbox->options as $field => $label) {
+            echo "output:".$field."=>".$label."<br />";
+            $output .= html_writer::checkbox($field, true, in_array($field, $checkbox->selected), $label, $checkbox->attributes);
+            $output .= html_writer::empty_tag('br')."\n";
+        }
+
+        $go = html_writer::empty_tag('input', array('type'=>'submit', 'value'=>get_string('go')));
+        $output .= html_writer::tag('noscript', html_writer::tag('div', $go), array('class' => 'inline'));
+
+        /*$this->page->requires->yui_module('moodle-local-checkmarkreport-formautosubmit',
+            'M.local_checkmarkreport.init_formautosubmit',
+            array(array('inputid' => $checkbox->attributes['id']))
+        );*/
+
+        // then div wrapper for xhtml strictness
+        $output = html_writer::tag('div', $output);
+
+        // now the form itself around it
+        if ($checkbox->method === 'get') {
+            $url = $checkbox->url->out_omit_querystring(true); // url without params, the anchor part allowed
+        } else {
+            $url = $checkbox->url->out_omit_querystring();     // url without params, the anchor part not allowed
+        }
+        $formattributes = array('method' => $checkbox->method,
+                                'action' => $url,
+                                'id'     => $checkbox->formid);
+        $output = html_writer::tag('form', $output, $formattributes);
+
+        // and finally one more wrapper with class
+        return html_writer::tag('div', $output, array('class' => $checkbox->class));
     }
     
     /**

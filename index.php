@@ -118,7 +118,7 @@ if (! $checkmarks = get_all_instances_in_course('checkmark', $course)) {
 switch($tab) {
     case 'overview':
         $mform = new reportfilterform($PAGE->url, array('courseid'   => $id,
-                                                        'hideusers' => true));
+                                                        'hideusers' => true), 'get');
         if ($data = $mform->get_data()) {
             set_user_preference('checkmarkreport_showgrade', $data->grade);
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
@@ -127,7 +127,7 @@ switch($tab) {
             $groups = $data->groups;
             $instances = $data->instances;
         } else {
-            $groups = optional_param_array('groups', array(0), PARAM_INT);
+            $groups = optional_param('groups', array(0), PARAM_INT);
             $instances = optional_param_array('instances', array(0), PARAM_INT);
             $mform->set_data(array('groups' => $groups,
                                   'instances' => $instances));
