@@ -140,15 +140,41 @@ switch($tab) {
     break;
     case 'useroverview':
         $mform = new reportfilterform($PAGE->url, array('courseid'   => $id,
-                                                        'hideinstances' => true));
+                                                        'hideinstances' => true), 'get');
         if ($data = $mform->get_data()) {
             set_user_preference('checkmarkreport_showgrade', $data->grade);
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
             set_user_preference('checkmarkreport_sumrel', $data->sumrel);
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+            $groups = empty($data->groups) ? array(0) : $data->groups;
+            if (!is_array($groups)) {
+                $groups = array($groups);
+            }
+            $users = empty($data->users) ? array(0) : $data->users;
+            if (!is_array($users)) {
+                $users = array($users);
+            }
+        } else {
+            $groups = optional_param_array('groups', array(0), PARAM_INT);
+            $users = optional_param_array('users', array(0), PARAM_INT);
+            $mform->set_data(array('groups' => $groups,
+                                   'users' => $users));
         }
+        if (empty($groups)) {
+            $groups = array(0);
+        }
+        
+        if (empty($users)) {
+            $users = array(0);
+        }
+
         $mform->display();
-        $checkmarkreport = new checkmarkreport_useroverview($id);
+
+        $arrays = http_build_query(array('groups' => $groups,
+                                         'users'  => $users));
+        $PAGE->set_url($PAGE->url.'&'.$arrays);
+
+        $checkmarkreport = new checkmarkreport_useroverview($id, $groups, $users);
     break;
     case 'userview':
         $checkmarkreport = new checkmarkreport_userview($id);

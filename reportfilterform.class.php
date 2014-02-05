@@ -118,7 +118,7 @@ class reportfilterform extends moodleform {
         // Additional columns
         $mform->closeHeaderBefore('grade');
         //grade
-        $mform->addElement('advcheckbox', 'grade', get_string('additional_columns', 'local_checkmarkreport'), get_string('showgrade', 'local_checkmarkreport'));
+        $mform->addElement('advcheckbox', 'grade', get_string('additional_information', 'local_checkmarkreport'), get_string('showgrade', 'local_checkmarkreport'));
         $mform->setDefault('grade', get_user_preferences('checkmarkreport_showgrade'));
         //x/y ex
         $mform->addElement('advcheckbox', 'sumabs', null, get_string('summary_abs', 'checkmark'));

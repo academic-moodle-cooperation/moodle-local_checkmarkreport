@@ -121,7 +121,7 @@ class checkmarkreport {
         }
         $courseid = $course->id;
 
-        if (empty($userids)) {
+        if ($userids == 0) {
             $context = context_course::instance($courseid);
             $userids = get_enrolled_users($context, '', 0, 'u.*', 'lastname ASC');
         }
@@ -205,6 +205,12 @@ class checkmarkreport {
             foreach ($checkmarkids as $chkmkid) {
                 $params['chkmkid'] = $chkmkid;
                 $params['chkmkidb'] = $chkmkid;
+                if (!isset($examples[$chkmkid])) {
+                    $examples[$chkmkid] = 0;
+                }
+                if (!isset($grades[$chkmkid])) {
+                    $grades[$chkmkid] = 0;
+                }
                 $params['maxchecks'] = $examples[$chkmkid];
                 $params['maxchecksb'] = $examples[$chkmkid];
                 $params['maxgrade'] = $grades[$chkmkid];
