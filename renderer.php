@@ -934,67 +934,42 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
         $course = $DB->get_record('course', array('id'=>$this->courseid));
         $txt = '';
         $examplenames = array();
-        $instances = $this->get_instances();
+        $instances = $this->get_courseinstances();
         $course = $DB->get_record('course', array('id'=>$this->courseid));
         //Header
         $txt .= get_string('pluginname', 'local_checkmarkreport').': '.$course->fullname."\n";
-        //Title
-        $txt .= get_string('fullname');
-        $useridentity = explode(',', $CFG->showuseridentity);
-        foreach ($useridentity as $cur) {
-            $txt .= "\t".(($cur=='phone1') ? get_string('phone') : get_string($cur));
-        }
-        $txt .= "\tΣ ".get_string('grade');
-        $txt .= "\tΣ ".get_string('examples', 'local_checkmarkreport');
-        $txt .= "\tΣ % ".get_string('examples', 'local_checkmarkreport');
-        
-        $instances = $this->get_instances();
-        foreach($instances as $instance) {
-            $txt .= "\t".$instance->name.' '.get_string('grade');
-            $txt .= "\t".$instance->name.' '.get_string('examples', 'local_checkmarkreport');
-            $txt .= "\t".$instance->name.' % '.get_string('examples', 'local_checkmarkreport');
-            // Dynamically add examples!
-            // get example data
-            if (!isset($examplenames[$instance->id])) {
-                $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
-            }
-            foreach ($examplenames[$instance->id] as $key => $example) {
-                $txt .= "\t".$instance->name.' '.$example->name." (".$example->grade.'P)';
-            }
-        }
-        $txt .= "\n";
-        
         //Data
         foreach($data as $userid => $row) {
-            $txt .= fullname($row);
-            foreach ($row->userdata as $key => $cur) {
-                $txt .= "\t".html_writer::tag($key, $cur);
-            }
-            $txt .= "\t".(empty($row->checkgrade) ? 0 : $row->checkgrade);
-            $txt .= "\t".(empty($row->maxgrade) ? 0 : $row->maxgrade);
-            $txt .= "\t".$row->checks;
-            $txt .= "\t".$row->maxchecks;
-            
+            $txt .= get_string('fullname').': '.fullname($row)."\n";
+            $txt .= "Σ ".get_string('grade')."\t".(empty($row->checkgrade) ? 0 : $row->checkgrade).'/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
+            $txt .= "Σ ".get_string('examples', 'local_checkmarkreport')."\t".$row->checks.'/'.$row->maxchecks."\n";
+            $txt .= "Σ % ".get_string('examples', 'local_checkmarkreport')."\t".$row->percentchecked.'%'."\n";
             $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
-            $txt .= "\t".$row->percentchecked.'%';
-            $txt .= "\t".$percgrade.'%';
-            foreach ($instances as $instance) {
+            $txt .= "Σ % ".get_string('grade', 'local_checkmarkreport')."\t".$percgrade.'%'."\n";
+            $instances = $this->get_courseinstances();
+            foreach($instances as $instance) {
+                $txt .= $instance->name."\n";
+                // Dynamically add examples!
+                // get example data
                 if (!isset($examplenames[$instance->id])) {
                     $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
                 }
                 $instancedata = $row->instancedata[$instance->id];
-                $txt .= "\t".(empty($instancedata->grade) ? 0 : $instancedata->grade);
-                $txt .= "\t".(empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
-                $txt .= "\t".$instancedata->checked;
-                $txt .= "\t".$instancedata->maxchecked;
-                
-                $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
-                $txt .= "\t".$instancedata->percentchecked.'%';
-                $txt .= "\t".$percgrade.'%';
-                foreach ($instancedata->examples as $key => $example) {
-                    $txt .= "\t".($example ? "☒" : "☐");
+                foreach ($examplenames[$instance->id] as $key => $example) {
+                    $txt .= "\t".$examplenames[$instance->id][$key]->name." (".$examplenames[$instance->id][$key]->grade.'P)';
+                    $txt .= "\t".($instancedata->examples[$key] ? "☒" : "☐");
+                    $txt .= "\t".($instancedata->examples[$key] ? $examplenames[$instance->id][$key]->grade : 0).'/'.
+                            $examplenames[$instance->id][$key]->grade."\n";
                 }
+                $txt .= "Σ ".$examplenames[$instance->id][$key]->name;
+                $txt .= "\t".$instancedata->checked.'/'.$instancedata->maxchecked.
+                        '('.round($instancedata->percentchecked, 2).'%)';
+                $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
+                $txt .= "\t".(empty($instancedata->grade) ? 0 : $instancedata->grade).'/'.
+                        (empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade).
+                        '('.$percgrade." %)\n";
             }
+
             $txt .= "\n";
         }
         $filename = get_string('pluginname', 'local_checkmarkreport').'_'.
@@ -1060,9 +1035,16 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
         $x = $y = 0;
         
         // We start with the html_table-Object
-        $table = $this->get_table();
         
-        $worksheet = $workbook->add_worksheet(time());
+        
+        
+        $table = $this->get_table();
+        $group = optional_param('group', 0, PARAM_INT);
+        if (empty($group)) {
+            $worksheet = $workbook->add_worksheet(get_string('all'));
+        } else {
+            $worksheet = $workbook->add_worksheet(groups_get_name($group));
+        }
         
         // prepare table data and populate missing properties with reasonable defaults
         if (!empty($table->align)) {
