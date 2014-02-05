@@ -707,14 +707,16 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                                     'class' => 'checked');
         $table->colclasses['checked'] = 'checked';
         
-        $tableheaders['points'] = new html_table_cell(get_string('grade', 'local_checkmarkreport'));
-        $tableheaders['points']->header = true;
-        $table->align['points'] = 'center';
-        $tablecolumns[] = 'points';
-        $table->colgroups[] = array('span' => '1',
-                                    'class' => 'points');
-        $table->colclasses['points'] = 'points';
-        
+        if (!empty($showgrade)) {
+            $tableheaders['points'] = new html_table_cell(get_string('grade', 'local_checkmarkreport'));
+            $tableheaders['points']->header = true;
+            $table->align['points'] = 'center';
+            $tablecolumns[] = 'points';
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => 'points');
+            $table->colclasses['points'] = 'points';
+        }
+
         $table->head = array();
         $table->head[0] = new html_table_row();
         $table->head[0]->cells = $tableheaders;
@@ -735,7 +737,9 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                 $row['checkmark']->style = ' text-align: left; ';
                 $row['examples'] = null;
                 $row['checked'] = null;
-                $row['points'] = null;
+                if (!empty($showpoints)) {
+                    $row['points'] = null;
+                }
                 $table->data[$i] = new html_table_row();
                 $table->data[$i]->cells = $row;
                 $i++;
@@ -758,10 +762,12 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                     } else {
                         $row['checked'] = new html_table_cell($example ? "☒" : "☐");
                     }
-                    $row['points'] = new html_table_cell(($example ?
-                                                          $examplenames[$instance->id][$exid]->grade :
-                                                          0).'/'.
-                                                          $examplenames[$instance->id][$exid]->grade);
+                    if (!empty($showgrade)) {
+                        $row['points'] = new html_table_cell(($example ?
+                                                              $examplenames[$instance->id][$exid]->grade :
+                                                              0).'/'.
+                                                              $examplenames[$instance->id][$exid]->grade);
+                    }
                     $table->data[$i] = new html_table_row();
                     $table->data[$i]->cells = $row;
                     $i++;
@@ -769,50 +775,86 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                 }
                 $table->data[$i-$idx]->cells['checkmark']->rowspan = $idx;
             }
+            if (!empty($showabs) || !empty($showrel) || !empty($showgrade)) {
+                $row = array();
+                $row['checkmark'] = new html_table_cell('Σ '.$instance->name);
+                $row['checkmark']->header = true;
+                $row['checkmark']->colspan = 2;
+                $row['checkmark']->style = ' text-align: left; ';
+                $row['examples'] = null;
+                if (!empty($showabs)) {
+                    $checkedtext = $userdata->instancedata[$instance->id]->checked.'/'.
+                                   $userdata->instancedata[$instance->id]->maxchecked;
+                }
+                if (!empty($showrel)) {
+                    $percentchecked = round($userdata->instancedata[$instance->id]->percentchecked, 2);
+                    if (!empty($showabs)) {
+                        $checkedtext .= ' ('.$percentchecked.'%)';
+                    } else {
+                        $checkedtext = $percentchecked.'%';
+                    }
+                }
+                if (!empty($showrel) || !empty($showabs)) {
+                    $row['checked'] = new html_table_cell($checkedtext);
+                    $row['checked']->header = true;
+                    $row['checked']->style = ' text-align: right; ';
+                }
+                $grade = empty($userdata->instancedata[$instance->id]->grade) ? 0 : $userdata->instancedata[$instance->id]->grade;
+                if (!empty($showgrade)) {
+                    $gradetext = $grade.'/'.$userdata->instancedata[$instance->id]->maxgrade;
+                    if (!empty($showrel)) {
+                        $percentgrade = round($userdata->instancedata[$instance->id]->percentgrade, 2);
+                        $gradetext .= ' ('.$percentgrade.' %)';
+                    }
+                    $row['points'] = new html_table_cell($gradetext);
+                    $row['points']->header = true;
+                    $row['points']->style = ' text-align: right; ';
+                }
+                $table->data[$i] = new html_table_row();
+                $table->data[$i]->cells = $row;
+                $i++;
+                $idx++;
+            }
+            $table->data[$i] = new html_table_row(array('','',''));
+            $i++;
+            $idx++;
+        }
+        if (!empty($showabs) || !empty($showrel) || !empty($showgrade)) {
             $row = array();
             $row['checkmark'] = new html_table_cell('Σ '.get_string('total'));
             $row['checkmark']->header = true;
             $row['checkmark']->colspan = 2;
             $row['checkmark']->style = ' text-align: left; ';
             $row['examples'] = null;
-            $percentchecked = round($userdata->instancedata[$instance->id]->percentchecked, 2);
-            $row['checked'] = new html_table_cell($userdata->instancedata[$instance->id]->checked.'/'.
-                                                  $userdata->instancedata[$instance->id]->maxchecked.
-                                                  ' ('.$percentchecked.'%)');
-            $row['checked']->header = true;
-            $row['checked']->style = ' text-align: right; ';
-            $grade = empty($userdata->instancedata[$instance->id]->grade) ? 0 : $userdata->instancedata[$instance->id]->grade;
-            $percentgrade = round($userdata->instancedata[$instance->id]->percentgrade, 2);
-            $row['points'] = new html_table_cell($grade.'/'.
-                                                 $userdata->instancedata[$instance->id]->maxgrade.
-                                                 ' ('.$percentgrade.' %)');
-            $row['points']->header = true;
-            $row['points']->style = ' text-align: right; ';
+            $checkgrade = empty($userdata->checkgrade) ? 0 : $userdata->checkgrade;
+            if (!empty($showabs)) {
+                $checkedtext = $userdata->checks.'/'.$userdata->maxchecks;
+            }
+            if (!empty($showrel)) {
+                if (!empty($showabs)) {
+                    $checkedtext .= ' ('.round($userdata->percentchecked, 2).'%)';
+                } else {
+                    $checkedtext = round($userdata->percentchecked, 2).'%';
+                }
+            }
+            if (!empty($showrel) || !empty($showabs)) {
+                $row['checked'] = new html_table_cell($checkedtext);
+                $row['checked']->header = true;
+                $row['checked']->style = ' text-align: right; ';
+            }
+            if (!empty($showgrade)) {
+                $gradetext = (empty($userdata->checkgrade) ? 0 : $userdata->checkgrade).'/'.
+                             $userdata->maxgrade;
+                if (!empty($showrel)) {
+                    $gradetext .= ' ('.round($userdata->percentgrade, 2).'%)';
+                }
+                $row['points'] = new html_table_cell($gradetext);
+                $row['points']->header = true;
+                $row['points']->style = ' text-align: right; ';
+            }
             $table->data[$i] = new html_table_row();
             $table->data[$i]->cells = $row;
-            $i++;
-            $idx++;
-            $table->data[$i] = new html_table_row(array('','',''));
-            $i++;
-            $idx++;
         }
-        $row = array();
-        $row['checkmark'] = new html_table_cell('Σ '.get_string('total'));
-        $row['checkmark']->header = true;
-        $row['checkmark']->colspan = 2;
-        $row['checkmark']->style = ' text-align: left; ';
-        $row['examples'] = null;
-        $checkgrade = empty($userdata->checkgrade) ? 0 : $userdata->checkgrade;
-        $row['checked'] = new html_table_cell($userdata->checks.'/'.$userdata->maxchecks.' ('.
-                                              round($userdata->percentchecked, 2).'%)');
-        $row['checked']->header = true;
-        $row['checked']->style = ' text-align: right; ';
-        $row['points'] = new html_table_cell($userdata->checkgrade.'/'.$userdata->maxgrade.' ('.
-                                             round($userdata->percentgrade, 2).'%)');
-        $row['points']->header = true;
-        $row['points']->style = ' text-align: right; ';
-        $table->data[$i] = new html_table_row();
-        $table->data[$i]->cells = $row;
 
         return $table;
     }
@@ -823,7 +865,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
         $course = $DB->get_record('course', array('id'=>$this->courseid));
         $xml = '';
         $examplenames = array();
-        $instances = $this->get_instances();
+        $instances = $this->get_courseinstances();
         foreach($data as $userid => $row) {
             $xml .= "\t".html_writer::start_tag('user')."\n".
                     "\t\t".html_writer::tag('id', $userid)."\n".
