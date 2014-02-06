@@ -84,8 +84,8 @@ class reportfilterform extends moodleform {
             $groupsel->addOption(get_string('all').' '.get_string('groups'), 0);
             if(count($groups)) {
                 list($grpssql, $grpsparams) = $DB->get_in_or_equal(array_keys($groups));
-                $groupmembers = $DB->get_fieldset_sql("
-                SELECT COUNT(DISTINCT userid)
+                $groupmembers = $DB->get_records_sql_menu("
+                SELECT groupid, COUNT(DISTINCT userid)
                   FROM {groups_members}
                  WHERE groupid ".$grpssql."
               GROUP BY groupid", $grpsparams);
