@@ -1032,108 +1032,136 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
     }
 
     public function fill_workbook($workbook) {
-        $x = $y = 0;
-        
-        // We start with the html_table-Object
-        
-        
-        
-        $table = $this->get_table();
-        $group = optional_param('group', 0, PARAM_INT);
-        if (empty($group)) {
-            $worksheet = $workbook->add_worksheet(get_string('all'));
-        } else {
-            $worksheet = $workbook->add_worksheet(groups_get_name($group));
-        }
-        
-        // prepare table data and populate missing properties with reasonable defaults
-        if (!empty($table->align)) {
-            foreach ($table->align as $key => $aa) {
-                if ($aa) {
-                    $table->align[$key] = fix_align_rtl($aa);  // Fix for RTL languages
+        //initialise everything
+        $x = $y = array(0);
+        $worksheets = array();
+        if (!empty($this->groups) && is_array($this->groups)) {
+            foreach ($this->groups as $group) {
+                $x[$group] = 0;
+                $y[$group] = 0;
+                if ($group == 0) {
+                    $worksheets[$group] = $workbook->add_worksheet(get_string('all').' '.get_string('groups'));
                 } else {
-                    $table->align[$key] = null;
+                    $worksheets[$group] = $workbook->add_worksheet(groups_get_name($group));
                 }
             }
         }
-        if (!empty($table->size)) {
-            foreach ($table->size as $key => $ss) {
-                if ($ss) {
-                    $table->size[$key] = $ss;
-                } else {
-                    $table->size[$key] = null;
+        $data = $this->get_coursedata();
+        foreach($data as $userid => $userdata) {
+            $table = $this->get_table($userdata);
+            $groups = groups_get_all_groups($this->courseid, $userid);
+            $groups = array_intersect_assoc($groups, array_flip($this->groups));
+            $all = new stdClass();
+            $all->id = 0;
+            $all->name = get_string('all').' '.get_string('groups');
+            $groups = array(0=>$all)+$groups;
+            foreach($groups as $group) {
+                $x[$group->id] = 0;
+                if ($y[$group->id] != 0) {
+                    $y[$group->id]++;
                 }
+                $worksheets[$group->id]->write_string($y[$group->id], $x[$group->id], fullname($data[$userid]));
+                $y[$group->id]++;
             }
-        }
-
-        if (!empty($table->head)) {
-            foreach ($table->head as $key => $val) {
-                if (!isset($table->align[$key])) {
-                    $table->align[$key] = null;
-                }
-                if (!isset($table->size[$key])) {
-                    $table->size[$key] = null;
-                }
-            }
-        }
-
-        $countcols = 0;
-
-        if (!empty($table->head)) {
-            $countrows = count($table->head);
-
-            foreach($table->head as $headrow) {
-                $x = 0;
-                $keys = array_keys($headrow->cells);
-                $lastkey = end($keys);
-                $countcols = count($headrow->cells);
-
-                foreach ($headrow->cells as $key => $heading) {
-                    // Convert plain string headings into html_table_cell objects
-                    if (!($heading instanceof html_table_cell)) {
-                        $headingtext = $heading;
-                        $heading = new html_table_cell();
-                        $heading->text = $headingtext;
-                        $heading->header = true;
+            // We may use additional table data to format sheets!
+            if (!empty($table->align)) {
+                foreach ($table->align as $key => $aa) {
+                    if ($aa) {
+                        $table->align[$key] = fix_align_rtl($aa);  // Fix for RTL languages
+                    } else {
+                        $table->align[$key] = null;
                     }
-                    
-                    if($heading->text == null) {
-                        //$worksheet->write_blank($y, $x);
-                        $x++;
-                        continue;
-                    }
-
-                    if ($heading->header !== false) {
-                        $heading->header = true;
-                    }
-
-/*                    if (isset($heading->colspan) && $heading->colspan > 1) {
-                        $countcols += $heading->colspan - 1;
-                    }*/
-
-                    $heading->attributes['class'] = trim($heading->attributes['class']);
-                    $attributes = array_merge($heading->attributes, array(
-                            'style'     => $heading->style,
-                            'scope'     => $heading->scope,
-                            'colspan'   => $heading->colspan,
-                            'rowspan'   => $heading->rowspan
-                        ));
-                    $worksheet->write_string($y, $x, $heading->text/*, $headline_format*/);
-                    $x++;
                 }
-                $y++;
             }
-        }
-        if (!empty($table->data)) {
-            $oddeven    = 1;
-            $keys       = array_keys($table->data);
-            $lastrowkey = end($keys);
+            if (!empty($table->size)) {
+                foreach ($table->size as $key => $ss) {
+                    if ($ss) {
+                        $table->size[$key] = $ss;
+                    } else {
+                        $table->size[$key] = null;
+                    }
+                }
+            }
 
-            foreach ($table->data as $key => $row) {
-                $x=0;
-                if (($row === 'hr') && ($countcols)) {
-                    //$output .= html_writer::tag('td', html_writer::tag('div', '', array('class' => 'tabledivider')), array('colspan' => $countcols));
-                } else {
+            if (!empty($table->head)) {
+                foreach ($table->head as $key => $val) {
+                    if (!isset($table->align[$key])) {
+                        $table->align[$key] = null;
+                    }
+                    if (!isset($table->size[$key])) {
+                        $table->size[$key] = null;
+                    }
+                }
+            }
+
+            $countcols = 0;
+
+            if (!empty($table->head)) {
+                $countrows = count($table->head);
+
+                foreach($table->head as $headrow) {
+                    foreach($groups as $group) {
+                        $x[$group->id] = 0;
+                    }
+                    $keys = array_keys($headrow->cells);
+                    $lastkey = end($keys);
+                    $countcols = count($headrow->cells);
+
+                    foreach ($headrow->cells as $key => $heading) {
+                        // Convert plain string headings into html_table_cell objects
+                        if (!($heading instanceof html_table_cell)) {
+                            $headingtext = $heading;
+                            $heading = new html_table_cell();
+                            $heading->text = $headingtext;
+                            $heading->header = true;
+                        }
+                        
+                        if($heading->text == null) {
+                            //$worksheet->write_blank($y, $x);
+                            foreach($groups as $group) {
+                                $x[$group->id]++;
+                            }
+                            continue;
+                        }
+
+                        if ($heading->header !== false) {
+                            $heading->header = true;
+                        }
+
+                       if (!isset($heading->rowspan)) {
+                            $heading->rowspan = 1;
+                        }
+                        if (!isset($heading->colspan)) {
+                            $heading->colspan = 1;
+                        }
+
+                        $heading->attributes['class'] = trim($heading->attributes['class']);
+                        $attributes = array_merge($heading->attributes, array(
+                                'style'     => $heading->style,
+                                'scope'     => $heading->scope,
+                                'colspan'   => $heading->colspan,
+                                'rowspan'   => $heading->rowspan
+                            ));
+                        foreach($groups as $group) {
+                            $worksheets[$group->id]->write_string($y[$group->id], $x[$group->id], $heading->text);
+                            $worksheets[$group->id]->merge_cells($y[$group->id], $x[$group->id], $y[$group->id]+$heading->rowspan-1, $x[$group->id]+$heading->colspan-1);
+                            $x[$group->id]++;
+                        }
+                    }
+                    foreach($groups as $group) {
+                        $y[$group->id]++;
+                    }
+                }
+            }
+            if (!empty($table->data)) {
+                $oddeven    = 1;
+                $keys       = array_keys($table->data);
+                $lastrowkey = end($keys);
+
+                foreach ($table->data as $key => $row) {
+                    foreach($groups as $group) {
+                        $x[$group->id]=0;
+                    }
                     // Convert array rows to html_table_rows and cell strings to html_table_cell objects
                     if (!($row instanceof html_table_row)) {
                         $newrow = new html_table_row();
@@ -1169,7 +1197,9 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                         }
                         
                         if ($cell == null) {
-                            $x++;
+                            foreach($groups as $group) {
+                                $x[$group->id]++;
+                            }
                             continue;
                         }
 
@@ -1209,14 +1239,24 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                         if ($cell->header === true) {
                             $tagtype = 'th';
                         }
-                        $worksheet->write_string($y, $x, $cell->text);
-                        $worksheet->merge_cells($y, $x, $y+$cell->rowspan, $x+$cell->colspan);
-                        //$output .= html_writer::tag($tagtype, $cell->text, $tdattributes) . "\n";
-                        $x++;
+                        if (!isset($cell->rowspan)) {
+                            $cell->rowspan = 1;
+                        }
+                        if (!isset($cell->colspan)) {
+                            $cell->colspan = 1;
+                        }
+                        foreach($groups as $group) {
+                            $worksheets[$group->id]->write_string($y[$group->id], $x[$group->id], $cell->text);
+                            if (($cell->rowspan > 1) || ($cell->colspan > 1)) {
+                                $worksheets[$group->id]->merge_cells($y[$group->id], $x[$group->id], $y[$group->id]+$cell->rowspan-1, $x[$group->id]+$cell->colspan-1);
+                            }
+                            $x[$group->id]++;
+                        }
+                    }
+                    foreach ($groups as $group) {
+                        $y[$group->id]++;
                     }
                 }
-                //$output .= html_writer::end_tag('tr') . "\n";
-                $y++;
             }
         }
     }
@@ -1310,12 +1350,12 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $downloadlinks .= html_writer::tag('span',
                                            html_writer::link($uri, 'XLSX'),
                                            array('class'=>'downloadlink'));
-        /*
-         * We deactivated output in Excel 2003 format due to it's limitations
+        
+         /* We deactivated output in Excel 2003 format due to it's limitations*/
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_XLS));
         $downloadlinks .= html_writer::tag('span',
                                            html_writer::link($uri, 'XLS'),
-                                           array('class'=>'downloadlink'));*/
+                                           array('class'=>'downloadlink'));
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_ODS));
         $downloadlinks .= html_writer::tag('span',
                                            html_writer::link($uri, 'ODS'),
@@ -1365,84 +1405,6 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         return $this->output->container($out, 'submission');
     }
 
-    /**
-     * Internal implementation of singlecheckbox rendering
-     *
-     * @param single_select $select
-     * @return string HTML fragment
-     */
-    protected function render_checkmarkreport_single_checkbox(checkmarkreport_single_checkbox $checkbox) {
-        $checkbox = clone($checkbox);
-        if (empty($checkbox->formid)) {
-            $checkbox->formid = html_writer::random_id('single_checkbox_f');
-        }
-
-        $output = '';
-        $params = $checkbox->url->params();
-        if ($checkbox->method === 'post') {
-            $params['sesskey'] = sesskey();
-        }
-        foreach ($params as $name=>$value) {
-            $output .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>$name, 'value'=>$value));
-        }
-
-        if (empty($checkbox->attributes['id'])) {
-            $checkbox->attributes['id'] = html_writer::random_id('single_checkbox');
-        }
-
-        if ($checkbox->disabled) {
-            $checkbox->attributes['disabled'] = 'disabled';
-        }
-
-        if ($checkbox->tooltip) {
-            $checkbox->attributes['title'] = $checkbox->tooltip;
-        }
-
-        $checkbox->attributes['class'] = 'autosubmit';
-        if ($checkbox->class) {
-            $checkbox->attributes['class'] .= ' ' . $checkbox->class;
-        }
-
-        if ($checkbox->label) {
-            $output .= html_writer::label($checkbox->label, $checkbox->attributes['id'], false, $checkbox->labelattributes);
-        }
-
-        if ($checkbox->helpicon instanceof help_icon) {
-            $output .= $this->render($checkbox->helpicon);
-        }
-        
-        foreach ($checkbox->options as $field => $label) {
-            echo "output:".$field."=>".$label."<br />";
-            $output .= html_writer::checkbox($field, true, in_array($field, $checkbox->selected), $label, $checkbox->attributes);
-            $output .= html_writer::empty_tag('br')."\n";
-        }
-
-        $go = html_writer::empty_tag('input', array('type'=>'submit', 'value'=>get_string('go')));
-        $output .= html_writer::tag('noscript', html_writer::tag('div', $go), array('class' => 'inline'));
-
-        /*$this->page->requires->yui_module('moodle-local-checkmarkreport-formautosubmit',
-            'M.local_checkmarkreport.init_formautosubmit',
-            array(array('inputid' => $checkbox->attributes['id']))
-        );*/
-
-        // then div wrapper for xhtml strictness
-        $output = html_writer::tag('div', $output);
-
-        // now the form itself around it
-        if ($checkbox->method === 'get') {
-            $url = $checkbox->url->out_omit_querystring(true); // url without params, the anchor part allowed
-        } else {
-            $url = $checkbox->url->out_omit_querystring();     // url without params, the anchor part not allowed
-        }
-        $formattributes = array('method' => $checkbox->method,
-                                'action' => $url,
-                                'id'     => $checkbox->formid);
-        $output = html_writer::tag('form', $output, $formattributes);
-
-        // and finally one more wrapper with class
-        return html_writer::tag('div', $output, array('class' => $checkbox->class));
-    }
-    
     /**
      * Renders HTML table
      *
