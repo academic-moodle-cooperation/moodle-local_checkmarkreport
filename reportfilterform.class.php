@@ -74,8 +74,10 @@ class reportfilterform extends moodleform {
 
         $mform->addElement('html', html_writer::start_tag('div', array('class'=>'columns')));
         $context = CONTEXT_COURSE::instance($COURSE->id);
+        $groupmode = $DB->get_field('course', 'groupmode', array('id'=>$COURSE->id), MUST_EXIST);
         // Groups filter
-        if (empty($this->_customdata['hidegroups'])) {
+        if (empty($this->_customdata['hidegroups'])
+            && $groupmode != NOGROUPS) {
             $groups = groups_get_all_groups($COURSE->id);
             $groupsel = $mform->createElement('select', 'groups', get_string('groups'));
             //$groupselects = array(get_string('all').' '.get_string('groups'));

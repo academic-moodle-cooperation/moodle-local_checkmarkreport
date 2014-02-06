@@ -124,7 +124,10 @@ switch($tab) {
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
             set_user_preference('checkmarkreport_sumrel', $data->sumrel);
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
-            $groups = $data->groups;
+            $groups = empty($data->groups) ? array(0) : $data->groups;
+            if (!is_array($groups)) {
+                $groups = array($groups);
+            }
             $instances = $data->instances;
         } else {
             $groups = optional_param('groups', array(0), PARAM_INT);
