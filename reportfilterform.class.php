@@ -50,6 +50,9 @@ class reportfilterform extends moodleform {
         global $CFG, $COURSE, $DB, $PAGE, $USER;
         $mform = $this->_form;
 
+        $mform->addElement('hidden', 'userid', $USER->id);
+        $mform->setType('userid', PARAM_INT);
+
         $mform->addElement('html', html_writer::start_tag('div', array('class'=>'columns')));
         $context = CONTEXT_COURSE::instance($COURSE->id);
         $groupmode = $DB->get_field('course', 'groupmode', array('id'=>$COURSE->id), MUST_EXIST);
@@ -57,7 +60,7 @@ class reportfilterform extends moodleform {
         if (empty($this->_customdata['hidegroups'])
             && $groupmode != NOGROUPS) {
             $groups = groups_get_all_groups($COURSE->id);
-            $groupsel = $mform->createElement('select', 'groups', get_string('groups'));
+            $groupsel = $mform->createElement('select', 'groups', get_string('groups'), null, array('id'=>'groups'));
             //$groupselects = array(get_string('all').' '.get_string('groups'));
             $groupsel->addOption(get_string('all').' '.get_string('groups'), 0);
             if(count($groups)) {
@@ -98,7 +101,7 @@ class reportfilterform extends moodleform {
                     $userselects[$user->id] = fullname($user);
                 }
             }
-            $users = $mform->addElement('select', 'users', get_string('users'), $userselects);
+            $users = $mform->addElement('select', 'users', get_string('users'), $userselects, array('id'=>'users'));
             $users->setMultiple(true);
         }
 
@@ -140,5 +143,11 @@ class reportfilterform extends moodleform {
         $mform->closeHeaderBefore('submitbutton');
 
         $mform->addElement('submit', 'submitbutton', get_string('update', 'local_checkmarkreport'));
+        $mform->disable_form_change_checker();
+        $PAGE->requires->string_for_js('all', 'moodle');
+        $PAGE->requires->string_for_js('users', 'moodle');
+        $PAGE->requires->string_for_js('error_retriefing_members', 'local_checkmarkreport');
+        $PAGE->requires->yui_module('moodle-local_checkmarkreport-filterform',
+                                    'M.local_checkmarkreport.init_filterform');
     }
 }

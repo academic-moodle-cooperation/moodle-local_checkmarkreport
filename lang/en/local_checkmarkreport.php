@@ -36,6 +36,7 @@ $string['pluginnameplural'] = 'Checkmark reports';
 
 $string['additional_information'] = 'Additional information';
 $string['additional_settings'] = 'Additional settings';
+$string['error_retriefing_members'] = 'Error getting groupmembers';
 $string['examples'] = 'Examples';
 $string['example'] = 'Example';
 $string['exportas'] = 'Export as';
