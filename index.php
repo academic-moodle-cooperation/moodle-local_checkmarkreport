@@ -15,7 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Prints a list of all checkmarkreport instances in the given course (via id)
  *
  * @package       local_checkmarkreport
  * @author        Philipp Hager (e0803285@gmail.com)
@@ -130,7 +129,7 @@ switch($tab) {
             }
             $instances = $data->instances;
         } else {
-            $groups = optional_param('groups', array(0), PARAM_INT);
+            $groups = optional_param_array('groups', array(0), PARAM_INT);
             $instances = optional_param_array('instances', array(0), PARAM_INT);
             $mform->set_data(array('groups' => $groups,
                                   'instances' => $instances));

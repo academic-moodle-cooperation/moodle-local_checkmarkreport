@@ -96,11 +96,12 @@ class checkmarkreport {
         $users = $DB->get_fieldset_sql($sql, $params);
 
         $data = $this->get_general_data($course, $users, $this->instances);
-
-        // Get examples states for user and instance!
-        foreach($checkmarks as $checkmark) {
-            foreach($data as $userid => $user) {
-                $data[$userid]->instancedata[$checkmark->id]->examples = $this->get_examples_data($checkmark->id, $userid);
+        if (!empty($data)) {
+            // Get examples states for user and instance!
+            foreach($checkmarks as $checkmark) {
+                foreach($data as $userid => $user) {
+                    $data[$userid]->instancedata[$checkmark->id]->examples = $this->get_examples_data($checkmark->id, $userid);
+                }
             }
         }
 

@@ -1285,8 +1285,8 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                       'showpoints' => false,
                       'sesskey'    => sesskey(),
                       'format'     => checkmarkreport::FORMAT_XLSX);
-        $groups = optional_param_array('groups', array(0), PARAM_INT);
-        $checkmarks = optional_param_array('instances', array(0), PARAM_INT);
+        $groups = $report->get_groups();
+        $checkmarks = $report->get_instances();
         $arrays = http_build_query(array('groups'     => $groups,
                                          'checkmarks' => $checkmarks));
         $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
@@ -1341,8 +1341,8 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                       'showpoints' => false,
                       'sesskey'    => sesskey(),
                       'format'     => checkmarkreport::FORMAT_XLSX);
-        $groups = optional_param_array('groups', array(0), PARAM_INT);
-        $users = optional_param_array('users', array(0), PARAM_INT);
+        $groups = $report->get_groups();
+        $users = $report->get_user();
         $arrays = http_build_query(array('groups' => $groups,
                                          'users'  => $users));
         $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
@@ -1370,12 +1370,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                                            array('class'=>'downloadlink'));
         $out .= html_writer::tag('div', $downloadlinks, array('class'=>'download'));
 
-        if (empty($report->get_user())) {
-            $out .= $this->output->notification(get_string('nousers', 'checkmark'), 'notifyproblem');
-        } else {
-            // Render the tables!
-            $data = $report->get_coursedata();
-            $users = $report->get_user();
+        // Render the tables!
+        $data = $report->get_coursedata();
+        $users = $report->get_user();
+        if (!empty($data) && !empty($users)) {
             foreach($data as $userdata) {
                 if (!in_array($userdata->id, $users) && !in_array(0, $users)) {
                     continue;
@@ -1388,7 +1386,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                 $out .= $this->output->heading($headingtext, 1, $headingtext);
                 $out .= html_writer::tag('div', $this->table($table, $report), array('class'=>'collapsible'));
             }
+        } else {
+            $out .= $this->output->notification(get_string('nousers', 'checkmark'), 'notifyproblem');
         }
+
         return $this->output->container($out, 'report');
     }
     
