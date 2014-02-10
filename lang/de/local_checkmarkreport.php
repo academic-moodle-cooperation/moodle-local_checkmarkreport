@@ -25,8 +25,35 @@ defined('MOODLE_INTERNAL') || die;
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['checkmarkreport:view'] = 'Zeige Kreuzerl�bungs�bersicht';
+$string['checkmarkreport:view'] = 'Zeige Kreuzerlübungsübersicht';
+$string['checkmarkreport:overview'] = 'Zeige Kreuzerlübung Kursübersicht';
+$string['checkmarkreport:useroverview'] = 'Zeige Kreuzerlübung Userübersicht';
+$string['checkmarkreport:userview'] = 'Zeige Kreuzerlübungsbericht';
 
-$string['pluginname'] = 'Kreuzerl�bungs�bersicht';
-$string['pluginname_help'] = 'Kreuzerl�bungs�bersicht erweitert die Funktionalit�t der Kreuzerl�bung (mod_checkmark), indem es praktische �bersichten �ber alle Kreuzerl�bungen f�r einen Kurs anbietet.';
-$string['pluginnameplural'] = 'Kreuzerl�bungs�bersichten';
+$string['pluginname'] = 'Kreuzerlübungsübersicht';
+$string['pluginname_help'] = 'Kreuzerlübungsübersicht erweitert die Funktionalität der Kreuzerlübung (mod_checkmark), indem es praktische Übersichten über alle Kreuzerlübungen für einen Kurs anbietet.';
+$string['pluginnameplural'] = 'Kreuzerlübungsübersichten';
+
+$string['additional_information'] = 'Zusätzliche Informationen';
+$string['additional_settings'] = 'Zusätzliche Einstellungen';
+$string['error_retriefing_members'] = 'Fehler beim Laden der Gruppenmitglieder';
+$string['examples'] = 'Beispiele';
+$string['example'] = 'Beispiel';
+$string['exportas'] = 'Exportiere als';
+$string['filter'] = 'Filter';
+$string['grade'] = 'Bewertung';
+$string['groups'] = 'Gruppen';
+$string['groups_help'] = 'Selektieren Sie die anzuzeigenden Gruppen. Gruppen ohne Mitglieder werden ausgegraut dargestellt und können nicht ausgewählt werden.';
+$string['noaccess'] = 'Sie haben keinen Zugriff auf dieses Modul. Sie haben nicht die benötigten Berechtigungen, um diesen Inhalt zu sehen.';
+$string['overview'] = 'Überblick';
+$string['overview_alt'] = 'Zeige Kreuzerlübungs Kursreport';
+$string['showgrade'] = 'Zeige Bewertung';
+$string['showpoints'] = 'Zeige Punkte';
+$string['sumabs'] = 'Zeige x/y Beispielen';
+$string['sumrel'] = 'Zeige % von Beispielen/Bewertung';
+$string['status'] = 'Status';
+$string['update'] = 'Aktualisieren';
+$string['useroverview'] = 'Benutzerübersicht';
+$string['useroverview_alt'] = 'Zeige Benutzerübersicht';
+$string['userview'] = 'Kreuzerlübungsübersicht';
+$string['userview_alt'] = 'Zeige Kreuzerlübungsübersicht';
