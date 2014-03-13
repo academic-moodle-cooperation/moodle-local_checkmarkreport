@@ -1261,27 +1261,52 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
         $downloadlinks = get_string('exportas', 'local_checkmarkreport');
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'XLSX'),
+                                           html_writer::link($uri, '.XLSX'),
                                            array('class'=>'downloadlink'));
-        /*
-         * We deactivated output in Excel 2003 format due to it's limitations
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_XLS));
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'XLS'),
-                                           array('class'=>'downloadlink'));*/
+                                           html_writer::link($uri, '.XLS'),
+                                           array('class'=>'downloadlink'));
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_ODS));
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'ODS'),
+                                           html_writer::link($uri, '.ODS'),
                                            array('class'=>'downloadlink'));
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_XML));
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'XML'),
+                                           html_writer::link($uri, '.XML'),
                                            array('class'=>'downloadlink'));
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_TXT));
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'TXT'),
+                                           html_writer::link($uri, '.TXT'),
                                            array('class'=>'downloadlink'));
-        $out = html_writer::tag('div', $downloadlinks, array('class'=>'download'));
+        // Append warning message for XLS if there are more than 256 Columns
+        $columns = 1; //Fullname
+        $columns += count(explode(',', $CFG->showuseridentity));
+        $addfact = 0;
+        if (get_user_preferences('checkmarkreport_showgrade')) {
+            $addfact++;
+        }
+        if (get_user_preferences('checkmarkreport_sumabs')) {
+            $addfact++;
+        }
+        if (get_user_preferences('checkmarkreport_sumrel')) {
+            $addfact++;
+        }
+        if (in_array(0, $checkmarks)) {
+            $checkmarks = $DB->get_fieldset_select('checkmark', 'id', 'course = ?', array($report->get_courseid()));
+        }
+        $columns += $addfact * (count($checkmarks)+1);
+        foreach($checkmarks as $checkmarkid) {
+            $columns += $DB->count_records('checkmark_examples',
+                                           array('checkmarkid' => $checkmarkid));
+        }
+        $out = '';
+        if ($columns >= 256) {
+            $out .= $this->output->notification(get_string('xlsover256', 'local_checkmarkreport'),
+                                          'notifyproblem');
+        }
+
+        $out .= html_writer::tag('div', $downloadlinks, array('class'=>'download'));
         
         // Render the table!
         $table = $report->get_table();

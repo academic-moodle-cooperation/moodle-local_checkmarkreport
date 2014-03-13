@@ -59,3 +59,4 @@ $string['useroverview'] = 'Student Overview';
 $string['useroverview_alt'] = 'View checkmark userreport';
 $string['userview'] = 'Userview';
 $string['userview_alt'] = 'View my checkmark report';
+$string['xlsover256'] = 'XLS file format only supports 256 columns at maximum. The file you\'re about to generate exceeds this limitation. Please deselect some instances or avoid using XLS.';
