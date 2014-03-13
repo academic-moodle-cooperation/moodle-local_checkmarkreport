@@ -141,8 +141,11 @@ switch($tab) {
         $checkmarkreport = new checkmarkreport_overview($id, $groups, $instances);
     break;
     case 'useroverview':
-        $mform = new reportfilterform($PAGE->url, array('courseid'   => $id,
-                                                        'hideinstances' => true), 'get');
+        $customdata = array('courseid'      => $id,
+                            'hideinstances' => true,
+                            'header'        => get_string('additional_information',
+                                                          'local_checkmarkreport'));
+        $mform = new reportfilterform($PAGE->url, $customdata, 'get');
         if ($data = $mform->get_data()) {
             set_user_preference('checkmarkreport_showgrade', $data->grade);
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
