@@ -26,23 +26,6 @@
  */
 
 /** General Styles **/
-div.columns {
-    padding-top:2em;
-    padding-bottom:2em;
-    white-space:nowrap;
-}
-div.columns fieldset {
-    margin:0px;
-    display:inline;
-    width:25%;
-    margin:0px;
-    vertical-align:top;
-}
-
-div.columns fieldset .felement {
-    margin-left:40% !important;
-}
-
 div.scrollforced {
     width:100%;
     overflow-x:scroll;
@@ -79,4 +62,18 @@ table.coloredrows .hidecol {
 
 table.coloredrows.userview th.cell {
     text-align:center;
+}
+
+table.coloredrows, table.coloredrows th, table.coloredrows td {
+    border: 1px solid #BBB;
+}
+
+table.coloredrows .r0 {
+    background-color: #f0f0f0;
+    white-space:nowrap
+}
+
+table.coloredrows .r1 {
+    background-color: #fafafa;
+    white-space:nowrap
 }

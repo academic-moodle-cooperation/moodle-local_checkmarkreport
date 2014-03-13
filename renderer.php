@@ -52,6 +52,8 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
         
         $table = new html_table();
+        
+        $table->id = "attempts";
         if (!isset($table->attributes)) {
             $table->attributes = array('class' => 'coloredrows');
         } else if (!isset($table->attributes['class'])) {
@@ -663,6 +665,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
         
         $table = new html_table();
+        $table->id = "attempts";
         if (!isset($table->attributes)) {
             $table->attributes = array('class' => 'coloredrows userview');
         } else if (!isset($table->attributes['class'])) {
@@ -815,7 +818,8 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                 $i++;
                 $idx++;
             }
-            $table->data[$i] = new html_table_row(array('','',''));
+            $table->data[$i] = new html_table_row(array(''));
+            $table->data[$i]->cells[0]->colspan = count($table->data[$i-1]->cells);
             $i++;
             $idx++;
         }
@@ -1265,7 +1269,9 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
 class checkmarkreport_userview extends checkmarkreport_useroverview implements renderable {
     function __construct($id) {
         global $USER;
-
+        set_user_preference('checkmarkreport_showgrade', 1);
+        set_user_preference('checkmarkreport_sumabs', 1);
+        set_user_preference('checkmarkreport_sumrel', 1);
         parent::__construct($id, array(0), array($USER->id));
     }
 }
