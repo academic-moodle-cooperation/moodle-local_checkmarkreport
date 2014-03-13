@@ -1354,25 +1354,23 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
         $downloadlinks = get_string('exportas', 'local_checkmarkreport');
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'XLSX'),
+                                           html_writer::link($uri, '.XLSX'),
                                            array('class'=>'downloadlink'));
-        
-         /* We deactivated output in Excel 2003 format due to it's limitations*/
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_XLS));
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'XLS'),
+                                           html_writer::link($uri, '.XLS'),
                                            array('class'=>'downloadlink'));
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_ODS));
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'ODS'),
+                                           html_writer::link($uri, '.ODS'),
                                            array('class'=>'downloadlink'));
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_XML));
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'XML'),
+                                           html_writer::link($uri, '.XML'),
                                            array('class'=>'downloadlink'));
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_TXT));
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, 'TXT'),
+                                           html_writer::link($uri, '.TXT'),
                                            array('class'=>'downloadlink'));
         $out .= html_writer::tag('div', $downloadlinks, array('class'=>'download'));
 
