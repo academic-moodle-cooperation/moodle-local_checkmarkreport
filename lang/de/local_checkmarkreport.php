@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die;
 
 $string['checkmarkreport:view'] = 'Zeige Kreuzerlübungsübersicht';
 $string['checkmarkreport:overview'] = 'Zeige Kreuzerlübung Kursübersicht';
-$string['checkmarkreport:useroverview'] = 'Zeige Kreuzerlübung Userübersicht';
+$string['checkmarkreport:useroverview'] = 'Zeige Kreuzerlübung Teilnehmer/innenübersicht';
 $string['checkmarkreport:userview'] = 'Zeige Kreuzerlübungsbericht';
 
 $string['pluginname'] = 'Kreuzerlübung Bericht';
@@ -55,7 +55,7 @@ $string['sumabs'] = 'Zeige x/y Beispielen';
 $string['sumrel'] = 'Zeige % von Beispielen/Bewertung';
 $string['status'] = 'Status';
 $string['update'] = 'Aktualisieren';
-$string['useroverview'] = 'Benutzerübersicht';
-$string['useroverview_alt'] = 'Zeige Benutzerübersicht';
+$string['useroverview'] = 'Teilnehmer/innenübersicht';
+$string['useroverview_alt'] = 'Zeige Teilnehmer/innenübersicht';
 $string['userview'] = 'Kreuzerlübungsübersicht';
 $string['userview_alt'] = 'Zeige Kreuzerlübungsübersicht';
