@@ -100,9 +100,9 @@ YUI.add('moodle-local_checkmarkreport-filterform', function(Y) {
             config.statusText += ' (' +ajaxurl+ ')';
         }*/
         //Restore group-members and display error message?
-        Y.one(SELECTORS.MEMBERS).setHTML('<option value=\"0\">'+
+        Y.one(SELECTORS.MEMBERS).set('innerHTML', '<option value=\"0\">'+
                                          M.util.get_string('all')+' '+M.util.get_string('users')+
-                                         get_string('error_retriefing_members', 'local_checkmarkreport')+
+                                         M.util.get_string('error_retriefing_members', 'local_checkmarkreport')+
                                          '</option>');
     }
     
@@ -118,15 +118,10 @@ YUI.add('moodle-local_checkmarkreport-filterform', function(Y) {
             while (selectEl.one('option')) {
                 selectEl.removeChild(selectEl.one('option'));
             }
-            var newOption = document.createElement('option');
-            /*newOption.value='';
-            newOption.text='<img src="'+M.cfg.loadingicon+'" class="spinner" />';
-            selectEl.appendChild(newOption);
-            newOption = document.createElement('option');*/
-            newOption.value='';
-            newOption.text=M.util.get_string('loading', 'local_checkmarkreport');
-            newOption.addClass('loading');
-            selectEl.appendChild(newOption);
+            Y.one(SELECTORS.MEMBERS).set('innerHTML',
+                                         '<option class=\"loading\" value=\"0\">'+
+                                         M.util.get_string('loading', 'local_checkmarkreport')+
+                                         '</option>');
         }
     }
 

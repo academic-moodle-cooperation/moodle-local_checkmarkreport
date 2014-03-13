@@ -35,6 +35,7 @@ $string['pluginname_help'] = 'Checkmark reports extend the functionality of mod_
 $string['pluginnameplural'] = 'Checkmark reports';
 
 $string['additional_information'] = 'Additional information';
+$string['additional_columns'] = 'Additional columns';
 $string['additional_settings'] = 'Additional settings';
 $string['error_retriefing_members'] = 'Error getting groupmembers';
 $string['examples'] = 'Examples';
@@ -44,6 +45,7 @@ $string['filter'] = 'Filter';
 $string['grade'] = 'Grade';
 $string['groups'] = 'Groups';
 $string['groups_help'] = 'Use this to select the groups to be displayed. Empty groups are disabled and only members of selected groups are displayed in the users selection (after update).';
+$string['loading'] = 'Loading...';
 $string['noaccess'] = 'You have no access to this module. You\'re missing the required capabilities to view this content.';
 $string['overview'] = 'Overview';
 $string['overview_alt'] = 'View checkmark coursereport';

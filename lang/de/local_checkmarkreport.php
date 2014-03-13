@@ -35,6 +35,7 @@ $string['pluginname_help'] = 'Kreuzerlübung Bericht erweitert die Funktionalit�
 $string['pluginnameplural'] = 'Kreuzerlübung Berichte';
 
 $string['additional_information'] = 'Zusätzliche Informationen';
+$string['additional_columns'] = 'Zusätzliche Spalten';
 $string['additional_settings'] = 'Zusätzliche Einstellungen';
 $string['error_retriefing_members'] = 'Fehler beim Laden der Gruppenmitglieder';
 $string['examples'] = 'Beispiele';
@@ -44,6 +45,7 @@ $string['filter'] = 'Filter';
 $string['grade'] = 'Bewertung';
 $string['groups'] = 'Gruppen';
 $string['groups_help'] = 'Selektieren Sie die anzuzeigenden Gruppen. Gruppen ohne Mitglieder werden ausgegraut dargestellt und können nicht ausgewählt werden.';
+$string['loading'] = 'Lade...';
 $string['noaccess'] = 'Sie haben keinen Zugriff auf dieses Modul. Sie haben nicht die benötigten Berechtigungen, um diesen Inhalt zu sehen.';
 $string['overview'] = 'Überblick';
 $string['overview_alt'] = 'Zeige Kreuzerlübungs Kursreport';
