@@ -30,9 +30,9 @@ $string['checkmarkreport:overview'] = 'Zeige Kreuzerlübung Kursübersicht';
 $string['checkmarkreport:useroverview'] = 'Zeige Kreuzerlübung Userübersicht';
 $string['checkmarkreport:userview'] = 'Zeige Kreuzerlübungsbericht';
 
-$string['pluginname'] = 'Kreuzerlübungsübersicht';
-$string['pluginname_help'] = 'Kreuzerlübungsübersicht erweitert die Funktionalität der Kreuzerlübung (mod_checkmark), indem es praktische Übersichten über alle Kreuzerlübungen für einen Kurs anbietet.';
-$string['pluginnameplural'] = 'Kreuzerlübungsübersichten';
+$string['pluginname'] = 'Kreuzerlübung Bericht';
+$string['pluginname_help'] = 'Kreuzerlübung Bericht erweitert die Funktionalität der Kreuzerlübung (mod_checkmark), indem es praktische Übersichten über alle Kreuzerlübungen für einen Kurs anbietet.';
+$string['pluginnameplural'] = 'Kreuzerlübung Berichte';
 
 $string['additional_information'] = 'Zusätzliche Informationen';
 $string['additional_settings'] = 'Zusätzliche Einstellungen';
