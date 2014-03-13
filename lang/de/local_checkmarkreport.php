@@ -26,9 +26,9 @@ defined('MOODLE_INTERNAL') || die;
  */
 
 $string['checkmarkreport:view'] = 'Zeige Kreuzerlübungsübersicht';
-$string['checkmarkreport:overview'] = 'Zeige Kreuzerlübung Kursübersicht';
-$string['checkmarkreport:useroverview'] = 'Zeige Kreuzerlübung Teilnehmer/innenübersicht';
-$string['checkmarkreport:userview'] = 'Zeige Kreuzerlübungsbericht';
+$string['checkmarkreport:view_courseoverview'] = 'Zeige Kreuzerlübung Kursübersicht';
+$string['checkmarkreport:view_students_overview'] = 'Zeige Kreuzerlübung Teilnehmer/innenübersicht';
+$string['checkmarkreport:view_own_overview'] = 'Zeige Kreuzerlübungsbericht';
 
 $string['pluginname'] = 'Kreuzerlübung Bericht';
 $string['pluginname_help'] = 'Kreuzerlübung Bericht erweitert die Funktionalität der Kreuzerlübung (mod_checkmark), indem es praktische Übersichten über alle Kreuzerlübungen für einen Kurs anbietet.';

@@ -26,9 +26,9 @@ defined('MOODLE_INTERNAL') || die;
  */
 
 $string['checkmarkreport:view'] = 'View checkmark report';
-$string['checkmarkreport:overview'] = 'View checkmark coursereport';
-$string['checkmarkreport:useroverview'] = 'View checkmark userreport';
-$string['checkmarkreport:userview'] = 'View my checkmark report';
+$string['checkmarkreport:view_courseoverview'] = 'View checkmark coursereport';
+$string['checkmarkreport:view_students_overview'] = 'View checkmark userreport';
+$string['checkmarkreport:view_own_overview'] = 'View my checkmark report';
 
 $string['pluginname'] = 'Checkmark report';
 $string['pluginname_help'] = 'Checkmark reports extend the functionality of mod_checkmark by making convenient course-overview reports for all checkmarks available.';
