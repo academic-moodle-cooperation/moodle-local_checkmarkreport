@@ -1037,36 +1037,15 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
 
     public function fill_workbook($workbook) {
         //initialise everything
-        $x = $y = array(0);
         $worksheets = array();
-        if (!empty($this->groups) && is_array($this->groups)) {
-            foreach ($this->groups as $group) {
-                $x[$group] = 0;
-                $y[$group] = 0;
-                if ($group == 0) {
-                    $worksheets[$group] = $workbook->add_worksheet(get_string('all').' '.get_string('groups'));
-                } else {
-                    $worksheets[$group] = $workbook->add_worksheet(groups_get_name($group));
-                }
-            }
-        }
         $data = $this->get_coursedata();
         foreach($data as $userid => $userdata) {
+            $x = 0;
+            $y = 0;
+            $worksheets[$userid] = $workbook->add_worksheet(fullname($userdata));
             $table = $this->get_table($userdata);
-            $groups = groups_get_all_groups($this->courseid, $userid);
-            $groups = array_intersect_assoc($groups, array_flip($this->groups));
-            $all = new stdClass();
-            $all->id = 0;
-            $all->name = get_string('all').' '.get_string('groups');
-            $groups = array(0=>$all)+$groups;
-            foreach($groups as $group) {
-                $x[$group->id] = 0;
-                if ($y[$group->id] != 0) {
-                    $y[$group->id]++;
-                }
-                $worksheets[$group->id]->write_string($y[$group->id], $x[$group->id], fullname($data[$userid]));
-                $y[$group->id]++;
-            }
+            $worksheets[$userid]->write_string($y, $x, fullname($data[$userid]));
+            $y++;
             // We may use additional table data to format sheets!
             if (!empty($table->align)) {
                 foreach ($table->align as $key => $aa) {
@@ -1104,9 +1083,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                 $countrows = count($table->head);
 
                 foreach($table->head as $headrow) {
-                    foreach($groups as $group) {
-                        $x[$group->id] = 0;
-                    }
+                    $x = 0;
                     $keys = array_keys($headrow->cells);
                     $lastkey = end($keys);
                     $countcols = count($headrow->cells);
@@ -1122,9 +1099,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                         
                         if($heading->text == null) {
                             //$worksheet->write_blank($y, $x);
-                            foreach($groups as $group) {
-                                $x[$group->id]++;
-                            }
+                            $x++;
                             continue;
                         }
 
@@ -1132,7 +1107,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                             $heading->header = true;
                         }
 
-                       if (!isset($heading->rowspan)) {
+                        if (!isset($heading->rowspan)) {
                             $heading->rowspan = 1;
                         }
                         if (!isset($heading->colspan)) {
@@ -1146,15 +1121,11 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                                 'colspan'   => $heading->colspan,
                                 'rowspan'   => $heading->rowspan
                             ));
-                        foreach($groups as $group) {
-                            $worksheets[$group->id]->write_string($y[$group->id], $x[$group->id], $heading->text);
-                            $worksheets[$group->id]->merge_cells($y[$group->id], $x[$group->id], $y[$group->id]+$heading->rowspan-1, $x[$group->id]+$heading->colspan-1);
-                            $x[$group->id]++;
-                        }
+                        $worksheets[$userid]->write_string($y, $x, $heading->text);
+                        $worksheets[$userid]->merge_cells($y, $x, $y+$heading->rowspan-1, $x+$heading->colspan-1);
+                        $x++;
                     }
-                    foreach($groups as $group) {
-                        $y[$group->id]++;
-                    }
+                    $y++;
                 }
             }
             if (!empty($table->data)) {
@@ -1163,9 +1134,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                 $lastrowkey = end($keys);
 
                 foreach ($table->data as $key => $row) {
-                    foreach($groups as $group) {
-                        $x[$group->id]=0;
-                    }
+                    $x=0;
                     // Convert array rows to html_table_rows and cell strings to html_table_cell objects
                     if (!($row instanceof html_table_row)) {
                         $newrow = new html_table_row();
@@ -1201,9 +1170,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                         }
                         
                         if ($cell == null) {
-                            foreach($groups as $group) {
-                                $x[$group->id]++;
-                            }
+                            $x++;
                             continue;
                         }
 
@@ -1249,17 +1216,13 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                         if (!isset($cell->colspan)) {
                             $cell->colspan = 1;
                         }
-                        foreach($groups as $group) {
-                            $worksheets[$group->id]->write_string($y[$group->id], $x[$group->id], $cell->text);
-                            if (($cell->rowspan > 1) || ($cell->colspan > 1)) {
-                                $worksheets[$group->id]->merge_cells($y[$group->id], $x[$group->id], $y[$group->id]+$cell->rowspan-1, $x[$group->id]+$cell->colspan-1);
-                            }
-                            $x[$group->id]++;
+                        $worksheets[$userid]->write_string($y, $x, $cell->text);
+                        if (($cell->rowspan > 1) || ($cell->colspan > 1)) {
+                            $worksheets[$userid]->merge_cells($y, $x, $y+$cell->rowspan-1, $x+$cell->colspan-1);
                         }
+                        $x++;
                     }
-                    foreach ($groups as $group) {
-                        $y[$group->id]++;
-                    }
+                    $y++;
                 }
             }
         }
