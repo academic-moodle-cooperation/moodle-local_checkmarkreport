@@ -135,7 +135,9 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $instances = $this->get_courseinstances();
         foreach($instances as $instance) {
             $span = 0;
-            $tableheaders['instance'.$instance->id] = new html_table_cell($instance->name);
+            $instanceurl = new moodle_url('/mod/checkmark/view.php', array('id'=>$instance->coursemodule));
+            $instancelink = html_writer::link($instanceurl, $instance->name);
+            $tableheaders['instance'.$instance->id] = new html_table_cell($instancelink);
             $tableheaders['instance'.$instance->id]->header = true;
             $tableheaders['instance'.$instance->id]->scope = 'colgroup';
             $table->colclasses['instance'.$instance->id] = 'instance'.$instance->id;
@@ -194,7 +196,10 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
 
         foreach ($data as $userid => $curuser) {
             $row = array();
-            $row['fullnameuser'] = new html_table_cell(fullname($curuser));
+            $userurl = new moodle_url('/user/view.php', array('id'     => $userid,
+                                                              'course' => $this->courseid));
+            $userlink = html_writer::link($userurl, fullname($curuser));
+            $row['fullnameuser'] = new html_table_cell($userlink);
             foreach ($useridentity as $cur) {
                 $row[$cur] = new html_table_cell($curuser->$cur);
             }
@@ -734,7 +739,10 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
             }
             if (count($userdata->instancedata[$instance->id]->examples) == 0) {
                 $row = array();
-                $row['checkmark'] = new html_table_cell($instance->name);
+                $instanceurl = new moodle_url('/mod/checmark/view.php',
+                                              array('id'=>$instance->coursemodule));
+                $instancelink = html_writer::link($instanceurl, $instance->name);
+                $row['checkmark'] = new html_table_cell($instancelink);
                 $row['checkmark']->colspan = 4;
                 $row['checkmark']->header = true;
                 $row['checkmark']->style = ' text-align: left; ';
@@ -750,7 +758,10 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                 foreach ($userdata->instancedata[$instance->id]->examples as $exid => $example) {
                     $row = array();
                     if ($idx == 0) {
-                        $row['checkmark'] = new html_table_cell($instance->name);
+                        $instanceurl = new moodle_url('/mod/checkmark/view.php',
+                                                      array('id'=>$instance->coursemodule));
+                        $instancelink = html_writer::link($instanceurl, $instance->name);
+                        $row['checkmark'] = new html_table_cell($instancelink);
                         $row['checkmark']->header = true;
                         $row['checkmark']->style = ' text-align: left; ';
                     } else {
