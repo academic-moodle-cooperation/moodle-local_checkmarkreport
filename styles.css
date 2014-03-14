@@ -77,3 +77,11 @@ table.coloredrows .r1 {
     background-color: #fafafa;
     white-space:nowrap
 }
+
+table.coloredrows td {
+    text-align:center;
+}
+
+table.coloredrows td.fullnameuser, table.coloredrows td.email {
+    text-align:left;
+}
