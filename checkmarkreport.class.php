@@ -27,7 +27,7 @@
 class checkmarkreport {
 
     protected $courseid = 0;
-    
+
     const FORMAT_XLSX = 0;
     const FORMAT_XLS = 1;
     const FORMAT_ODS = 2;
@@ -45,6 +45,7 @@ class checkmarkreport {
         $this->users = $users;
         $this->instances = $instances;
         $this->init_hidden();
+        $this->init_sortby();
     }
 
     public function get_instances() {
@@ -115,7 +116,7 @@ class checkmarkreport {
      *
      */
     public function get_general_data($course = null, $userids=0, $instances = array(0)) {
-        global $DB, $COURSE, $CFG;
+        global $DB, $COURSE, $CFG, $SESSION;
 
         $summary_abs = get_user_preferences('checkmark_sumabs', 1);
         $summary_rel = get_user_preferences('checkmark_sumrel', 1);
@@ -184,6 +185,25 @@ class checkmarkreport {
             $params['maxgradeb'] = $grades[0];
             $params['maxchecks'] = $examples[0];
             $params['maxchecksb'] = $examples[0];
+            $sortable = array('firstname', 'lastname',
+                              'percentchecked', 'checks',
+                              'percentgrade', 'checkgrade');
+            if (!empty($CFG->showuseridentity)) {
+                $sortable = array_merge($sortable, explode(',', $CFG->showuseridentity));
+            }
+            $sortarr = $SESSION->checkmarkreport->{$courseid}->sort;
+            $sort = '';
+            foreach ($sortarr as $field => $direction) {
+                if (in_array($field, $sortable)) {
+                    if (!empty($sort)) {
+                        $sort .= ', ';
+                    }
+                    $sort .= $field.' '.$direction;
+                }
+            }
+            if (!empty($sort)) {
+                $sort = ' ORDER BY '.$sort;
+            }
             $sql = 'SELECT '.$ufields.', '.$useridentityfields.',
                            100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
                            COUNT( DISTINCT cchks.id ) as checks, :maxchecksb as maxchecks,
@@ -196,7 +216,8 @@ class checkmarkreport {
                                                       AND cchks.state = 1
                  LEFT JOIN {checkmark_examples} as cex ON cchks.exampleid = cex.id
                      WHERE u.id '.$sqluserids.'
-                  GROUP BY u.id';
+                  GROUP BY u.id'.
+                  $sort;
 
             $data = $DB->get_records_sql($sql, $params);
 
@@ -217,6 +238,9 @@ class checkmarkreport {
                   GROUP BY u.id';
             $params = $userparams;
             $instancedata = array();
+            $reorder = false;
+            reset($sortarr);
+            $primesort = key($sortarr);
             foreach ($checkmarkids as $chkmkid) {
                 $params['chkmkid'] = $chkmkid;
                 $params['chkmkidb'] = $chkmkid;
@@ -230,39 +254,77 @@ class checkmarkreport {
                 $params['maxchecksb'] = $examples[$chkmkid];
                 $params['maxgrade'] = $grades[$chkmkid];
                 $params['maxgradeb'] = $grades[$chkmkid];
+                $sort = '';
+                if ($primesort == 'checks'.$chkmkid) {
+                    $sort = ' ORDER BY checks '.current($sortarr);
+                    $reorder = $chkmkid;
+                }
+                if ($primesort == 'percentchecked'.$chkmkid) {
+                    $sort = ' ORDER BY percentchecked '.current($sortarr);
+                    $reorder = $chkmkid;
+                }
+                if ($primesort == 'grade'.$chkmkid) {
+                    $sort = ' ORDER BY grade '.current($sortarr);
+                    $reorder = $chkmkid;
+                }
+                if ($primesort == 'percentgrade'.$chkmkid) {
+                    $sort = ' ORDER BY percentgrade '.current($sortarr);
+                    $reorder = $chkmkid;
+                }
+                $sql .= $sort;
                 $instancedata[$chkmkid] = $DB->get_records_sql($sql, $params);
             }
 
             if (!empty($data)) {
-                foreach ($data as $key => $row) {
-                    $data[$key]->userdata = array();
+                if ($reorder !== false) {
+                    $userids = array_keys($instancedata[$reorder]);
+                    $returndata = array();
+                } else {
+                    $userids = array_keys($data);
+                    $returndata = $data;
+                }
+                if (key_exists('checkmark', $sortarr)) {
+                    $params = array_merge(array('courseid' => $courseid),
+                                          $checkmarkparams);
+                    $checkmarkids = $DB->get_fieldset_sql('
+SELECT id
+  FROM {checkmark}
+ WHERE {checkmark}.course = :courseid
+       AND {checkmark}.id '.$sqlcheckmarkids.'
+ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
+                }
+                foreach ($userids as $key) {
+                    if ($reorder !== false) {
+                        $returndata[$key] = $data[$key];
+                    }
+                    $returndata[$key]->userdata = array();
                     foreach ($useridentity as $useridfield) {
-                        $data[$key]->userdata[$useridfield] = $data[$key]->$useridfield;
+                        $returndata[$key]->userdata[$useridfield] = $data[$key]->$useridfield;
                         unset($useridfield);
                     }
                     $data[$key]->instancedata = array();
                     foreach ($checkmarkids as $chkmkid) {
-                        $data[$key]->instancedata[$chkmkid] = new stdClass();
+                        $returndata[$key]->instancedata[$chkmkid] = new stdClass();
                         $grade = empty($instancedata[$chkmkid][$key]->grade) ?
                                  0 : $instancedata[$chkmkid][$key]->grade;
-                        $data[$key]->instancedata[$chkmkid]->grade = $grade;
-                        $data[$key]->instancedata[$chkmkid]->maxgrade = $instancedata[$chkmkid][$key]->maxgrade;
+                        $returndata[$key]->instancedata[$chkmkid]->grade = $grade;
+                        $returndata[$key]->instancedata[$chkmkid]->maxgrade = $instancedata[$chkmkid][$key]->maxgrade;
                         $checks = empty($instancedata[$chkmkid][$key]->checks) ?
                                   0 : $instancedata[$chkmkid][$key]->checks;
-                        $data[$key]->instancedata[$chkmkid]->checked = $checks;
-                        $data[$key]->instancedata[$chkmkid]->maxchecked = $instancedata[$chkmkid][$key]->maxchecks;
+                        $returndata[$key]->instancedata[$chkmkid]->checked = $checks;
+                        $returndata[$key]->instancedata[$chkmkid]->maxchecked = $instancedata[$chkmkid][$key]->maxchecks;
                         $percentchecked = empty($instancedata[$chkmkid][$key]->percentchecked) ?
                                           0 : $instancedata[$chkmkid][$key]->percentchecked;
-                        $data[$key]->instancedata[$chkmkid]->percentchecked = $percentchecked;
+                        $returndata[$key]->instancedata[$chkmkid]->percentchecked = $percentchecked;
                         $percentgrade = empty($instancedata[$chkmkid][$key]->percentgrade) ?
                                         0 : $instancedata[$chkmkid][$key]->percentgrade;
-                        $data[$key]->instancedata[$chkmkid]->percentgrade = $percentgrade;
-                        $data[$key]->instancedata[$chkmkid]->cmid = $cmids[$chkmkid];
+                        $returndata[$key]->instancedata[$chkmkid]->percentgrade = $percentgrade;
+                        $returndata[$key]->instancedata[$chkmkid]->cmid = $cmids[$chkmkid];
                     }
                 }
             }
 
-            return $data;
+            return $returndata;
         }
 
         return null;
@@ -290,14 +352,19 @@ class checkmarkreport {
         if (!empty($this->courseid)) {
             $course = $DB->get_record('course', array('id'=>$this->courseid), '*', MUST_EXIST);
             $instances = get_all_instances_in_course('checkmark', $course);
+            $new_isntances = array();
             if(!in_array(0, $this->instances)) {
                 foreach ($instances as $key => $inst) {
-                    if (!in_array($inst->id, $this->instances)) {
-                        unset($instances[$key]);
+                    if (in_array($inst->id, $this->instances)) {
+                        $new_instances[$inst->id] = $inst;
                     }
                 }
+            } else {
+                foreach ($instances as $key => $inst) {
+                    $new_instances[$inst->id] = $inst;
+                }
             }
-            return $instances;
+            return $new_instances;
         } else {
             return null;
         }
@@ -313,18 +380,12 @@ class checkmarkreport {
         $tshow = optional_param('tshow', null, PARAM_ALPHANUM);
         if (!isset($SESSION->checkmarkreport)) {
             $SESSION->checkmarkreport = new stdClass();
-            $SESSION->checkmarkreport->{$this->courseid} = new stdClass();
-            $SESSION->checkmarkreport->{$this->courseid}->hidden = array();
-            return 0;
         }
         if (!isset($SESSION->checkmarkreport->{$this->courseid})) {
             $SESSION->checkmarkreport->{$this->courseid} = new stdClass();
-            $SESSION->checkmarkreport->{$this->courseid}->hidden = array();
-            return 0;
         }
         if (!isset($SESSION->checkmarkreport->{$this->courseid}->hidden)) {
             $SESSION->checkmarkreport->{$this->courseid}->hidden = array();
-            return 0;
         }
         if (!empty($thide) && !in_array($thide, $SESSION->checkmarkreport->{$this->courseid}->hidden)) {
             $SESSION->checkmarkreport->{$this->courseid}->hidden[] = $thide;
@@ -336,6 +397,86 @@ class checkmarkreport {
                 }
             }
         }
+    }
+    
+    public function init_sortby() {
+        global $SESSION;
+
+        $tsort = optional_param('tsort', null, PARAM_ALPHANUM);
+
+        if (!isset($SESSION->checkmarkreport)) {
+            $SESSION->checkmarkreport = new stdClass();
+        }
+        if (!isset($SESSION->checkmarkreport->{$this->courseid})) {
+            $SESSION->checkmarkreport->{$this->courseid} = new stdClass();
+        }
+        if (!isset($SESSION->checkmarkreport->{$this->courseid}->sort)) {
+            $SESSION->checkmarkreport->{$this->courseid}->sort = array();
+        }
+        
+        if (!empty($tsort)) {
+            $arr = $SESSION->checkmarkreport->{$this->courseid}->sort;
+            if (!key_exists($tsort, $SESSION->checkmarkreport->{$this->courseid}->sort)) {
+                // Like array_unshift with associative key preservation!
+                $arr = array_reverse($arr, true); 
+                $arr[$tsort] = 'ASC'; 
+                $SESSION->checkmarkreport->{$this->courseid}->sort = array_reverse($arr, true); 
+            } else {
+                switch($tsort) {
+                    case 'checkmark':
+                        if($arr[$tsort] == 'ASC') {
+                                $arr[$tsort] = 'DESC';
+                        } else {
+                            unset($arr[$tsort]);
+                        }
+                        break;
+                    default:
+                        reset($arr);
+                        // Bring to front!
+                        if (key($arr) != $tsort) {
+                            $tmp = $arr[$tsort];
+                            unset($arr[$tsort]);
+                            $arr = array_reverse($arr, true);
+                            $arr[$tsort] = $tmp;
+                            $arr = array_reverse($arr, true);
+                        }
+                        // Reverse sort order!
+                        $arr[$tsort] = $arr[$tsort] == 'ASC' ? 'DESC' : 'ASC';
+                        break;
+                }
+                $SESSION->checkmarkreport->{$this->courseid}->sort = $arr;
+            }
+        }
+    }
+    
+    public function get_sortlink($column, $text, $url) {
+        global $SESSION, $OUTPUT;
+        // Sortarray has to be initialized!
+        $sortarr = $SESSION->checkmarkreport->{$this->courseid}->sort;
+        reset($sortarr);
+        $primesort = key($sortarr);
+        if (($primesort == 'checkmark') && ($column != 'checkmark')) {
+            next($sortarr);
+            $primesort = key($sortarr);
+        }
+        if (($column == $primesort)
+            || (($column == 'checkmark') && key_exists($column, $sortarr))) {
+            //We show only the first sortby column and checkmark!
+            switch ($sortarr[$column]) {
+                case 'ASC':
+                    $picattr = array('src' => $OUTPUT->pix_url('t/up'),
+                                     'alt' => get_string('desc'));
+                    break;
+                case 'DESC':
+                    $picattr = array('src' => $OUTPUT->pix_url('t/down'),
+                                     'alt' => get_string('asc'));
+                    break;
+            }
+            $text .= html_writer::empty_tag('img', $picattr);
+        }
+        $sorturl = new moodle_url($url, array('tsort'=>$column));
+        $sortlink = html_writer::link($sorturl, $text);
+        return $sortlink;
     }
     
     public function column_is_hidden($column='nonexistend') {

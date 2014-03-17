@@ -42,7 +42,9 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
     }
 
     function get_table() {
-        global $CFG, $DB;
+        global $CFG, $DB, $SESSION, $PAGE;
+        
+        $sortarray = &$SESSION->checkmarkreport->{$this->courseid}->sort;
         
         $data = $this->get_coursedata();
         
@@ -72,9 +74,15 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $tableheaders = array();
         $tablecolumns = array();
         $table->colgroups = array();
+        $sortable = array();
         $useridentity = explode(',', $CFG->showuseridentity);
-
-        $tableheaders['fullnameuser'] = new html_table_cell(get_string('fullnameuser'));
+        //Firstname sortlink
+        $firstname = $this->get_sortlink('firstname', get_string('firstname'), $PAGE->url);
+        //Lastname sortlink
+        $lastname = $this->get_sortlink('lastname', get_string('lastname'), $PAGE->url);
+        $sortable[] = 'lasname';
+        $sortable[] = 'firstname';
+        $tableheaders['fullnameuser'] = new html_table_cell($firstname.' '.$lastname);
         $tableheaders['fullnameuser']->header = true;
         $tableheaders['fullnameuser']->rowspan = 2;
         $tableheaders2['fullnameuser'] = null;
@@ -84,7 +92,10 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $table->colclasses['fullnameuser'] = 'fullnameuser';
 
         foreach ($useridentity as $cur) {
-            $tableheaders[$cur] = new html_table_cell(($cur=='phone1') ? get_string('phone') : get_string($cur));
+            $sortable[] = $cur;
+            $text = ($cur=='phone1') ? get_string('phone') : get_string($cur);
+            $sortlink = $this->get_sortlink($cur, $text, $PAGE->url);
+            $tableheaders[$cur] = new html_table_cell($sortlink);
             $tableheaders[$cur]->header = true;
             $tableheaders[$cur]->rowspan = 2;
             $tableheaders2[$cur] = null;
@@ -96,7 +107,9 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         
         //coursesum of course grade
         if (!empty($showgrade)) {
-            $tableheaders['grade'] = new html_table_cell('Σ '.get_string('grade'));
+            $sortlink = $this->get_sortlink('checkgrade', 'Σ '.get_string('grade'), $PAGE->url);
+            $sortable[] = 'grade';
+            $tableheaders['grade'] = new html_table_cell($sortlink);
             $tableheaders['grade']->header = true;
             $tableheaders['grade']->rowspan = 2;
             $tableheaders2['grade'] = null;
@@ -108,7 +121,10 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
 
         //coursesum of course examples
         if (!empty($showabs)) {
-            $tableheaders['examples'] = new html_table_cell('Σ '.get_string('examples', 'local_checkmarkreport'));
+            $text = 'Σ '.get_string('examples', 'local_checkmarkreport');
+            $sortlink = $this->get_sortlink('checks', $text, $PAGE->url);
+            $sortable[] = 'examples';
+            $tableheaders['examples'] = new html_table_cell($sortlink);
             $tableheaders['examples']->header = true;
             $tableheaders['examples']->rowspan = 2;
             $tableheaders2['examples'] = null;
@@ -120,9 +136,16 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         
         if (!empty($showrel)) {
             //percent of course examples
-            $tableheaders['percentex'] = new html_table_cell('Σ % '.
-                                                             get_string('examples', 'local_checkmarkreport').
-                                                             '/'.get_string('grade'));
+            $text = 'Σ % '.
+                    $this->get_sortlink('percentchecked',
+                                        get_string('examples',
+                                                   'local_checkmarkreport'),
+                                        $PAGE->url).
+                    ' ('.
+                     $this->get_sortlink('percentgrade', get_string('grade'),
+                                         $PAGE->url).')';
+            $sortable[] = 'percentex';
+            $tableheaders['percentex'] = new html_table_cell($text);
             $tableheaders['percentex']->header = true;
             $tableheaders['percentex']->rowspan = 2;
             $tableheaders2['percentex'] = null;
@@ -144,7 +167,10 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             //coursesum of course grade
             if (!empty($showgrade)) {
                 $span++;
-                $tableheaders2['grade'.$instance->id] = new html_table_cell(get_string('grade'));
+                $text = get_string('grade');
+                $sortable[] = 'grade'.$instance->id;
+                $sortlink = $this->get_sortlink('grade'.$instance->id, $text, $PAGE->url);
+                $tableheaders2['grade'.$instance->id] = new html_table_cell($sortlink);
                 $tableheaders2['grade'.$instance->id]->header = true;
                 $tablecolumns[] = 'grade'.$instance->id;
                 $table->colclasses['grade'.$instance->id] = 'instance'.$instance->id.' grade'.$instance->id;
@@ -153,7 +179,10 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             //coursesum of course examples
             if (!empty($showabs)) {
                 $span++;
-                $tableheaders2['examples'.$instance->id] = new html_table_cell(get_string('examples', 'local_checkmarkreport'));
+                $text = get_string('examples', 'local_checkmarkreport');
+                $sortable[] = 'examples'.$instance->id;
+                $sortlink = $this->get_sortlink('checks'.$instance->id, $text, $PAGE->url);
+                $tableheaders2['examples'.$instance->id] = new html_table_cell($sortlink);
                 $tableheaders2['examples'.$instance->id]->header = true;
                 $tablecolumns[] = 'examples';
                 $table->colclasses['examples'.$instance->id] = 'instance'.$instance->id.' examples'.$instance->id;
@@ -162,7 +191,15 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             //percent of course examples
             if (!empty($showrel)) {
                 $span++;
-                $title = '% '.get_string('examples', 'local_checkmarkreport').'/'.get_string('grade');
+                $title = '% '.
+                         $this->get_sortlink('percentchecked'.$instance->id,
+                                             get_string('examples',
+                                                        'local_checkmarkreport'),
+                                             $PAGE->url).
+                         ' ('.
+                         $this->get_sortlink('percentgrade'.$instance->id,
+                                             get_string('grade'), $PAGE->url).')';
+                $sortable[] = 'percentex'.$instance->id;
                 $tableheaders2['percentex'.$instance->id] = new html_table_cell($title);
                 $tableheaders2['percentex'.$instance->id]->header = true;
                 $tablecolumns[] = 'percentex'.$instance->id;
@@ -662,7 +699,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
     }
 
     function get_table($userdata) {
-        global $CFG, $DB;
+        global $CFG, $DB, $PAGE;
         
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
@@ -691,7 +728,10 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
         $table->colgroups = array();
         $table->align = array();
 
-        $tableheaders['checkmark'] = new html_table_cell(get_string('modulename', 'checkmark'));
+        $sortlink = $this->get_sortlink('checkmark',
+                                        get_string('modulename', 'checkmark'),
+                                        $PAGE->url);
+        $tableheaders['checkmark'] = new html_table_cell($sortlink);
         $tableheaders['checkmark']->header = true;
         $table->align['checkmark'] = 'center';
         $tablecolumns[] = 'checkmark';
@@ -731,8 +771,10 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
 
         $instances = $this->get_courseinstances();
         $i = 0;
-
-        foreach ($instances as $key => $instance) {
+        
+        //foreach ($instances as $key => $instance) {
+        foreach ($userdata->instancedata as $key => $instancedata) {
+            $instance = $instances[$key];
             $idx = 0;
             if (!isset($examplenames[$instance->id])) {
                 $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
