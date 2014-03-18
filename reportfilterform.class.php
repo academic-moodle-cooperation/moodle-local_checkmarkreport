@@ -126,16 +126,20 @@ class reportfilterform extends moodleform {
         }
         $mform->addElement('advcheckbox', 'grade', $this->_customdata['header'], get_string('showgrade', 'local_checkmarkreport'));
         $mform->setDefault('grade', get_user_preferences('checkmarkreport_showgrade'));
+        $mform->addHelpButton('grade', 'grade', 'local_checkmarkreport');
         //x/y ex
         $mform->addElement('advcheckbox', 'sumabs', null, get_string('sumabs', 'local_checkmarkreport'));
         $mform->setDefault('sumabs', get_user_preferences('checkmarkreport_sumabs'));
+        $mform->addHelpButton('sumabs', 'sumabs', 'local_checkmarkreport');
         //% ex
         $mform->addElement('advcheckbox', 'sumrel', null, get_string('sumrel', 'local_checkmarkreport'));
         $mform->setDefault('sumrel', get_user_preferences('checkmarkreport_sumrel'));
+        $mform->addHelpButton('sumrel', 'sumrel', 'local_checkmarkreport');
 
         // Additional settings ?? don't need them...
         $mform->addElement('advcheckbox', 'showpoints', get_string('additional_settings', 'local_checkmarkreport'), get_string('showpoints', 'local_checkmarkreport'));
         $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
+        $mform->addHelpButton('showpoints', 'showpoints', 'local_checkmarkreport');
 
         $mform->addElement('submit', 'submitbutton', get_string('update', 'local_checkmarkreport'));
         $mform->disable_form_change_checker();
