@@ -57,11 +57,47 @@ class reportfilterform extends moodleform {
 
         $context = CONTEXT_COURSE::instance($COURSE->id);
         $groupmode = $DB->get_field('course', 'groupmode', array('id'=>$COURSE->id), MUST_EXIST);
+
+        // Groupings filter
+        if (empty($this->_customdata['hidegroups'])
+            && $groupmode != NOGROUPS) {
+            $groupings = groups_get_all_groupings($COURSE->id);
+            $groupingsel = $mform->createElement('select', 'groupings[]', get_string('groupings', 'local_checkmarkreport'), null, array('id'=>'groupings'));
+            $groupingsel->addOption(get_string('all').' '.get_string('groupings', 'local_checkmarkreport'), 0);
+            if(count($groupings)) {
+                list($grpgssql, $grpgsparams) = $DB->get_in_or_equal(array_keys($groupings));
+                $groupinggroups = $DB->get_records_sql_menu("
+                SELECT groupingid, COUNT(DISTINCT groupid)
+                  FROM {groupings_groups}
+                 WHERE groupingid ".$grpgssql."
+              GROUP BY groupingid", $grpgsparams);
+                foreach($groupings as $grouping) {
+                    //$groupselects[$group->id] = $group->name;
+                    if (empty($groupinggroups[$grouping->id])) {
+                        $disabled = array('disabled'=>'disabled');
+                    } else {
+                        $disabled = array();
+                    }
+                    $groupingsel->addOption($grouping->name, $grouping->id, $disabled);
+                }
+            }
+            $groupings = $mform->addElement($groupingsel);
+            $mform->setDefault('groupings[]', optional_param_array('groupings', array(0), PARAM_INT));
+            $groupings->setMultiple(false);
+        }
+
         // Groups filter
         if (empty($this->_customdata['hidegroups'])
             && $groupmode != NOGROUPS) {
-            $groups = groups_get_all_groups($COURSE->id);
-            $groupsel = $mform->createElement('select', 'groups', get_string('groups'), null, array('id'=>'groups'));
+            $groupingids = optional_param_array('groupings', array(0), PARAM_INT);
+            $groups = array();
+            foreach($groupingids as $groupingid) {
+                $groupinggroups = groups_get_all_groups($COURSE->id, 0, $groupingid);
+                foreach ($groupinggroups as $group) {
+                    $groups[$group->id] = $group;
+                }
+            }
+            $groupsel = $mform->createElement('select', 'groups[]', get_string('groups'), null, array('id'=>'groups'));
             //$groupselects = array(get_string('all').' '.get_string('groups'));
             $groupsel->addOption(get_string('all').' '.get_string('groups'), 0);
             if(count($groups)) {
@@ -88,7 +124,8 @@ class reportfilterform extends moodleform {
             }
             $groups = $mform->addElement($groupsel);
             $groups->setMultiple(false);
-            $mform->addHelpButton('groups', 'groups', 'local_checkmarkreport');
+            $mform->setDefault('groups[]', optional_param_array('groups', array(0), PARAM_INT));
+            $mform->addHelpButton('groups[]', 'groups', 'local_checkmarkreport');
         }
 
         // User filter
@@ -101,7 +138,8 @@ class reportfilterform extends moodleform {
                     $userselects[$user->id] = fullname($user);
                 }
             }
-            $users = $mform->addElement('select', 'users', get_string('users'), $userselects, array('id'=>'users'));
+            $users = $mform->addElement('select', 'users[]', get_string('users'), $userselects, array('id'=>'users'));
+            $mform->setDefault('users[]', optional_param_array('users', array(0), PARAM_INT));
             $users->setMultiple(false);
         }
 

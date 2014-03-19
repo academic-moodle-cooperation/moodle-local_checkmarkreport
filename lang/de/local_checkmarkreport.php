@@ -46,6 +46,7 @@ $string['grade'] = 'Bewertung';
 $string['grade_help'] = 'Zeigt die aus den gekreuzten Beispielen berechnete Bewertung für den gesamten Kurs sowie für die einzelnen Kreuzerlübungen.';
 $string['groups'] = 'Gruppen';
 $string['groups_help'] = 'Selektieren Sie die anzuzeigenden Gruppen. Gruppen ohne Mitglieder werden ausgegraut dargestellt und können nicht ausgewählt werden.';
+$string['groupings'] = 'Gruppierungen';
 $string['loading'] = 'Lade...';
 $string['noaccess'] = 'Sie haben keinen Zugriff auf dieses Modul. Sie haben nicht die benötigten Berechtigungen, um diesen Inhalt zu sehen.';
 $string['overview'] = 'Überblick';

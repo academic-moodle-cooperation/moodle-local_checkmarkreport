@@ -30,15 +30,26 @@ require_once $CFG->dirroot.'/local/checkmarkreport/checkmarkreport.class.php';
 require_once $CFG->dirroot.'/local/checkmarkreport/reportfilterform.class.php';
 
 class checkmarkreport_overview extends checkmarkreport implements renderable {
-    function __construct($id, $groups=array(0), $instances=array(0)) {
+    function __construct($id, $groupings=array(0), $groups=array(0), $instances=array(0)) {
         global $DB;
+
+        if (!in_array(0, $groupings)) {
+            list($insql, $params) = $DB->get_in_or_equal($groupings);
+            $grpgsgrps = $DB->get_fieldset_select('groupings_groups', 'DISTINCT groupid', 'groupingid '.$insql, $params);
+            if (in_array(0, $groups) || empty($groups)) {
+                $groups = $grpgsgrps;
+            } else {
+                $groups = array_intersect($groups, $grpgsgrps);
+            }
+        }
+
         if (!in_array(0, $groups)) {
             list($insql, $params) = $DB->get_in_or_equal($groups);
             $users = $DB->get_fieldset_select('groups_members', 'DISTINCT userid', 'groupid '.$insql, $params);
         } else {
             $users = array(0);
         }
-        parent::__construct($id, array(0), $users, $instances);
+        parent::__construct($id, $groups, $users, $instances);
     }
 
     function get_table() {
@@ -571,7 +582,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
                         $heading->rowspan = 1;
                     }
                     $worksheet->merge_cells($y, $x, $y+$heading->rowspan-1, $x+$heading->colspan-1);
-                    $worksheet->write_string($y, $x, $heading->text/*, $headline_format*/);
+                    $worksheet->write_string($y, $x, strip_tags($heading->text)/*, $headline_format*/);
                     $x++;
                 }
                 $y++;
@@ -668,7 +679,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
                         if (!isset($cell->colspan)) {
                             $cell->colspan = 1;
                         }
-                        $worksheet->write_string($y, $x, $cell->text);
+                        $worksheet->write_string($y, $x, strip_tags($cell->text));
                         $worksheet->merge_cells($y, $x, $y+$cell->rowspan-1, $x+$cell->colspan-1);
                         //$output .= html_writer::tag($tagtype, $cell->text, $tdattributes) . "\n";
                         $x++;
@@ -682,8 +693,19 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
 }
 
 class checkmarkreport_useroverview extends checkmarkreport implements renderable {
-    function __construct($id, $groups=array(0), $users=array(0)) {
+    function __construct($id, $groupings=array(0), $groups=array(0), $users=array(0)) {
         global $DB;
+
+        if (!in_array(0, $groupings)) {
+            list($insql, $params) = $DB->get_in_or_equal($groupings);
+            $grpgsgrps = $DB->get_fieldset_select('groupings_groups', 'DISTINCT groupid', 'groupingid '.$insql, $params);
+            if (in_array(0, $groups) || empty($groups)) {
+                $groups = $grpgsgrps;
+            } else {
+                $groups = array_intersect($groups, $grpgsgrps);
+            }
+        }
+
         if (!in_array(0, $groups)) {
             //remove all users who aren't part of the groups
             list($insql, $params) = $DB->get_in_or_equal($groups);
@@ -1097,7 +1119,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
             $y = 0;
             $worksheets[$userid] = $workbook->add_worksheet(fullname($userdata));
             $table = $this->get_table($userdata);
-            $worksheets[$userid]->write_string($y, $x, fullname($data[$userid]));
+            $worksheets[$userid]->write_string($y, $x, strip_tags(fullname($data[$userid])));
             $y++;
             // We may use additional table data to format sheets!
             if (!empty($table->align)) {
@@ -1174,7 +1196,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                                 'colspan'   => $heading->colspan,
                                 'rowspan'   => $heading->rowspan
                             ));
-                        $worksheets[$userid]->write_string($y, $x, $heading->text);
+                        $worksheets[$userid]->write_string($y, $x, strip_tags($heading->text));
                         $worksheets[$userid]->merge_cells($y, $x, $y+$heading->rowspan-1, $x+$heading->colspan-1);
                         $x++;
                     }
@@ -1269,7 +1291,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                         if (!isset($cell->colspan)) {
                             $cell->colspan = 1;
                         }
-                        $worksheets[$userid]->write_string($y, $x, $cell->text);
+                        $worksheets[$userid]->write_string($y, $x, strip_tags($cell->text));
                         if (($cell->rowspan > 1) || ($cell->colspan > 1)) {
                             $worksheets[$userid]->merge_cells($y, $x, $y+$cell->rowspan-1, $x+$cell->colspan-1);
                         }
@@ -1288,7 +1310,7 @@ class checkmarkreport_userview extends checkmarkreport_useroverview implements r
         set_user_preference('checkmarkreport_showgrade', 1);
         set_user_preference('checkmarkreport_sumabs', 1);
         set_user_preference('checkmarkreport_sumrel', 1);
-        parent::__construct($id, array(0), array($USER->id));
+        parent::__construct($id, array(0), array(0), array($USER->id));
     }
 }
 

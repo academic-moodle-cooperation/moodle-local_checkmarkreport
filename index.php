@@ -123,22 +123,28 @@ switch($tab) {
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
             set_user_preference('checkmarkreport_sumrel', $data->sumrel);
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+            $groupings = empty($data->groupings) ? array(0) : $data->groupings;
+            if (!is_array($groupings)) {
+                $groupings = array($groupings);
+            }
             $groups = empty($data->groups) ? array(0) : $data->groups;
             if (!is_array($groups)) {
                 $groups = array($groups);
             }
             $instances = $data->instances;
         } else {
+            $groupings = optional_param_array('groupings', array(0), PARAM_INT);
             $groups = optional_param_array('groups', array(0), PARAM_INT);
             $instances = optional_param_array('instances', array(0), PARAM_INT);
-            $mform->set_data(array('groups' => $groups,
+            $mform->set_data(array('groupings' => $groupings,
                                   'instances' => $instances));
         }
-        $arrays = http_build_query(array('groups'     => $groups,
+        $arrays = http_build_query(array('groupings'  => $groupings,
+                                         'groups'     => $groups,
                                          'checkmarks' => $instances));
         $PAGE->set_url($PAGE->url.'&'.$arrays);
         $mform->display();
-        $checkmarkreport = new checkmarkreport_overview($id, $groups, $instances);
+        $checkmarkreport = new checkmarkreport_overview($id, $groupings, $groups, $instances);
     break;
     case 'useroverview':
         $customdata = array('courseid'      => $id,
@@ -151,6 +157,10 @@ switch($tab) {
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
             set_user_preference('checkmarkreport_sumrel', $data->sumrel);
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+            $groupings = empty($data->groupings) ? array(0) : $data->groupings;
+            if (!is_array($groupings)) {
+                $groupings = array($groupings);
+            }
             $groups = empty($data->groups) ? array(0) : $data->groups;
             if (!is_array($groups)) {
                 $groups = array($groups);
@@ -160,26 +170,34 @@ switch($tab) {
                 $users = array($users);
             }
         } else {
+            $groupings = optional_param_array('groupings', array(0), PARAM_INT);
             $groups = optional_param_array('groups', array(0), PARAM_INT);
             $users = optional_param_array('users', array(0), PARAM_INT);
-            $mform->set_data(array('groups' => $groups,
-                                   'users' => $users));
+            $mform->set_data(array('groupings' => $groupings,
+                                   'groups'    => $groups,
+                                   'users'     => $users));
         }
+
+        if (empty($groupings)) {
+            $groupings = array(0);
+        }
+
         if (empty($groups)) {
             $groups = array(0);
         }
-        
+
         if (empty($users)) {
             $users = array(0);
         }
 
         $mform->display();
 
-        $arrays = http_build_query(array('groups' => $groups,
-                                         'users'  => $users));
+        $arrays = http_build_query(array('groupings' => $groupings,
+                                         'groups'    => $groups,
+                                         'users'     => $users));
         $PAGE->set_url($PAGE->url.'&'.$arrays);
 
-        $checkmarkreport = new checkmarkreport_useroverview($id, $groups, $users);
+        $checkmarkreport = new checkmarkreport_useroverview($id, $groupings, $groups, $users);
     break;
     case 'userview':
         $checkmarkreport = new checkmarkreport_userview($id);

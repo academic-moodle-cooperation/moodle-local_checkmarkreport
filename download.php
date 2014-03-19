@@ -29,6 +29,7 @@ require_once $CFG->dirroot.'/local/checkmarkreport/lib.php';
 
 $id = required_param('id', PARAM_INT);   // Course.
 
+$groupings = optional_param_array('groupings', array(0), PARAM_INT);
 $groups = optional_param_array('groups', array(0), PARAM_INT);
 $users = optional_param_array('users', array(0), PARAM_INT);
 $instances = optional_param_array('checkmarks', array(0), PARAM_INT);
@@ -108,13 +109,13 @@ if (count($tabs) > 1) {
 $output = $PAGE->get_renderer('local_checkmarkreport');
 switch($tab) {
     case 'overview':
-        $report = new checkmarkreport_overview($id, $groups, $instances);
+        $report = new checkmarkreport_overview($id, $groupings, $groups, $instances);
     break;
     case 'useroverview':
-        $report = new checkmarkreport_useroverview($id, $groups, $users);
+        $report = new checkmarkreport_useroverview($id, $groupings, $groups, $users);
     break;
     case 'userview':
-        $report = new checkmarkreport_userview($id, array(0), $USER->id);
+        $report = new checkmarkreport_userview();
     break;
     case 'noaccess':
         $notification = $output->notification(get_string('noaccess', 'local_checkmarkreport'), 'notifyproblem');

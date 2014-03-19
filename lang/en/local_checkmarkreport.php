@@ -46,6 +46,7 @@ $string['grade'] = 'Grade';
 $string['grade_help'] = 'Shows grade calculated by checked examples for the whole course as well as for each checkmark.';
 $string['groups'] = 'Groups';
 $string['groups_help'] = 'Use this to select the groups to be displayed. Empty groups are disabled and only members of selected groups are displayed in the users selection (after update).';
+$string['groupings'] = 'Groupings';
 $string['loading'] = 'Loading...';
 $string['noaccess'] = 'You have no access to this module. You\'re missing the required capabilities to view this content.';
 $string['overview'] = 'Overview';
