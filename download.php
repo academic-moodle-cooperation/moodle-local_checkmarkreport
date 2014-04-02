@@ -115,7 +115,7 @@ switch($tab) {
         $report = new checkmarkreport_useroverview($id, $groupings, $groups, $users);
     break;
     case 'userview':
-        $report = new checkmarkreport_userview();
+        $report = new checkmarkreport_userview($id);
     break;
     case 'noaccess':
         $notification = $output->notification(get_string('noaccess', 'local_checkmarkreport'), 'notifyproblem');
