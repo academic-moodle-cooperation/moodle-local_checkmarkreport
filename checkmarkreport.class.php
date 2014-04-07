@@ -117,8 +117,6 @@ class checkmarkreport {
     public function get_general_data($course = null, $userids=0, $instances = array(0)) {
         global $DB, $COURSE, $CFG, $SESSION;
 
-        $useridentity = explode(',', $CFG->showuseridentity);
-
         // Construct the SQL!
         $conditions = array();
         $params = array();
@@ -133,8 +131,10 @@ class checkmarkreport {
         }
         $courseid = $course->id;
 
+        $context = context_course::instance($courseid);
+        $useridentity = get_extra_user_fields($context);
+
         if ($userids == 0) {
-            $context = context_course::instance($courseid);
             $userids = get_enrolled_users($context, '', 0, 'u.*', 'lastname ASC');
         }
 
@@ -158,7 +158,7 @@ class checkmarkreport {
             list($sqlcheckmarkbids, $checkmarkbparams) = $DB->get_in_or_equal($checkmarkids, SQL_PARAMS_NAMED, 'checkmarkb');
             $params = array_merge_recursive($params, $checkmarkbparams);
 
-            $useridentityfields = 'u.'.str_replace(',', ',u.', $CFG->showuseridentity);
+            $useridentityfields = get_extra_user_fields_sql($context, 'u');
             $grades = $DB->get_records_sql_menu('
                             SELECT 0 as id, SUM(gex.grade) as grade
                               FROM {checkmark_examples} as gex
@@ -184,9 +184,8 @@ class checkmarkreport {
             $sortable = array('firstname', 'lastname',
                               'percentchecked', 'checks',
                               'percentgrade', 'checkgrade');
-            if (!empty($CFG->showuseridentity)) {
-                $sortable = array_merge($sortable, explode(',', $CFG->showuseridentity));
-            }
+            $sortable = array_merge($sortable, get_extra_user_fields($context));
+
             $sortarr = $SESSION->checkmarkreport->{$courseid}->sort;
             $sort = '';
             foreach ($sortarr as $field => $direction) {
@@ -200,7 +199,7 @@ class checkmarkreport {
             if (!empty($sort)) {
                 $sort = ' ORDER BY '.$sort;
             }
-            $sql = 'SELECT '.$ufields.', '.$useridentityfields.',
+            $sql = 'SELECT '.$ufields.' '.$useridentityfields.',
                            100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
                            COUNT( DISTINCT cchks.id ) as checks, :maxchecksb as maxchecks,
                            100 * SUM( cex.grade ) / :maxgrade as percentgrade,

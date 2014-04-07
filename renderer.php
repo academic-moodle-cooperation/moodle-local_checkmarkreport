@@ -54,6 +54,8 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
     public function get_table() {
         global $CFG, $DB, $SESSION, $PAGE;
 
+        $context = context_course::instance($this->courseid);
+
         $sortarray = &$SESSION->checkmarkreport->{$this->courseid}->sort;
 
         $data = $this->get_coursedata();
@@ -85,14 +87,14 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $tablecolumns = array();
         $table->colgroups = array();
         $sortable = array();
-        $useridentity = explode(',', $CFG->showuseridentity);
+        $useridentity = get_extra_user_fields($context);
         // Firstname sortlink.
         $firstname = $this->get_sortlink('firstname', get_string('firstname'), $PAGE->url);
         // Lastname sortlink.
         $lastname = $this->get_sortlink('lastname', get_string('lastname'), $PAGE->url);
         $sortable[] = 'lasname';
         $sortable[] = 'firstname';
-        $tableheaders['fullnameuser'] = new html_table_cell($firstname.' '.$lastname);
+        $tableheaders['fullnameuser'] = new html_table_cell($firstname.' / '.$lastname);
         $tableheaders['fullnameuser']->header = true;
         $tableheaders['fullnameuser']->rowspan = 2;
         $tableheaders2['fullnameuser'] = null;
@@ -379,6 +381,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         global $CFG, $DB;
         $data = $this->get_coursedata();
         $course = $DB->get_record('course', array('id' => $this->courseid));
+        $context = context_course::instance($this->courseid);
         $txt = '';
         $examplenames = array();
         $instances = $this->get_courseinstances();
@@ -387,7 +390,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $txt .= get_string('pluginname', 'local_checkmarkreport').': '.$course->fullname."\n";
         // Title.
         $txt .= get_string('fullname');
-        $useridentity = explode(',', $CFG->showuseridentity);
+        $useridentity = get_extra_user_fields($context);
         foreach ($useridentity as $cur) {
             $txt .= "\t".(($cur == 'phone1') ? get_string('phone') : get_string($cur));
         }
@@ -1240,6 +1243,8 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
     protected function render_checkmarkreport_overview(checkmarkreport_overview $report) {
         global $CFG, $DB;
 
+        $context = context_course::instance($report->get_courseid());
+
         // Render download links!
         $data = array('id'         => $report->get_courseid(),
                       'tab'        => optional_param('tab', null, PARAM_ALPHANUM),
@@ -1276,7 +1281,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                                            array('class' => 'downloadlink'));
         // Append warning message for XLS if there are more than 256 Columns!
         $columns = 1; // Fullname.
-        $columns += count(explode(',', $CFG->showuseridentity));
+        $columns += count(get_extra_user_fields($context));
         $addfact = 0;
         if (get_user_preferences('checkmarkreport_showgrade')) {
             $addfact++;
