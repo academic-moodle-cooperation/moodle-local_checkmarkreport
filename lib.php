@@ -1,5 +1,5 @@
 <?php
-// This file is made for Moodle - http://moodle.org/
+// This file is part of local_checkmarkreport for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,12 +29,11 @@
  * @since         Moodle 2.5.3
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 define('CHECKMARKREPORT_GODMODE', true);
 
-require_once $CFG->dirroot.'/local/checkmarkreport/checkmarkreport.class.php';
+require_once($CFG->dirroot.'/local/checkmarkreport/checkmarkreport.class.php');
 
 /*******************************************************************************
  * Moodle core API                                                             *
@@ -53,16 +52,17 @@ function local_checkmarkreport_extends_settings_navigation(settings_navigation $
     }
 
     // Only let users with the appropriate capability see this settings item.
-    if (!has_capability('local/checkmarkreport:view', context_course::instance($PAGE->course->id), $USER->id, CHECKMARKREPORT_GODMODE)) {
+    if (!has_capability('local/checkmarkreport:view', context_course::instance($PAGE->course->id),
+                        $USER->id, CHECKMARKREPORT_GODMODE)) {
         return;
     }
     $checkmarks = get_all_instances_in_course('checkmark', $PAGE->course);
-    //add link only if checkmarks are available in course
+    // Add link only if checkmarks are available in course!
     if (empty($checkmarks)) {
         return;
     }
-    //prepare our node
-    $url = new moodle_url('/local/checkmarkreport/index.php', array('id'=>$PAGE->course->id));
+    // Prepare our node!
+    $url = new moodle_url('/local/checkmarkreport/index.php', array('id' => $PAGE->course->id));
     $icon = new pix_icon('i/report', get_string('pluginname', 'local_checkmarkreport'));
     $node = $setnav->create(get_string('pluginname', 'local_checkmarkreport'),
                                        $url,
@@ -70,21 +70,20 @@ function local_checkmarkreport_extends_settings_navigation(settings_navigation $
                                        get_string('pluginname', 'local_checkmarkreport'),
                                        'checkmarkreport',
                                        $icon);
-    //find courseadmin
+    // Find courseadmin!
     $courseadmin = $setnav->get('courseadmin');
 
     $iterator = $courseadmin->children->getIterator();
 
-    //find child grades
+    // Find child grades!
     while ($iterator->valid() && ($iterator->current()->key != 'grades')) {
-        //var_dump($iterator->current());
         $iterator->next();
     }
     $iterator->next();
     $key = $iterator->current()->key;
-    
-    //add before!
+
+    // Add before!
     $courseadmin->children->add($node, $key);
-    
+
     return;
 }

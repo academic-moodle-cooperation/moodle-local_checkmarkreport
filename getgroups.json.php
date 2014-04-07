@@ -1,5 +1,5 @@
 <?php
-// This file is made for Moodle - http://moodle.org/
+// This file is part of local_checkmarkreport for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,23 +25,23 @@ $lang     = optional_param('lang', 'en', PARAM_LANG);
 // We don't actually modify the session here as we have NO_MOODLE_COOKIES set.
 $SESSION->lang = $lang;
 
-//if session has expired and its an ajax request so we cant do a page redirect
-if( !isloggedin() ){
+// If session has expired and its an ajax request so we cant do a page redirect!
+if (!isloggedin()) {
     $result = new stdClass();
     $result->error = get_string('sessionerroruser', 'error');
     echo json_encode($result);
     die();
 }
-require_course_login($courseid, true, NULL, true, true);
+require_course_login($courseid, true, null, true, true);
 
 $context = get_context_instance(CONTEXT_COURSE, $courseid);
 
 require_capability('local/checkmarkreport:view', $context, $userid);
 
 $groupselects = array();
-foreach($groupings as $curgrpg) {
+foreach ($groupings as $curgrpg) {
     $groups = groups_get_all_groups($courseid, 0, $curgrpg);
-    foreach($groups as $group) {
+    foreach ($groups as $group) {
         $groupselects[$group->id] = $group;
     }
 }

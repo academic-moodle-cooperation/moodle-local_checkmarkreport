@@ -42,8 +42,8 @@ INSTALLATION
    All languages should be encoded with utf8.
 
     After it you have to run the admin-page of moodle
-	http://your-moodle-site/admin) in your browser. 
-	You have to logged in as admin before.
+    http://your-moodle-site/admin) in your browser. 
+    You have to logged in as admin before.
     The installation process will be displayed on the screen.
     That's all.
 

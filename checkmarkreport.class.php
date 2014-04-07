@@ -1,5 +1,5 @@
 <?php
-// This file is made for Moodle - http://moodle.org/
+// This file is part of local_checkmarkreport for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -33,13 +33,13 @@ class checkmarkreport {
     const FORMAT_ODS = 2;
     const FORMAT_XML = 3;
     const FORMAT_TXT = 4;
-    
+
     protected $data = null;
     protected $groups = array(0);
     protected $users = array(0);
     protected $instances = array(0);
 
-    function __construct($id, $groups=array(0), $users=array(0), $instances=array(0)) {
+    public function __construct($id, $groups=array(0), $users=array(0), $instances=array(0)) {
         $this->courseid = $id;
         $this->groups = $groups;
         $this->users = $users;
@@ -63,23 +63,23 @@ class checkmarkreport {
     public function get_coursedata() {
         global $PAGE, $DB;
 
-        $course = $DB->get_record('course', array('id'=>$this->courseid), '*', MUST_EXIST);
+        $course = $DB->get_record('course', array('id' => $this->courseid), '*', MUST_EXIST);
 
         $context = context_course::instance($course->id);
-        
-        //get all checkmarkinstances in course
+
+        // Get all checkmark instances in course!
         $checkmarks = get_all_instances_in_course('checkmark', $course);
         if (!in_array(0, $this->instances)) {
-            foreach($checkmarks as $key => $inst) {
+            foreach ($checkmarks as $key => $inst) {
                 if (!in_array($inst->id, $this->instances)) {
                     unset($checkmarks[$key]);
                 }
             }
         }
-        
+
         $data = array();
-        
-        //get all userdata in 1 query
+
+        // Get all userdata in 1 query!
         $context = context_course::instance($course->id);
 
         // Get general data from users!
@@ -99,8 +99,8 @@ class checkmarkreport {
         $data = $this->get_general_data($course, $users, $this->instances);
         if (!empty($data)) {
             // Get examples states for user and instance!
-            foreach($checkmarks as $checkmark) {
-                foreach($data as $userid => $user) {
+            foreach ($checkmarks as $checkmark) {
+                foreach ($data as $userid => $user) {
                     $data[$userid]->instancedata[$checkmark->id]->examples = $this->get_examples_data($checkmark->id, $userid);
                 }
             }
@@ -112,14 +112,10 @@ class checkmarkreport {
     }
 
     /*
-     * 
-     *
+     * TODO document this function
      */
     public function get_general_data($course = null, $userids=0, $instances = array(0)) {
         global $DB, $COURSE, $CFG, $SESSION;
-
-        $summary_abs = get_user_preferences('checkmark_sumabs', 1);
-        $summary_rel = get_user_preferences('checkmark_sumrel', 1);
 
         $useridentity = explode(',', $CFG->showuseridentity);
 
@@ -133,7 +129,7 @@ class checkmarkreport {
         if ($course == null) {
             $course = $COURSE;
         } else {
-            $course = $DB->get_record('course', array('id'=>$course->id), '*', MUST_EXIST);
+            $course = $DB->get_record('course', array('id' => $course->id), '*', MUST_EXIST);
         }
         $courseid = $course->id;
 
@@ -141,33 +137,33 @@ class checkmarkreport {
             $context = context_course::instance($courseid);
             $userids = get_enrolled_users($context, '', 0, 'u.*', 'lastname ASC');
         }
-        
+
         $checkmarks = get_all_instances_in_course('checkmark', $course);
         $checkmarkids = array();
         $cmids = array();
         $noinstancefilter = in_array(0, $instances);
-        foreach($checkmarks as $checkmark) {
+        foreach ($checkmarks as $checkmark) {
             if ($noinstancefilter || in_array($checkmark->id, $instances)) {
                 $checkmarkids[] = $checkmark->id;
                 $cmids[$checkmark->id] = $checkmark->coursemodule;
             }
         }
-        
+
         if (!empty($userids) && !empty($checkmarkids)) {
             list($sqluserids, $userparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'user');
             $params = array_merge_recursive($params, $userparams);
-            
+
             list($sqlcheckmarkids, $checkmarkparams) = $DB->get_in_or_equal($checkmarkids, SQL_PARAMS_NAMED, 'checkmark');
             $params = array_merge_recursive($params, $checkmarkparams);
             list($sqlcheckmarkbids, $checkmarkbparams) = $DB->get_in_or_equal($checkmarkids, SQL_PARAMS_NAMED, 'checkmarkb');
             $params = array_merge_recursive($params, $checkmarkbparams);
-            
+
             $useridentityfields = 'u.'.str_replace(',', ',u.', $CFG->showuseridentity);
             $grades = $DB->get_records_sql_menu('
                             SELECT 0 as id, SUM(gex.grade) as grade
                               FROM {checkmark_examples} as gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkbids.'
-                             UNION 
+                             UNION
                             SELECT gex.checkmarkid as id, SUM(gex.grade) as grade
                               FROM {checkmark_examples} as gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkids.'
@@ -176,7 +172,7 @@ class checkmarkreport {
                             SELECT 0 as id, COUNT(DISTINCT gex.id) as examples
                               FROM {checkmark_examples} as gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkbids.'
-                             UNION 
+                             UNION
                             SELECT gex.checkmarkid as id, COUNT(DISTINCT gex.id) as examples
                               FROM {checkmark_examples} as gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkids.'
@@ -209,7 +205,7 @@ class checkmarkreport {
                            COUNT( DISTINCT cchks.id ) as checks, :maxchecksb as maxchecks,
                            100 * SUM( cex.grade ) / :maxgrade as percentgrade,
                            SUM( cex.grade ) as checkgrade, :maxgradeb as maxgrade
-                      FROM {user} AS u 
+                      FROM {user} AS u
                  LEFT JOIN {checkmark_submissions} AS s ON u.id = s.userid
                                                        AND s.checkmarkid '.$sqlcheckmarkids.'
                  LEFT JOIN {checkmark_checks} AS cchks ON cchks.submissionid = s.id
@@ -221,7 +217,7 @@ class checkmarkreport {
 
             $data = $DB->get_records_sql($sql, $params);
 
-            //Add per instance data
+            // Add per instance data!
             $sql = 'SELECT u.id,
                            100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
                            COUNT( DISTINCT cchks.id ) as checks,
@@ -333,10 +329,10 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
     public function get_examples_data($checkmarkid=0, $userid=0) {
         global $DB;
 
-        // Get instances examples
+        // Get instances examples!
         $sql = 'SELECT ex.id, chks.state
                   FROM {checkmark_examples} as ex
-             LEFT JOIN {checkmark_submissions} as sub ON sub.checkmarkid = ex.checkmarkid 
+             LEFT JOIN {checkmark_submissions} as sub ON sub.checkmarkid = ex.checkmarkid
                                                      AND sub.userid = :userid
              LEFT JOIN {checkmark_checks} as chks ON chks.submissionid = sub.id
                                                  AND chks.exampleid = ex.id
@@ -346,25 +342,25 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
 
         return $DB->get_records_sql_menu($sql, $params);
     }
-    
+
     public function get_courseinstances() {
         global $DB;
         if (!empty($this->courseid)) {
-            $course = $DB->get_record('course', array('id'=>$this->courseid), '*', MUST_EXIST);
+            $course = $DB->get_record('course', array('id' => $this->courseid), '*', MUST_EXIST);
             $instances = get_all_instances_in_course('checkmark', $course);
-            $new_isntances = array();
-            if(!in_array(0, $this->instances)) {
+            $newinstances = array();
+            if (!in_array(0, $this->instances)) {
                 foreach ($instances as $key => $inst) {
                     if (in_array($inst->id, $this->instances)) {
-                        $new_instances[$inst->id] = $inst;
+                        $newinstances[$inst->id] = $inst;
                     }
                 }
             } else {
                 foreach ($instances as $key => $inst) {
-                    $new_instances[$inst->id] = $inst;
+                    $newinstances[$inst->id] = $inst;
                 }
             }
-            return $new_instances;
+            return $newinstances;
         } else {
             return null;
         }
@@ -373,7 +369,7 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
     public function get_courseid() {
         return $this->courseid;
     }
-    
+
     public function init_hidden() {
         global $SESSION;
         $thide = optional_param('thide', null, PARAM_ALPHANUM);
@@ -391,14 +387,14 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
             $SESSION->checkmarkreport->{$this->courseid}->hidden[] = $thide;
         }
         if (!empty($tshow)) {
-            foreach($SESSION->checkmarkreport->{$this->courseid}->hidden as $idx => $hidden) {
+            foreach ($SESSION->checkmarkreport->{$this->courseid}->hidden as $idx => $hidden) {
                 if ($hidden == $tshow) {
                     unset($SESSION->checkmarkreport->{$this->courseid}->hidden[$idx]);
                 }
             }
         }
     }
-    
+
     public function init_sortby() {
         global $SESSION;
 
@@ -413,18 +409,18 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
         if (!isset($SESSION->checkmarkreport->{$this->courseid}->sort)) {
             $SESSION->checkmarkreport->{$this->courseid}->sort = array();
         }
-        
+
         if (!empty($tsort)) {
             $arr = $SESSION->checkmarkreport->{$this->courseid}->sort;
             if (!key_exists($tsort, $SESSION->checkmarkreport->{$this->courseid}->sort)) {
                 // Like array_unshift with associative key preservation!
-                $arr = array_reverse($arr, true); 
-                $arr[$tsort] = 'ASC'; 
-                $SESSION->checkmarkreport->{$this->courseid}->sort = array_reverse($arr, true); 
+                $arr = array_reverse($arr, true);
+                $arr[$tsort] = 'ASC';
+                $SESSION->checkmarkreport->{$this->courseid}->sort = array_reverse($arr, true);
             } else {
                 switch($tsort) {
                     case 'checkmark':
-                        if($arr[$tsort] == 'ASC') {
+                        if ($arr[$tsort] == 'ASC') {
                                 $arr[$tsort] = 'DESC';
                         } else {
                             unset($arr[$tsort]);
@@ -448,7 +444,7 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
             }
         }
     }
-    
+
     public function get_sortlink($column, $text, $url) {
         global $SESSION, $OUTPUT;
         // Sortarray has to be initialized!
@@ -461,7 +457,7 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
         }
         if (($column == $primesort)
             || (($column == 'checkmark') && key_exists($column, $sortarr))) {
-            //We show only the first sortby column and checkmark!
+            // We show only the first sortby column and checkmark!
             switch ($sortarr[$column]) {
                 case 'ASC':
                     $picattr = array('src' => $OUTPUT->pix_url('t/up'),
@@ -474,11 +470,11 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
             }
             $text .= html_writer::empty_tag('img', $picattr);
         }
-        $sorturl = new moodle_url($url, array('tsort'=>$column));
+        $sorturl = new moodle_url($url, array('tsort' => $column));
         $sortlink = html_writer::link($sorturl, $text);
         return $sortlink;
     }
-    
+
     public function column_is_hidden($column='nonexistend') {
         global $SESSION;
         if (!isset($SESSION->checkmarkreport)) {
@@ -496,12 +492,12 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
             $SESSION->checkmarkreport->{$this->courseid}->hidden = array();
             return 0;
         }
-        
+
         if ((array)$column !== $column) {
             return in_array($column, $SESSION->checkmarkreport->{$this->courseid}->hidden);
         } else {
             $return = false;
-            foreach($column as $cur) {
+            foreach ($column as $cur) {
                 $return = $return || in_array($cur, $SESSION->checkmarkreport->{$this->courseid}->hidden);
             }
             return $return;

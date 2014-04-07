@@ -1,5 +1,5 @@
 <?php
-// This file is made for Moodle - http://moodle.org/
+// This file is part of local_checkmarkreport for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -46,15 +46,15 @@ function xmldb_local_checkmarkreport_upgrade($oldversion) {
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
 
     /*
-     *	And upgrade begins here. For each one, you'll need one
+     * And upgrade begins here. For each one, you'll need one
      * block of code similar to the next one. Please, delete
      * this comment lines once this file start handling proper
      * upgrade code.
      */
 
-    if ($oldversion < 2014011002) { //New version in version.php
+    if ($oldversion < 2014011002) { // New version in version.php!
         upgrade_plugin_savepoint(true, 2014011002, 'local', 'checkmarkreport', true);
     }
-    
+
     return true;
 }

@@ -1,5 +1,5 @@
 <?php
-// This file is made for Moodle - http://moodle.org/
+// This file is part of local_checkmarkreport for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once dirname(dirname(dirname(__FILE__))).'/config.php';
-require_once $CFG->dirroot.'/local/checkmarkreport/lib.php';
-require_once $CFG->dirroot.'/local/checkmarkreport/reportfilterform.class.php';
+require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once($CFG->dirroot.'/local/checkmarkreport/lib.php');
+require_once($CFG->dirroot.'/local/checkmarkreport/reportfilterform.class.php');
 
 $id = required_param('id', PARAM_INT);   // Course.
 
@@ -46,9 +46,9 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 
-// Get Tabs according to capabilities
+// Get Tabs according to capabilities!
 $tabs = array();
-$available_tabs = array();
+$availabletabs = array();
 if (has_capability('local/checkmarkreport:view_courseoverview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
     $tabs[] = new tabobject('overview',
                            $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
@@ -56,7 +56,7 @@ if (has_capability('local/checkmarkreport:view_courseoverview', $coursecontext, 
                            get_string('overview', 'local_checkmarkreport'),
                            get_string('overview_alt', 'local_checkmarkreport'),
                            false);
-    $available_tabs[] = 'overview';
+    $availabletabs[] = 'overview';
 }
 
 if (has_capability('local/checkmarkreport:view_students_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
@@ -66,7 +66,7 @@ if (has_capability('local/checkmarkreport:view_students_overview', $coursecontex
                            get_string('useroverview', 'local_checkmarkreport'),
                            get_string('useroverview_alt', 'local_checkmarkreport'),
                            false);
-    $available_tabs[] = 'useroverview';
+    $availabletabs[] = 'useroverview';
 }
 
 if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
@@ -76,18 +76,18 @@ if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $U
                            get_string('userview', 'local_checkmarkreport'),
                            get_string('userview_alt', 'local_checkmarkreport'),
                            false);
-    $available_tabs[] = 'userview';
+    $availabletabs[] = 'userview';
 }
 
 if (count($tabs) > 1) {
-    $new_tab = optional_param('tab', null, PARAM_ALPHAEXT);
-    if (!empty($new_tab)) {
-        $tab = $new_tab;
+    $newtab = optional_param('tab', null, PARAM_ALPHAEXT);
+    if (!empty($newtab)) {
+        $tab = $newtab;
     } else if (!isset($tab)) {
-        $tab = current($available_tabs);
+        $tab = current($availabletabs);
     }
 } else if (count($tabs) == 1) {
-    $tab = current($available_tabs);
+    $tab = current($availabletabs);
 } else {
     $tab = 'noaccess';
 }
@@ -95,10 +95,10 @@ if (count($tabs) > 1) {
 $PAGE->set_url('/local/checkmarkreport/index.php', array('id' => $id, 'tab' => $tab));
 $PAGE->navbar->add(get_string('pluginname', 'local_checkmarkreport'),
                    new moodle_url('/local/checkmarkreport/index.php',
-                                  array('id'=>$id)));
+                                  array('id' => $id)));
 $PAGE->navbar->add(get_string($tab, 'local_checkmarkreport'),
                    new moodle_url('/local/checkmarkreport/index.php',
-                                  array('id'=>$id, 'tab'=>$tab)));
+                                  array('id' => $id, 'tab' => $tab)));
 $output = $PAGE->get_renderer('local_checkmarkreport');
 
 echo $output->header();

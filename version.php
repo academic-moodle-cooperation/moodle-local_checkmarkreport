@@ -1,5 +1,5 @@
 <?php
-// This file is made for Moodle - http://moodle.org/
+// This file is part of local_checkmarkreport for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,8 +30,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2014011003;              // The current module version (Date: YYYYMMDDXX).
-$plugin->requires  = 2013051400.03;           // Requires this Moodle version!
-                                              // 2.2.1+ (Build: 20120127)
+$plugin->requires  = 2013111802.00;           // Requires this Moodle version!
+                                              // 2.6.2 (Build: 20140310)
 $plugin->cron      = 0;                       // Period for cron to check this module (secs).
 $plugin->component = 'local_checkmarkreport'; // To check on upgrade, that module sits in correct place.
 

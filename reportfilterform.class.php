@@ -1,5 +1,5 @@
 <?php
-// This file is made for Moodle - http://moodle.org/
+// This file is part of local_checkmarkreport for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once $CFG->libdir .'/formslib.php';
+require_once($CFG->libdir .'/formslib.php');
 
 /**
  * Filter form
@@ -56,25 +56,26 @@ class reportfilterform extends moodleform {
         $mform->setType('userid', PARAM_INT);
 
         $context = CONTEXT_COURSE::instance($COURSE->id);
-        $groupmode = $DB->get_field('course', 'groupmode', array('id'=>$COURSE->id), MUST_EXIST);
+        $groupmode = $DB->get_field('course', 'groupmode', array('id' => $COURSE->id), MUST_EXIST);
 
-        // Groupings filter
+        // Groupings filter!
         if (empty($this->_customdata['hidegroups'])
             && $groupmode != NOGROUPS) {
             $groupings = groups_get_all_groupings($COURSE->id);
-            $groupingsel = $mform->createElement('select', 'groupings[]', get_string('groupings', 'local_checkmarkreport'), null, array('id'=>'groupings'));
+            $groupingsel = $mform->createElement('select', 'groupings[]',
+                                                 get_string('groupings', 'local_checkmarkreport'),
+                                                 null, array('id' => 'groupings'));
             $groupingsel->addOption(get_string('all').' '.get_string('groupings', 'local_checkmarkreport'), 0);
-            if(count($groupings)) {
+            if (count($groupings)) {
                 list($grpgssql, $grpgsparams) = $DB->get_in_or_equal(array_keys($groupings));
                 $groupinggroups = $DB->get_records_sql_menu("
                 SELECT groupingid, COUNT(DISTINCT groupid)
                   FROM {groupings_groups}
                  WHERE groupingid ".$grpgssql."
               GROUP BY groupingid", $grpgsparams);
-                foreach($groupings as $grouping) {
-                    //$groupselects[$group->id] = $group->name;
+                foreach ($groupings as $grouping) {
                     if (empty($groupinggroups[$grouping->id])) {
-                        $disabled = array('disabled'=>'disabled');
+                        $disabled = array('disabled' => 'disabled');
                     } else {
                         $disabled = array();
                     }
@@ -86,31 +87,30 @@ class reportfilterform extends moodleform {
             $groupings->setMultiple(false);
         }
 
-        // Groups filter
+        // Groups filter!
         if (empty($this->_customdata['hidegroups'])
             && $groupmode != NOGROUPS) {
             $groupingids = optional_param_array('groupings', array(0), PARAM_INT);
             $groups = array();
-            foreach($groupingids as $groupingid) {
+            foreach ($groupingids as $groupingid) {
                 $groupinggroups = groups_get_all_groups($COURSE->id, 0, $groupingid);
                 foreach ($groupinggroups as $group) {
                     $groups[$group->id] = $group;
                 }
             }
-            $groupsel = $mform->createElement('select', 'groups[]', get_string('groups'), null, array('id'=>'groups'));
-            //$groupselects = array(get_string('all').' '.get_string('groups'));
+            $groupsel = $mform->createElement('select', 'groups[]', get_string('groups'), null,
+                                              array('id' => 'groups'));
             $groupsel->addOption(get_string('all').' '.get_string('groups'), 0);
-            if(count($groups)) {
+            if (count($groups)) {
                 list($grpssql, $grpsparams) = $DB->get_in_or_equal(array_keys($groups));
                 $groupmembers = $DB->get_records_sql_menu("
                 SELECT groupid, COUNT(DISTINCT userid)
                   FROM {groups_members}
                  WHERE groupid ".$grpssql."
               GROUP BY groupid", $grpsparams);
-                foreach($groups as $group) {
-                    //$groupselects[$group->id] = $group->name;
+                foreach ($groups as $group) {
                     if (empty($groupmembers[$group->id])) {
-                        $disabled = array('disabled'=>'disabled');
+                        $disabled = array('disabled' => 'disabled');
                     } else {
                         $disabled = array();
                     }
@@ -128,54 +128,55 @@ class reportfilterform extends moodleform {
             $mform->addHelpButton('groups[]', 'groups', 'local_checkmarkreport');
         }
 
-        // User filter
+        // User filter!
         if (empty($this->_customdata['hideusers'])) {
             $userselects = array(get_string('all').' '.get_string('user'));
             $groups = optional_param_array('groups', array(0), PARAM_INT);
-            foreach($groups as $curgrp) {
+            foreach ($groups as $curgrp) {
                 $users = get_enrolled_users($context, '', $curgrp, 'u.*', 'lastname ASC');
-                foreach($users as $user) {
+                foreach ($users as $user) {
                     $userselects[$user->id] = fullname($user);
                 }
             }
-            $users = $mform->addElement('select', 'users[]', get_string('users'), $userselects, array('id'=>'users'));
+            $users = $mform->addElement('select', 'users[]', get_string('users'), $userselects, array('id' => 'users'));
             $mform->setDefault('users[]', optional_param_array('users', array(0), PARAM_INT));
             $users->setMultiple(false);
         }
 
-        // Instance filter
+        // Instance filter!
         if (empty($this->_customdata['hideinstances'])) {
             $checkmarkselects = array(get_string('all').' '.
                                       get_string('modulenameplural', 'checkmark'));
             if ($checkmarks = get_all_instances_in_course('checkmark', $COURSE)) {
-                foreach($checkmarks as $checkmark) {
+                foreach ($checkmarks as $checkmark) {
                     $checkmarkselects[$checkmark->id] = $checkmark->name;
                 }
                 $instances = $mform->addElement('select', 'instances',
                                    get_string('modulenameplural', 'checkmark'),
-                                   $checkmarkselects, array('size'=>5));
+                                   $checkmarkselects, array('size' => 5));
                 $instances->setMultiple(true);
             }
         }
 
-        //grade
-        if(empty($this->_customdata['header'])) {
+        // Add Grade!
+        if (empty($this->_customdata['header'])) {
             $this->_customdata['header'] = get_string('additional_columns', 'local_checkmarkreport');
         }
         $mform->addElement('advcheckbox', 'grade', $this->_customdata['header'], get_string('showgrade', 'local_checkmarkreport'));
         $mform->setDefault('grade', get_user_preferences('checkmarkreport_showgrade'));
         $mform->addHelpButton('grade', 'grade', 'local_checkmarkreport');
-        //x/y ex
+        // Add x/y ex!
         $mform->addElement('advcheckbox', 'sumabs', null, get_string('sumabs', 'local_checkmarkreport'));
         $mform->setDefault('sumabs', get_user_preferences('checkmarkreport_sumabs'));
         $mform->addHelpButton('sumabs', 'sumabs', 'local_checkmarkreport');
-        //% ex
+        // Add % ex!
         $mform->addElement('advcheckbox', 'sumrel', null, get_string('sumrel', 'local_checkmarkreport'));
         $mform->setDefault('sumrel', get_user_preferences('checkmarkreport_sumrel'));
         $mform->addHelpButton('sumrel', 'sumrel', 'local_checkmarkreport');
 
         // Additional settings ?? don't need them...
-        $mform->addElement('advcheckbox', 'showpoints', get_string('additional_settings', 'local_checkmarkreport'), get_string('showpoints', 'local_checkmarkreport'));
+        $mform->addElement('advcheckbox', 'showpoints', get_string('additional_settings', 'local_checkmarkreport'),
+                           get_string('showpoints', 'local_checkmarkreport'));
         $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
         $mform->addHelpButton('showpoints', 'showpoints', 'local_checkmarkreport');
 

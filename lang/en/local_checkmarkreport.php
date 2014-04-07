@@ -1,5 +1,5 @@
 <?php
-// This file is made for Moodle - http://moodle.org/
+// This file is part of local_checkmarkreport for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 defined('MOODLE_INTERNAL') || die;
 
-/**
- * Strings for component 'mod_checkmark', language 'en', branch 'MOODLE_21_STABLE'
+/*
+ * Strings for component 'local_checkmarkreport', language 'en', branch 'MOODLE_26_STABLE'
  *
- * @package       mod_checkmark
+ * @package       local_checkmarkreport
  * @author        Philipp Hager (e0803285@gmail.com)
- * @copyright     2011 TSC TU Vienna
- * @since         Moodle 2.1
+ * @copyright     2014 TSC TU Vienna
+ * @since         Moodle 2.5
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
