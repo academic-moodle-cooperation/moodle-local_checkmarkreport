@@ -34,7 +34,7 @@ if (!isloggedin()) {
 }
 require_course_login($courseid, true, null, true, true);
 
-$context = get_context_instance(CONTEXT_COURSE, $courseid);
+$context = context_course::instance($courseid);
 
 require_capability('local/checkmarkreport:view', $context, $userid);
 
