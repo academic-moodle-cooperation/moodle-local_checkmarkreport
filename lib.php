@@ -71,19 +71,20 @@ function local_checkmarkreport_extends_settings_navigation(settings_navigation $
                                        'checkmarkreport',
                                        $icon);
     // Find courseadmin!
-    $courseadmin = $setnav->get('courseadmin');
+    if ($courseadmin = $setnav->get('courseadmin')) {
 
-    $iterator = $courseadmin->children->getIterator();
+        $iterator = $courseadmin->children->getIterator();
 
-    // Find child grades!
-    while ($iterator->valid() && ($iterator->current()->key != 'grades')) {
+        // Find child grades!
+        while ($iterator->valid() && ($iterator->current()->key != 'grades')) {
+            $iterator->next();
+        }
         $iterator->next();
-    }
-    $iterator->next();
-    $key = $iterator->current()->key;
+        $key = $iterator->current()->key;
 
-    // Add before!
-    $courseadmin->children->add($node, $key);
+        // Add before!
+        $courseadmin->children->add($node, $key);
+    } //otherwise there's no courseadmin menu here...
 
     return;
 }
