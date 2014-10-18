@@ -37,8 +37,6 @@ $coursecontext = context_course::instance($course->id);
 
 require_capability('local/checkmarkreport:view', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE);
 
-add_to_log($course->id, 'checkmarkreport', 'view', 'index.php?id='.$course->id, '');
-
 $PAGE->set_pagelayout('incourse');
 $PAGE->set_url('/local/checkmarkreport/index.php', array('id' => $id));
 $PAGE->set_title(format_string($course->fullname));
@@ -145,6 +143,8 @@ switch($tab) {
         $PAGE->set_url($PAGE->url.'&'.$arrays);
         $mform->display();
         $checkmarkreport = new checkmarkreport_overview($id, $groupings, $groups, $instances);
+        // Trigger the event!
+        \local_checkmarkreport\event\overview_viewed::overview($course)->trigger();
     break;
     case 'useroverview':
         $customdata = array('courseid'      => $id,
@@ -198,9 +198,13 @@ switch($tab) {
         $PAGE->set_url($PAGE->url.'&'.$arrays);
 
         $checkmarkreport = new checkmarkreport_useroverview($id, $groupings, $groups, $users);
+        // Trigger the event!
+        \local_checkmarkreport\event\useroverview_viewed::useroverview($course)->trigger();
     break;
     case 'userview':
         $checkmarkreport = new checkmarkreport_userview($id);
+        // Trigger the event!
+        \local_checkmarkreport\event\userview_viewed::userview($course)->trigger();
     break;
     case 'noaccess':
         $notification = $output->notification(get_string('noaccess', 'local_checkmarkreport'), 'notifyproblem');

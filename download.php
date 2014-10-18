@@ -47,8 +47,6 @@ $coursecontext = context_course::instance($course->id);
 
 require_capability('local/checkmarkreport:view', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE);
 
-add_to_log($course->id, 'checkmarkreport', 'view', 'index.php?id='.$course->id, '');
-
 $PAGE->set_pagelayout('popup');
 $arrays = http_build_query(array('groups'    => $groups,
                                  'users'     => $users,
@@ -107,15 +105,38 @@ if (count($tabs) > 1) {
     $tab = 'noaccess';
 }
 $output = $PAGE->get_renderer('local_checkmarkreport');
+
+switch($format) {
+    case checkmarkreport::FORMAT_XML:
+        $format_readable = 'XML';
+    break;
+    case checkmarkreport::FORMAT_TXT:
+        $format_readable = 'TXT';
+    break;
+    case checkmarkreport::FORMAT_ODS:
+        $format_readable = 'ODS';
+    break;
+    case checkmarkreport::FORMAT_XLS:
+        $format_readable = 'XLS';
+    break;
+    default:
+    case checkmarkreport::FORMAT_XLSX:
+        $format_readable = 'XLSX';
+    break;
+}
+
 switch($tab) {
     case 'overview':
         $report = new checkmarkreport_overview($id, $groupings, $groups, $instances);
+        $event = \local_checkmarkreport\event\overview_exported::overview($course, $format, $format_readable);
     break;
     case 'useroverview':
         $report = new checkmarkreport_useroverview($id, $groupings, $groups, $users);
+        $event = \local_checkmarkreport\event\useroverview_exported::useroverview($course, $format, $format_readable);
     break;
     case 'userview':
         $report = new checkmarkreport_userview($id);
+        $event = \local_checkmarkreport\event\userview_exported::userview($course, $format, $format_readable);
     break;
     case 'noaccess':
         $notification = $output->notification(get_string('noaccess', 'local_checkmarkreport'), 'notifyproblem');
@@ -130,6 +151,8 @@ switch($tab) {
         echo $output->footer();
         die;
 }
+
+$event->trigger();
 
 switch($format) {
     case checkmarkreport::FORMAT_XML:
