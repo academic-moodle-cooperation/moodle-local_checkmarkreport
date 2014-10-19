@@ -18,7 +18,6 @@
  * The local_checkmarkreport_exported_base event.
  *
  * @package       local_checkmarkreport
- * @since         Moodle 2.7
  * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
  * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
  * @author        Philipp Hager
