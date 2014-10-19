@@ -1,54 +1,62 @@
+// This file is part of local_checkmarkreport for Moodle - http://moodle.org/
+//
+// It is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// It is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * README.txt
+ * @version       2014-10-19
+ * @package       local_checkmarkreport
+ * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
+ * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
+ * @author        Eva Karall (eva.maria.karall@univie.ac.at)
+ * @author        Philipp Hager
+ * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 # ---------------------------------------------------------------
-# This software is provided under the GNU General Public License
-# http://www.gnu.org/licenses/gpl.html
-# with Copyright © 2012 onwards
-#
-# Dipl.-Ing. Andreas Hruska
-# andreas.hruska@tuwien.ac.at
-# 
-# Dipl.-Ing. Mag. rer.soc.oec. Katarzyna Potocka
-# katarzyna.potocka@tuwien.ac.at
-# 
-# Vienna University of Technology
-# Teaching Support Center
-# Gußhausstraße 28/E015
-# 1040 Wien
-# http://tsc.tuwien.ac.at/
-# ---------------------------------------------------------------
-# FOR Moodle 2.5.3
+# FOR Moodle 2.7+
 # ---------------------------------------------------------------
 
-README.txt
-v.2014011000
-
-
-Checkmarkreport
+Checkmarkreport plugin
 ===============
 
 OVERVIEW
 ================================================================================
-    
+
+
 REQUIREMENTS
 ================================================================================
-    Moodle <2.5.3 or later>
+    Moodle 2.7 or later
 
-INSTALLATION 
+INSTALLATION
 ================================================================================
-   The zip-archive includes the same directory hierarchy as moodle
-   So you only have to copy the files to the correspondent place.
-   copy the folder checkmarkreport.zip/local/checkmarkreport
-               --> moodle/local/checkmarkreport
-   The langfiles normaly can be left into the folder local/checkmarkreport/lang.
-   All languages should be encoded with utf8.
+    To install, extract the contents of the archive to the local/ folder in the moodle
+    root folder, and all of the archive's contents will be properly placed into the
+    folder structure. The module and all of its files is located in local_checkmarkreport
+    folder and requires checkmark module (for Moodle 2.7) to be installed.
 
-    After it you have to run the admin-page of moodle
-    http://your-moodle-site/admin) in your browser. 
-    You have to logged in as admin before.
-    The installation process will be displayed on the screen.
-    That's all.
+    The langfiles can be put into the folder local/checkmarkreport/lang normally.
+    All languages should be encoded with utf-8.
 
+    After it you have to run the admin-page of moodle (http://your-moodle-site/admin)
+    in your browser. You have to be logged in as admin before.
+    The installation process will be displayed on the screen. All the data necessary
+    for a proper install is contained in the help files displayed on screen.
 
 CHANGELOG
 ================================================================================
-v 2014011000
---------------------------------------------------------------------------------
+ *) 2014-10-19
+    -) improve logging
+    -) various bugs fixed
