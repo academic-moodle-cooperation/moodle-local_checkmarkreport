@@ -30,13 +30,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014011004;              // The current module version (Date: YYYYMMDDXX).
-$plugin->requires  = 2013111802.00;           // Requires this Moodle version!
-                                              // 2.6.2 (Build: 20140310)
-$plugin->cron      = 0;                       // Period for cron to check this module (secs).
+$plugin->version   = 2014101900;              // The current module version (Date: YYYYMMDDXX).
+$plugin->release = '2014-10-19';              // User-friendly version number.
+$plugin->maturity = MATURITY_STABLE;
+$plugin->requires  = 2014041100;              // Requires this Moodle version!
 $plugin->component = 'local_checkmarkreport'; // To check on upgrade, that module sits in correct place.
-
-$plugin->maturity = MATURITY_ALPHA;
-/*MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC, MATURITY_STABLE*/
-$plugin->release = 'TODO';
-$plugin->dependencies = array('mod_checkmark' => 2013062000/*, 'mod_data' => ANY_VERSION*/);
+$plugin->dependencies = array('mod_checkmark' => 2014101402); // FRANKENSTYLE + version number or ANY_VERSION
