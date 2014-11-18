@@ -38,51 +38,54 @@ span.downloadlink {
     margin-bottom:2em;
 }
 
-table.coloredrows .hidden .hidecol,
-table.coloredrows .showcol,
-table.coloredrows .hidden .content {
+#checkmarkreporttable table.coloredrows .hiddencol .hidecol,
+#checkmarkreporttable table.coloredrows .showcol,
+#checkmarkreporttable table.coloredrows .hiddencol .content {
     display:none;
 }
 
-table.coloredrows .hidden .showcol,
-table.coloredrows .hidecol,
-table.coloredrows .content {
+#checkmarkreporttable table.coloredrows .hiddencol .showcol,
+#checkmarkreporttable table.coloredrows .hidecol,
+#checkmarkreporttable table.coloredrows .content {
     display:block;
     display:inline;
     white-space:nowrap;
 }
 
-table.coloredrows .hidden {
+#checkmarkreporttable table.coloredrows .hiddencol {
     margin:0px;
     padding:0px;
 }
 
-table.coloredrows .hidecol {
+#checkmarkreporttable table.coloredrows .hidecol {
     margin-left:3px;
 }
 
-table.coloredrows.userview th.cell {
+#checkmarkreporttable table.coloredrows.userview th.cell {
     text-align:center;
 }
 
-table.coloredrows, table.coloredrows th, table.coloredrows td {
+#checkmarkreporttable table.coloredrows,
+#checkmarkreporttable table.coloredrows th,
+#checkmarkreporttable table.coloredrows td {
     border: 1px solid #BBB;
 }
 
-table.coloredrows .r0 {
+#checkmarkreporttable table.coloredrows .r0 {
     background-color: #f0f0f0;
     white-space:nowrap
 }
 
-table.coloredrows .r1 {
+#checkmarkreporttable table.coloredrows .r1 {
     background-color: #fafafa;
     white-space:nowrap
 }
 
-table.coloredrows td {
+#checkmarkreporttable table.coloredrows td {
     text-align:center;
 }
 
-table.coloredrows td.fullnameuser, table.coloredrows td.email {
+#checkmarkreporttable table.coloredrows td.fullnameuser,
+#checkmarkreporttable table.coloredrows td.email {
     text-align:left;
 }

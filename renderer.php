@@ -1315,7 +1315,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $out .= html_writer::tag('div', $this->table($table, $report),
                                 array('class' => 'scrollforced'));
 
-        return $this->output->container($out, 'submission');
+        return $this->output->container($out, 'submission', 'checkmarkreporttable');
     }
 
     protected function render_checkmarkreport_useroverview(checkmarkreport_useroverview $report, $hidefilter = false) {
@@ -1383,14 +1383,14 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
             $out .= $this->output->notification(get_string('nousers', 'checkmark'), 'notifyproblem');
         }
 
-        return $this->output->container($out, 'report');
+        return $this->output->container($out, 'report', 'checkmarkreporttable');
     }
 
     protected function render_checkmarkreport_userview(checkmarkreport_userview $report) {
         // Render the table!
         $out = $this->render_checkmarkreport_useroverview($report, true);
 
-        return $this->output->container($out, 'submission');
+        return $this->output->container($out, 'submission', 'checkmarkreporttable');
     }
 
     /**
@@ -1539,7 +1539,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                     }
 
                     if (!$nohide && ($report->column_is_hidden($key) || $report->column_is_hidden($classes))) {
-                        $attributes['class'] .= ' hidden';
+                        $attributes['class'] .= ' hiddencol';
                     }
                     $content = html_writer::tag('div', $heading->text,
                                                 array('class' => 'content')).
@@ -1662,7 +1662,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                             $clases = '';
                         }
                         if (!$nohide && ($report->column_is_hidden($key) || $report->column_is_hidden($classes))) {
-                            $tdattributes['class'] .= ' hidden';
+                            $tdattributes['class'] .= ' hiddencol';
                         }
                         $content = html_writer::tag('div', $cell->text, array('class' => 'content'));
                         $output .= html_writer::tag($tagtype, $content, $tdattributes) . "\n";
