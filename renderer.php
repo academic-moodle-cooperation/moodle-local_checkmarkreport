@@ -1694,14 +1694,14 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                                       $showicon,
                                       array('class' => $column.' showcol',
                                             'title' => get_string('show').
-                                                       ' '.$columnstring));
+                                                       ' '.clean_param($columnstring, PARAM_NOTAGS)));
         } else {
             // Hide link!
             $html = html_writer::link(new moodle_url($PAGE->url, array('thide' => $column)),
                                       $hideicon,
                                       array('class' => $column.' hidecol',
                                             'title' => get_string('hide').
-                                                       ' '.$columnstring));
+                                                       ' '.clean_param($columnstring, PARAM_NOTAGS)));
         }
         return $html;
     }
