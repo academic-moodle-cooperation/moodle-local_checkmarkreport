@@ -202,9 +202,9 @@ class checkmarkreport {
             }
             $sql = 'SELECT '.$ufields.' '.$useridentityfields.',
                            100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
-                           COUNT( DISTINCT cchks.id ) as checks, :maxchecksb as maxchecks,
+                           COUNT( DISTINCT cchks.id ) as checks,
                            100 * SUM( cex.grade ) / :maxgrade as percentgrade,
-                           SUM( cex.grade ) as checkgrade, :maxgradeb as maxgrade
+                           SUM( cex.grade ) as checkgrade
                       FROM {user} AS u
                  LEFT JOIN {checkmark_submissions} AS s ON u.id = s.userid
                                                        AND s.checkmarkid '.$sqlcheckmarkids.'
@@ -216,15 +216,17 @@ class checkmarkreport {
                   $sort;
 
             $data = $DB->get_records_sql($sql, $params);
+            foreach($data as $key => $cur) {
+                $data[$key]->maxgrade = $grades[0];
+                $data[$key]->maxchecks = $examples[0];
+            }
 
             // Add per instance data!
             $sql = 'SELECT u.id,
                            100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
                            COUNT( DISTINCT cchks.id ) as checks,
-                           :maxchecksb as maxchecks,
                            100 * SUM( cex.grade ) / :maxgrade as percentgrade,
-                           SUM( cex.grade ) as grade,
-                           :maxgradeb as maxgrade
+                           SUM( cex.grade ) as grade
                       FROM {user} AS u
                  LEFT JOIN {checkmark_submissions} AS s ON u.id = s.userid
                                                        AND s.checkmarkid = :chkmkid
@@ -247,9 +249,7 @@ class checkmarkreport {
                     $grades[$chkmkid] = 0;
                 }
                 $params['maxchecks'] = $examples[$chkmkid];
-                $params['maxchecksb'] = $examples[$chkmkid];
                 $params['maxgrade'] = $grades[$chkmkid];
-                $params['maxgradeb'] = $grades[$chkmkid];
                 $sort = '';
                 if ($primesort == 'checks'.$chkmkid) {
                     $sort = ' ORDER BY checks '.current($sortarr);
@@ -269,6 +269,11 @@ class checkmarkreport {
                 }
                 $sql .= $sort;
                 $instancedata[$chkmkid] = $DB->get_records_sql($sql, $params);
+
+                foreach($instancedata[$chkmkid] as $key => $cur) {
+                    $instancedata[$chkmkid][$key]->maxchecks = $examples[$chkmkid];
+                    $instancedata[$chkmkid][$key]->maxgrade = $grades[$chkmkid];
+                }
             }
 
             if (!empty($data)) {
