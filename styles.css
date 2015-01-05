@@ -89,3 +89,41 @@ span.downloadlink {
 #checkmarkreporttable table.coloredrows td.email {
     text-align:left;
 }
+
+#checkmarkreporttable .overview .current, #checkmarkreporttable .useroverview .current {
+    background: #f3e4c0;
+}
+
+#checkmarkreporttable .yui3-overlay {
+    background-color: #ffee69;
+    border-color: #d4c237 #a6982b #a6982b;
+    border-style: solid;
+    border-width: 1px;
+    font-size: 0.7em;
+    left: 0;
+    padding: 2px 5px;
+]
+
+/*#checkmarkreporttable .tooltip::before {
+    content: attr(data-tip) ;
+
+    font-size: 10px;
+    position:absolute;
+    z-index: 999;
+    white-space:nowrap;
+    bottom:9999px;
+    left: 50%;
+    background:#000;
+    color:#e0e0e0;
+    padding:0px 7px;
+    line-height: 24px;
+    height: 24px;
+
+    opacity: 0;
+    transition:opacity 0.4s ease-out;
+    }
+
+#checkmarkreporttable .tooltip:hover::before {
+    opacity: 1;
+    bottom:-35px;
+    }*/

@@ -80,11 +80,16 @@ function local_checkmarkreport_extends_settings_navigation(settings_navigation $
         while ($iterator->valid() && ($iterator->current()->key != 'grades')) {
             $iterator->next();
         }
-        $iterator->next();
         $key = $iterator->current()->key;
-
-        // Add before!
-        $courseadmin->children->add($node, $key);
+        $iterator->next();
+        if ($iterator->current() != null) {
+            $key = $iterator->current()->key;
+            // Add before!
+            $courseadmin->children->add($node, $key);
+        } else {
+            // Add as last if there's no node after Grades!
+            $courseadmin->children->add($node);
+        }
     } //otherwise there's no courseadmin menu here...
 
     return;

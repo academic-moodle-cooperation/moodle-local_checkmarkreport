@@ -25,6 +25,10 @@
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once $CFG->dirroot.'/grade/lib.php';
+require_once $CFG->dirroot.'/grade/querylib.php';
+
+
 class checkmarkreport {
 
     protected $courseid = 0;
@@ -151,6 +155,11 @@ class checkmarkreport {
         }
 
         if (!empty($userids) && !empty($checkmarkids)) {
+            // Get gradebook grades!
+            // Get course grade
+            $gbgrades = grade_get_course_grades($courseid, $userids);
+            //$grd = $resultkrb->grades[$user->id];
+
             list($sqluserids, $userparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'user');
             $params = array_merge_recursive($params, $userparams);
 
@@ -219,6 +228,9 @@ class checkmarkreport {
             foreach($data as $key => $cur) {
                 $data[$key]->maxgrade = $grades[0];
                 $data[$key]->maxchecks = $examples[0];
+                $data[$key]->coursegrade = $gbgrades->grades[$key];
+                $data[$key]->coursesum = 0; // Sum it up during per-instance-data;
+                $data[$key]->overridden = false;
             }
 
             // Add per instance data!
@@ -239,7 +251,13 @@ class checkmarkreport {
             $reorder = false;
             reset($sortarr);
             $primesort = key($sortarr);
+            $gradinginfo = array();
             foreach ($checkmarkids as $chkmkid) {
+                // Get instance gradebook data!
+                $gradinginfo[$chkmkid] = grade_get_grades($courseid, 'mod', 'checkmark',
+                                                          $chkmkid, $userids);
+                $grademax[$chkmkid] = $gradinginfo[$chkmkid]->items[0]->grademax;
+
                 $params['chkmkid'] = $chkmkid;
                 $params['chkmkidb'] = $chkmkid;
                 if (!isset($examples[$chkmkid])) {
@@ -321,9 +339,27 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
                                         0 : $instancedata[$chkmkid][$key]->percentgrade;
                         $returndata[$key]->instancedata[$chkmkid]->percentgrade = $percentgrade;
                         $returndata[$key]->instancedata[$chkmkid]->cmid = $cmids[$chkmkid];
+
+                        // Add gradebook data!
+                        $finalgrade = $gradinginfo[$chkmkid]->items[0]->grades[$key];
+                        $returndata[$key]->instancedata[$chkmkid]->finalgrade = $gradinginfo[$chkmkid]->items[0]->grades[$key];
+                        $returndata[$key]->instancedata[$chkmkid]->formatted_grade = round($finalgrade->grade, 2).
+                                                                                     ' / '.round($grademax, 2);
+                        /*$lockedoroverridden[$chkmkid] = 'locked';
+                        if ($finalgrade->overridden) {
+                            $lockedoroverridden = 'overridden';
+                        }*/
+                        if (($finalgrade->locked || $finalgrade->overridden || ($finalgrade->grade != $grade)) && !is_null($finalgrade->grade)) {
+                            $returndata[$key]->coursesum += $finalgrade->grade;
+                            $returndata[$key]->overridden = true;
+                        } else {
+                            $returndata[$key]->coursesum += $grade;
+                        }
                     }
                 }
             }
+
+            //debugging("<pre>".print_r($returndata, true)."</pre>", DEBUG_DEVELOPER);
 
             return $returndata;
         }

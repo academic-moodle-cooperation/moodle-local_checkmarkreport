@@ -30,6 +30,9 @@ require_once($CFG->dirroot.'/local/checkmarkreport/checkmarkreport.class.php');
 require_once($CFG->dirroot.'/local/checkmarkreport/reportfilterform.class.php');
 
 class checkmarkreport_overview extends checkmarkreport implements renderable {
+
+    protected $tableclass = 'coloredrows overview';
+
     public function __construct($id, $groupings=array(0), $groups=array(0), $instances=array(0)) {
         global $DB;
 
@@ -59,7 +62,10 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
 
         $sortarray = &$SESSION->checkmarkreport->{$this->courseid}->sort;
 
+        $performance = new stdClass();
+        $performance->start = microtime(true);
         $data = $this->get_coursedata();
+        $performance->datafetched = microtime(true);
 
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
@@ -68,13 +74,22 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
 
         $table = new html_table();
 
-        $table->id = 'attempts';
+        $jsarguments = array(
+            'id'        => '#user-grades',
+            'cfg'       => array('ajaxenabled'=>false),
+            'items'     => array(),
+            'users'     => array(),
+            'grade'  => array()
+        );
+        $jsscales = array();
+
+        $table->id = 'user-grades'; // Was former "attempts"! Changed due to style of overridden grades!
         if (!isset($table->attributes)) {
-            $table->attributes = array('class' => 'coloredrows');
+            $table->attributes = array('class' => 'coloredrows overview');
         } else if (!isset($table->attributes['class'])) {
-            $table->attributes['class'] = 'coloredrows';
+            $table->attributes['class'] = 'coloredrows overview';
         } else {
-            $table->attributes['class'] .= ' coloredrows';
+            $table->attributes['class'] .= ' coloredrows overview';
         }
 
         $table->tablealign = 'center';
@@ -258,6 +273,17 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             if (!empty($showgrade)) {
                 $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ?
                                                     0 : $curuser->checkgrade).' / '.$curuser->maxgrade);
+                // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                if ($curuser->overridden) {
+                    $row['grade'] = new html_table_cell((empty($curuser->coursesum) ?
+                                                        0 : round($curuser->coursesum, 2)).' / '.$curuser->maxgrade);
+                    $row['grade']->attributes['class'] = 'current';
+                    $row['grade']->id = "u".$curuser->id."i0_a";
+                } else {
+                    $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ?
+                                                        0 : $curuser->checkgrade).' / '.$curuser->maxgrade);
+                }
+                $row['grade']->attributes['id'] = 'u'.$curuser->id.'i0';
             }
             // Coursesum of course examples.
             if (!empty($showabs)) {
@@ -265,19 +291,60 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             }
             // Percent of course examples.
             if (!empty($showrel)) {
-                $percgrade = empty($curuser->percentgrade) ? 0 : $curuser->percentgrade;
-                $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.
-                                                        round($percgrade, 2).' %)');
+                // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                if ($curuser->overridden) {
+                    $percgrade = empty($curuser->coursesum) ? 0 : 100*$curuser->coursesum/$curuser->maxgrade;
+                    $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.
+                                                            round($percgrade, 2).' %)');
+                    $row['percentex']->attributes['class'] = 'current';
+                    $row['percentex']->id = "u".$curuser->id."i0_r";
+                    // TODO add data to jsarguments!
+                } else {
+                    $percgrade = empty($curuser->percentgrade) ? 0 : $curuser->percentgrade;
+                    $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.
+                                                            round($percgrade, 2).' %)');
+                }
             }
 
             $instances = $this->get_courseinstances();
             foreach ($instances as $instance) {
                 // Coursesum of course grade.
                 if (!empty($showgrade)) {
-                    $grade = (empty($curuser->instancedata[$instance->id]->grade) ?
-                              0 : $curuser->instancedata[$instance->id]->grade).
-                             ' / '.$curuser->instancedata[$instance->id]->maxgrade;
+                    if (($curuser->instancedata[$instance->id]->finalgrade->overridden
+                            || $curuser->instancedata[$instance->id]->finalgrade->locked
+                            || ($curuser->instancedata[$instance->id]->grade != $curuser->instancedata[$instance->id]->finalgrade->grade))
+                        && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                        $grade = (empty($curuser->instancedata[$instance->id]->finalgrade->grade) ? 0 :
+                                  round($curuser->instancedata[$instance->id]->finalgrade->grade, 2)).' / '.$curuser->instancedata[$instance->id]->maxgrade;
+                        // TODO add data to js arguments!
+                        if (empty($jsarguments['users'][$userid])) {
+                            $userobj = $DB->get_record('user', array('id'=>$userid), 'id, '.implode(', ', get_all_user_name_fields()));
+                            $jsarguments['users'][$userid] = fullname($userobj);
+                        }
+                        if (empty($jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
+                            $userobj = $DB->get_record('user', array('id'=>$curuser->instancedata[$instance->id]->finalgrade->usermodified),
+                                                       'id, '.implode(', ', get_all_user_name_fields()));
+                            $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified] = fullname($userobj);
+                        }
+                        $jsarguments['grade'][] = array('user'       => $curuser->id,
+                                                        'item'       => $instance->id,
+                                                        'dategraded' => userdate($curuser->instancedata[$instance->id]->finalgrade->dategraded),
+                                                        'grader'     => $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified]);
+                    } else {
+                        $grade = (empty($curuser->instancedata[$instance->id]->grade) ?
+                                  0 : $curuser->instancedata[$instance->id]->grade).
+                                 ' / '.$curuser->instancedata[$instance->id]->maxgrade;
+                    }
                     $row['grade'.$instance->id] = new html_table_cell($grade);
+                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                    if (($curuser->instancedata[$instance->id]->finalgrade->overridden
+                            || $curuser->instancedata[$instance->id]->finalgrade->locked
+                            || ($curuser->instancedata[$instance->id]->grade != $curuser->instancedata[$instance->id]->finalgrade->grade))
+                        && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                        $row['grade'.$instance->id]->attributes['class'] = 'current';
+                        // TODO add data to jsarguments!
+                        $row['grade'.$instance->id]->id = "u".$curuser->id."i".$instance->id."_a";
+                    }
                 }
                 // Coursesum of course examples.
                 if (!empty($showabs)) {
@@ -289,10 +356,40 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
                 if (!empty($showrel)) {
                     $perccheck = empty($curuser->instancedata[$instance->id]->percentchecked) ?
                                  0 : $curuser->instancedata[$instance->id]->percentchecked;
-                    $percgrade = empty($curuser->instancedata[$instance->id]->percentgrade) ?
-                                 0 : $curuser->instancedata[$instance->id]->percentgrade;
+                    if (($curuser->instancedata[$instance->id]->finalgrade->overridden
+                            || $curuser->instancedata[$instance->id]->finalgrade->locked
+                            || ($curuser->instancedata[$instance->id]->grade != $curuser->instancedata[$instance->id]->finalgrade->grade))
+                        && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                        // TODO add data to jsarguments!
+                        $percgrade = round(100*$curuser->instancedata[$instance->id]->finalgrade->grade/$curuser->instancedata[$instance->id]->maxgrade, 2);
+                        if (empty($jsarguments['users'][$userid])) {
+                            $userobj = $DB->get_record('user', array('id'=>$userid), 'id, '.implode(', ', get_all_user_name_fields()));
+                            $jsarguments['users'][$userid] = fullname($userobj);
+                        }
+                        if (empty($jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
+                            $userobj = $DB->get_record('user', array('id'=>$curuser->instancedata[$instance->id]->finalgrade->usermodified),
+                                                       'id, '.get_all_user_name_fields());
+                            $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified] = fullname($userobj);
+                        }
+                        $jsarguments['grade'][] = array('user'       => $curuser->id,
+                                                        'item'       => $instance->id,
+                                                        'dategraded' => userdate($curuser->instancedata[$instance->id]->finalgrade->dategraded),
+                                                        'grader'     => $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified]);
+                    } else {
+                        $percgrade = empty($curuser->instancedata[$instance->id]->percentgrade) ?
+                                     0 : $curuser->instancedata[$instance->id]->percentgrade;
+                    }
                     $row['percentex'.$instance->id] = new html_table_cell(round($perccheck, 2).'% ('.
-                                                                          round($percgrade, 2).' %)');
+                                                                          round($percgrade, 2).'%)');
+                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                    if (($curuser->instancedata[$instance->id]->finalgrade->overridden
+                            || $curuser->instancedata[$instance->id]->finalgrade->locked
+                            || ($curuser->instancedata[$instance->id]->grade != $curuser->instancedata[$instance->id]->finalgrade->grade))
+                        && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                        $row['percentex'.$instance->id]->attributes['class'] = 'current';
+                        // TODO add data to jsarguments!
+                        $row['percentex'.$instance->id]->id = "u".$curuser->id."i".$instance->id."_r";
+                    }
                 }
                 // Dynamically add examples!
                 foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
@@ -306,6 +403,32 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             $table->data[$userid] = new html_table_row();
             $table->data[$userid]->cells = $row;
         }
+        $performance->table_built = microtime(true);
+        /*debugging("<pre>--- Started at:".$performance->start."\n".
+                  ">".($performance->datafetched-$performance->start)."\n".
+                  "--- Data fetched: ".$performance->datafetched."\n".
+                  ">".($performance->table_built-$performance->datafetched)."\n".
+                  "--- Table Built: ".$performance->table_built."\n".
+                  "----------------------------------------------------\n".
+                  "Sum: ".($performance->table_built-$performance->start)."\n".
+                  "</pre>", DEBUG_DEVELOPER);*/
+
+        $jsarguments['cfg']['ajaxenabled'] = true;
+
+        // Student grades and feedback are already at $jsarguments['feedback'] and $jsarguments['grades']
+        $jsarguments['cfg']['courseid'] =  $this->courseid;
+
+        $module = array(
+            'name'      => 'local_checkmarkreport',
+            'fullpath'  => '/local/checkmarkreport/module.js',
+            'requires'  => array('base', 'dom', 'event', 'event-mouseenter', 'event-key', 'io-queue', 'json-parse', 'overlay')
+        );
+        $PAGE->requires->js_init_call('M.local_checkmarkreport.init_report', $jsarguments, false, $module);
+        //$PAGE->requires->strings_for_js(array('ajaxchoosescale', 'ajaxclicktoclose', 'ajaxerror', 'ajaxfailedupdate', 'ajaxfieldchanged'), 'gradereport_grader');
+
+        $PAGE->requires->string_for_js('overwritten', 'local_checkmarkreport');
+        $PAGE->requires->string_for_js('by', 'local_checkmarkreport');
+
         return $table;
     }
 
@@ -666,6 +789,9 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
 }
 
 class checkmarkreport_useroverview extends checkmarkreport implements renderable {
+
+    protected $tableclass = 'coloredrows useroverview';
+
     public function __construct($id, $groupings=array(0), $groups=array(0), $users=array(0)) {
         global $DB;
 
@@ -702,13 +828,23 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
 
         $table = new html_table();
-        $table->id = "attempts";
+
+        $jsarguments = array(
+            'id'        => "#attempts-$userdata->id",
+            'cfg'       => array('ajaxenabled'=>false),
+            'items'     => array(),
+            'users'     => array(),
+            'grade'  => array()
+        );
+        $jsscales = array();
+
+        $table->id = "attempts-$userdata->id";
         if (!isset($table->attributes)) {
-            $table->attributes = array('class' => 'coloredrows userview');
+            $table->attributes = array('class' => $this->tableclass);
         } else if (!isset($table->attributes['class'])) {
-            $table->attributes['class'] = 'coloredrows userview';
+            $table->attributes['class'] = $this->tableclass;
         } else {
-            $table->attributes['class'] .= ' coloredrows userview';
+            $table->attributes['class'] .= $this->tableclass;
         }
 
         $table->tablealign = 'center';
@@ -851,13 +987,48 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                 }
                 $grade = empty($userdata->instancedata[$instance->id]->grade) ? 0 : $userdata->instancedata[$instance->id]->grade;
                 if (!empty($showgrade)) {
-                    $gradetext = $grade.'/'.$userdata->instancedata[$instance->id]->maxgrade;
+                    if (($userdata->instancedata[$instance->id]->finalgrade->overridden
+                            || $userdata->instancedata[$instance->id]->finalgrade->locked
+                            || ($userdata->instancedata[$instance->id]->grade != $userdata->instancedata[$instance->id]->finalgrade->grade))
+                        && !is_null($userdata->instancedata[$instance->id]->finalgrade->grade)) {
+                        $gradetext = (empty($userdata->instancedata[$instance->id]->finalgrade->grade) ? 0 :
+                                     round($userdata->instancedata[$instance->id]->finalgrade->grade, 2)).' / '.$userdata->maxgrade;
+                        $class = "current";
+                        // TODO add data to jsarguments!
+                        $userid = $userdata->id;
+                        if (empty($jsarguments['users'][$userid])) {
+                            $userobj = $DB->get_record('user', array('id'=>$userid), 'id, '.implode(', ', get_all_user_name_fields()));
+                            $jsarguments['users'][$userid] = fullname($userobj);
+                        }
+                        if (empty($jsarguments['users'][$userdata->instancedata[$instance->id]->finalgrade->usermodified])) {
+                            $userobj = $DB->get_record('user', array('id'=>$userdata->instancedata[$instance->id]->finalgrade->usermodified),
+                                                       'id, '.implode(', ', get_all_user_name_fields()));
+                            $jsarguments['users'][$userdata->instancedata[$instance->id]->finalgrade->usermodified] = fullname($userobj);
+                        }
+                        $jsarguments['grade'][] = array('user'       => $userdata->id,
+                                                        'item'       => $instance->id,
+                                                        'dategraded' => userdate($userdata->instancedata[$instance->id]->finalgrade->dategraded),
+                                                        'grader'     => $jsarguments['users'][$userdata->instancedata[$instance->id]->finalgrade->usermodified]);
+                    } else {
+                        $gradetext = (empty($userdata->checkgrade) ? 0 :
+                                     $userdata->checkgrade).'/'.$userdata->maxgrade;
+                            $class = "";
+                    }
                     if (!empty($showrel)) {
-                        $percentgrade = round($userdata->instancedata[$instance->id]->percentgrade, 2);
+                        if (($userdata->instancedata[$instance->id]->finalgrade->overridden
+                                || $userdata->instancedata[$instance->id]->finalgrade->locked
+                                || ($userdata->instancedata[$instance->id]->grade != $userdata->instancedata[$instance->id]->finalgrade->grade))
+                            && !is_null($userdata->instancedata[$instance->id]->finalgrade->grade)) {
+                            $percentgrade = round(100*$userdata->instancedata[$instance->id]->finalgrade->grade/$userdata->maxgrade, 2);
+                        } else {
+                            $percentgrade = round($userdata->instancedata[$instance->id]->percentgrade, 2);
+                        }
                         $gradetext .= ' ('.$percentgrade.' %)';
                     }
                     $row['points'] = new html_table_cell($gradetext);
                     $row['points']->header = true;
+                    $row['points']->attributes['class'] = $class;
+                    $row['points']->id = "u".$userdata->id."i".$instance->id."_a";
                     $row['points']->style = ' text-align: right; ';
                 }
                 $table->data[$i] = new html_table_row();
@@ -894,18 +1065,51 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                 $row['checked']->style = ' text-align: right; ';
             }
             if (!empty($showgrade)) {
-                $gradetext = (empty($userdata->checkgrade) ? 0 : $userdata->checkgrade).'/'.
-                             $userdata->maxgrade;
+                // Coursesum of course grade.
+                if (!empty($showgrade)) {
+                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                    if ($userdata->overridden) {
+                        $gradetext = (empty($userdata->coursesum) ? 0 :
+                                     round($userdata->coursesum, 2)).' / '.$userdata->maxgrade;
+                        // TODO add data to jsarguments!
+                    } else {
+                        $gradetext = (empty($userdata->checkgrade) ? 0 :
+                                     $userdata->checkgrade).'/'.$userdata->maxgrade;
+                    }
+                }
                 if (!empty($showrel)) {
-                    $gradetext .= ' ('.round($userdata->percentgrade, 2).'%)';
+                    if ($userdata->overridden) {
+                        $percgrade = empty($userdata->coursesum) ? 0 : 100*$userdata->coursesum/$userdata->maxgrade;
+                        $gradetext .= ' ('.round($percgrade, 2).'%)';
+                    } else {
+                        $gradetext .= ' ('.round($userdata->percentgrade, 2).'%)';
+                    }
                 }
                 $row['points'] = new html_table_cell($gradetext);
                 $row['points']->header = true;
+                $row['points']->attributes['class'] = !empty($userdata->overridden) ? 'current' : '';
+                $row['points']->id = "u".$userdata->id."i0_a";
                 $row['points']->style = ' text-align: right; ';
             }
             $table->data[$i] = new html_table_row();
             $table->data[$i]->cells = $row;
         }
+
+        $jsarguments['cfg']['ajaxenabled'] = true;
+
+        // Student grades and feedback are already at $jsarguments['feedback'] and $jsarguments['grades']
+        $jsarguments['cfg']['courseid'] =  $this->courseid;
+
+        $module = array(
+            'name'      => 'local_checkmarkreport',
+            'fullpath'  => '/local/checkmarkreport/module.js',
+            'requires'  => array('base', 'dom', 'event', 'event-mouseenter', 'event-key', 'io-queue', 'json-parse', 'overlay')
+        );
+        $PAGE->requires->js_init_call('M.local_checkmarkreport.init_report', $jsarguments, false, $module);
+        //$PAGE->requires->strings_for_js(array('ajaxchoosescale', 'ajaxclicktoclose', 'ajaxerror', 'ajaxfailedupdate', 'ajaxfieldchanged'), 'gradereport_grader');
+
+        $PAGE->requires->string_for_js('overwritten', 'local_checkmarkreport');
+        $PAGE->requires->string_for_js('by', 'local_checkmarkreport');
 
         return $table;
     }
@@ -1230,6 +1434,9 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
 }
 
 class checkmarkreport_userview extends checkmarkreport_useroverview implements renderable {
+
+    protected $tableclass = 'coloredrows userview';
+
     public function __construct($id) {
         global $USER;
         set_user_preference('checkmarkreport_showgrade', 1);
@@ -1313,7 +1520,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $table = $report->get_table();
 
         $out .= html_writer::tag('div', $this->table($table, $report),
-                                array('class' => 'scrollforced'));
+                                array('class' => 'scrollforced course-content'));
 
         return $this->output->container($out, 'submission', 'checkmarkreporttable');
     }
@@ -1376,14 +1583,18 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                                                               'course' => $report->get_courseid()));
                 $userlink = html_writer::link($url, fullname($userdata));
                 $headingtext = get_string('overview', 'local_checkmarkreport').' - '.$userlink;
-                $out .= $this->output->heading($headingtext, 1, $headingtext);
+                $out .= $this->output->heading($headingtext, 1, strip_tags($headingtext));
                 $out .= html_writer::tag('div', $this->table($table, $report), array('class' => 'collapsible'));
             }
         } else {
             $out .= $this->output->notification(get_string('nousers', 'checkmark'), 'notifyproblem');
         }
 
-        return $this->output->container($out, 'report', 'checkmarkreporttable');
+        if ($hidefilter == true) {
+            // Skip wrapper for userview. It has its own wrapper!
+            return $out;
+        }
+        return $this->output->container($out, 'report course-content', 'checkmarkreporttable');
     }
 
     protected function render_checkmarkreport_userview(checkmarkreport_userview $report) {
