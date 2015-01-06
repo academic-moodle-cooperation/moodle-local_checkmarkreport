@@ -48,7 +48,7 @@ class reportfilterform extends moodleform {
      * @global object $PAGE
      */
     protected function definition() {
-        global $CFG, $COURSE, $DB, $PAGE, $USER;
+        global $CFG, $COURSE, $DB, $PAGE, $USER, $OUTPUT;
         $mform = $this->_form;
 
         $mform->addElement('header', 'checkmarkreport', get_string('pluginname', 'local_checkmarkreport'));
@@ -163,23 +163,37 @@ class reportfilterform extends moodleform {
         if (empty($this->_customdata['header'])) {
             $this->_customdata['header'] = get_string('additional_columns', 'local_checkmarkreport');
         }
-        $mform->addElement('advcheckbox', 'grade', $this->_customdata['header'], get_string('showgrade', 'local_checkmarkreport'));
+
+
+        $addcolumns = array();
+        //$this->_customdata['header']
+        $gradehelp = new help_icon('grade', 'local_checkmarkreport');
+        $sumabshelp = new help_icon('sumabs', 'local_checkmarkreport');
+        $sumrelhelp = new help_icon('sumrel', 'local_checkmarkreport');
+
+        $addcolumns[] =& $mform->createElement('advcheckbox', 'grade', '', get_string('showgrade', 'local_checkmarkreport').$OUTPUT->render($gradehelp));
         $mform->setDefault('grade', get_user_preferences('checkmarkreport_showgrade'));
-        $mform->addHelpButton('grade', 'grade', 'local_checkmarkreport');
+        //$mform->addHelpButton('grade', 'grade', 'local_checkmarkreport');
         // Add x/y ex!
-        $mform->addElement('advcheckbox', 'sumabs', null, get_string('sumabs', 'local_checkmarkreport'));
+        $addcolumns[] =& $mform->createElement('advcheckbox', 'sumabs', '', get_string('sumabs', 'local_checkmarkreport').$OUTPUT->render($sumabshelp));
         $mform->setDefault('sumabs', get_user_preferences('checkmarkreport_sumabs'));
-        $mform->addHelpButton('sumabs', 'sumabs', 'local_checkmarkreport');
+        //$mform->addHelpButton('sumabs', 'sumabs', 'local_checkmarkreport');
         // Add % ex!
-        $mform->addElement('advcheckbox', 'sumrel', null, get_string('sumrel', 'local_checkmarkreport'));
+        $addcolumns[] =& $mform->createElement('advcheckbox', 'sumrel', '', get_string('sumrel', 'local_checkmarkreport').$OUTPUT->render($sumrelhelp));
         $mform->setDefault('sumrel', get_user_preferences('checkmarkreport_sumrel'));
-        $mform->addHelpButton('sumrel', 'sumrel', 'local_checkmarkreport');
+        //$mform->addHelpButton('sumrel', 'sumrel', 'local_checkmarkreport');
+
+        $mform->addGroup($addcolumns, 'additionalcolumns', $this->_customdata['header'], html_writer::empty_tag('br'), false);
 
         // Additional settings ?? don't need them...
-        $mform->addElement('advcheckbox', 'showpoints', get_string('additional_settings', 'local_checkmarkreport'),
-                           get_string('showpoints', 'local_checkmarkreport'));
+        $addsettings = array();
+        $pointshelp = new help_icon('showpoints', 'local_checkmarkreport');
+        $addsettings[] =& $mform->createElement('advcheckbox', 'showpoints', '',
+                                                get_string('showpoints', 'local_checkmarkreport').$OUTPUT->render($pointshelp));
         $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
-        $mform->addHelpButton('showpoints', 'showpoints', 'local_checkmarkreport');
+        //$mform->addHelpButton('showpoints', 'showpoints', 'local_checkmarkreport');
+
+        $mform->addGroup($addsettings, 'additionalsettings', get_string('additional_settings', 'local_checkmarkreport'), html_writer::empty_tag('br'), false);
 
         $mform->addElement('submit', 'submitbutton', get_string('update', 'local_checkmarkreport'));
         $mform->disable_form_change_checker();
