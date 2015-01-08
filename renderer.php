@@ -368,7 +368,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
                         }
                         if (empty($jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
                             $userobj = $DB->get_record('user', array('id'=>$curuser->instancedata[$instance->id]->finalgrade->usermodified),
-                                                       'id, '.get_all_user_name_fields());
+                                                       'id, '.implode(', ', get_all_user_name_fields()));
                             $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified] = fullname($userobj);
                         }
                         $jsarguments['grade'][] = array('user'       => $curuser->id,
