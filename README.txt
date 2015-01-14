@@ -15,13 +15,13 @@
 
 /**
  * README.txt
- * @version       2014-10-19
+ * @version       2015-01-14
  * @package       local_checkmarkreport
  * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
  * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
  * @author        Eva Karall (eva.maria.karall@univie.ac.at)
  * @author        Philipp Hager
- * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @copyright     2015 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -57,6 +57,17 @@ INSTALLATION
 
 CHANGELOG
 ================================================================================
- *) 2014-10-19
+v 2015011400
+-------------------------
+*) Replace add_to_log with triggered events
+*) Add support for PostgreSQL-DBs
+*) Fix hidden columns not being restoreable
+*) Strip HTML-tags from link titles in table
+*) Implement gradebook-support and show locked/overwritten grades
+*) Improve layout for small browser windows
+*) Fixed some minor bugs
+
+v 2014101900
+-------------------------
     -) improve logging
     -) various bugs fixed
