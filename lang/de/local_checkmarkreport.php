@@ -75,4 +75,6 @@ $string['useroverview'] = 'Teilnehmer/innenübersicht';
 $string['useroverview_alt'] = 'Zeige Teilnehmer/innenübersicht';
 $string['userview'] = 'Kreuzerlübungsübersicht';
 $string['userview_alt'] = 'Zeige Kreuzerlübungsübersicht';
+
+// Deprecated since Moodle 2.8
 $string['xlsover256'] = 'Das XLS Dateiformat unterstützt nur maximal 256 Spalten. Die zu erstellende Datei überschreitet diese Grenze. Bitte wählen sie nur bestimmte Instanzen aus, oder vermeiden sie das XLS Dateiformat.';

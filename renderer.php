@@ -598,22 +598,6 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
         $workbook->close();
     }
 
-    public function get_xls() {
-        global $CFG, $DB;
-
-        require_once($CFG->libdir . "/excellib.class.php");
-
-        $workbook = new MoodleExcelWorkbook("-", 'excel5');
-
-        $this->fill_workbook($workbook);
-
-        $course = $DB->get_record('course', array('id' => $this->courseid));
-
-        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
-        $workbook->send($filename.'.xls');
-        $workbook->close();
-    }
-
     public function get_xlsx() {
         global $CFG, $DB;
 
@@ -1255,22 +1239,6 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
         $workbook->close();
     }
 
-    public function get_xls() {
-        global $CFG, $DB;
-
-        require_once($CFG->libdir . "/excellib.class.php");
-
-        $workbook = new MoodleExcelWorkbook("-", 'excel5');
-
-        $this->fill_workbook($workbook);
-
-        $course = $DB->get_record('course', array('id' => $this->courseid));
-
-        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
-        $workbook->send($filename.'.xls');
-        $workbook->close();
-    }
-
     public function get_xlsx() {
         global $CFG, $DB;
 
@@ -1471,10 +1439,6 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $downloadlinks .= html_writer::tag('span',
                                            html_writer::link($uri, '.XLSX'),
                                            array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_XLS));
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.XLS'),
-                                           array('class' => 'downloadlink'));
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_ODS));
         $downloadlinks .= html_writer::tag('span',
                                            html_writer::link($uri, '.ODS'),
@@ -1487,32 +1451,6 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $downloadlinks .= html_writer::tag('span',
                                            html_writer::link($uri, '.TXT'),
                                            array('class' => 'downloadlink'));
-        // Append warning message for XLS if there are more than 256 Columns!
-        $columns = 1; // Fullname.
-        $columns += count(get_extra_user_fields($context));
-        $addfact = 0;
-        if (get_user_preferences('checkmarkreport_showgrade')) {
-            $addfact++;
-        }
-        if (get_user_preferences('checkmarkreport_sumabs')) {
-            $addfact++;
-        }
-        if (get_user_preferences('checkmarkreport_sumrel')) {
-            $addfact++;
-        }
-        if (in_array(0, $checkmarks)) {
-            $checkmarks = $DB->get_fieldset_select('checkmark', 'id', 'course = ?', array($report->get_courseid()));
-        }
-        $columns += $addfact * (count($checkmarks) + 1);
-        foreach ($checkmarks as $checkmarkid) {
-            $columns += $DB->count_records('checkmark_examples',
-                                           array('checkmarkid' => $checkmarkid));
-        }
-        $out = '';
-        if ($columns >= 256) {
-            $out .= $this->output->notification(get_string('xlsover256', 'local_checkmarkreport'),
-                                          'notifyproblem');
-        }
 
         $out .= html_writer::tag('div', $downloadlinks, array('class' => 'download'));
 
@@ -1551,10 +1489,6 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $downloadlinks = get_string('exportas', 'local_checkmarkreport');
         $downloadlinks .= html_writer::tag('span',
                                            html_writer::link($uri, '.XLSX'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_XLS));
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.XLS'),
                                            array('class' => 'downloadlink'));
         $uri = new moodle_url($uri, array('format' => checkmarkreport::FORMAT_ODS));
         $downloadlinks .= html_writer::tag('span',

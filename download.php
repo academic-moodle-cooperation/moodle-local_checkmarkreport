@@ -117,9 +117,6 @@ switch($format) {
     case checkmarkreport::FORMAT_ODS:
         $format_readable = 'ODS';
     break;
-    case checkmarkreport::FORMAT_XLS:
-        $format_readable = 'XLS';
-    break;
     default:
     case checkmarkreport::FORMAT_XLSX:
         $format_readable = 'XLSX';
@@ -164,9 +161,6 @@ switch($format) {
     break;
     case checkmarkreport::FORMAT_ODS:
         $report->get_ods();
-    break;
-    case checkmarkreport::FORMAT_XLS:
-        $report->get_xls();
     break;
     default:
     case checkmarkreport::FORMAT_XLSX:

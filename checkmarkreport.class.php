@@ -28,13 +28,12 @@
 require_once $CFG->dirroot.'/grade/lib.php';
 require_once $CFG->dirroot.'/grade/querylib.php';
 
-
 class checkmarkreport {
 
     protected $courseid = 0;
 
     const FORMAT_XLSX = 0;
-    const FORMAT_XLS = 1;
+    const FORMAT_XLS = 1; // Unused since 2.8!
     const FORMAT_ODS = 2;
     const FORMAT_XML = 3;
     const FORMAT_TXT = 4;
