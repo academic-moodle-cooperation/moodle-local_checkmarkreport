@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * The local_checkmarkreport_exported_base event.
@@ -46,8 +46,8 @@ abstract class exported_base extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' exported the checkmarkreport '".$this->data['other']['tab']."' for the course with the " .
-               "id '$this->contextinstanceid' as '".$this->data['other']['format_readable']."'.";
+        return "The user with id '$this->userid' exported the checkmarkreport '".$this->data['other']['tab'].
+               "' for the course with the "."id '$this->contextinstanceid' as '".$this->data['other']['format_readable']."'.";
     }
 
     /**
@@ -77,8 +77,10 @@ abstract class exported_base extends \core\event\base {
      */
     protected function get_legacy_logdata() {
         return array($this->courseid, $this->objecttable, 'export',
-                     "download.php?id=".$this->contextinstanceid."&tab=".$this->data['other']['tab']."&format=".$this->data['other']['format'],
-                     get_string($this->data['other']['tab'], 'local_checkmarkreport').' '.$this->data['other']['format_readable'], $this->contextinstanceid);
+                     "download.php?id=".$this->contextinstanceid."&tab=".$this->data['other']['tab'].
+                     "&format=".$this->data['other']['format'],
+                     get_string($this->data['other']['tab'],
+                     'local_checkmarkreport').' '.$this->data['other']['format_readable'], $this->contextinstanceid);
     }
 
     /**

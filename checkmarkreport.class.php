@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Prints a list of all checkmarkreport instances in the given course (via id)
@@ -25,8 +25,8 @@
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once $CFG->dirroot.'/grade/lib.php';
-require_once $CFG->dirroot.'/grade/querylib.php';
+require_once($CFG->dirroot.'/grade/lib.php');
+require_once($CFG->dirroot.'/grade/querylib.php');
 
 class checkmarkreport {
 
@@ -155,9 +155,8 @@ class checkmarkreport {
 
         if (!empty($userids) && !empty($checkmarkids)) {
             // Get gradebook grades!
-            // Get course grade
+            // Get course grade!
             $gbgrades = grade_get_course_grades($courseid, $userids);
-            //$grd = $resultkrb->grades[$user->id];
 
             list($sqluserids, $userparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'user');
             $params = array_merge_recursive($params, $userparams);
@@ -169,21 +168,21 @@ class checkmarkreport {
 
             $useridentityfields = get_extra_user_fields_sql($context, 'u');
             $grades = $DB->get_records_sql_menu('
-                            SELECT 0 as id, SUM(gex.grade) as grade
-                              FROM {checkmark_examples} as gex
+                            SELECT 0 id, SUM(gex.grade) grade
+                              FROM {checkmark_examples} gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkbids.'
                              UNION
-                            SELECT gex.checkmarkid as id, SUM(gex.grade) as grade
-                              FROM {checkmark_examples} as gex
+                            SELECT gex.checkmarkid id, SUM(gex.grade) grade
+                              FROM {checkmark_examples} gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkids.'
                           GROUP BY gex.checkmarkid', $params);
             $examples = $DB->get_records_sql_menu('
-                            SELECT 0 as id, COUNT(DISTINCT gex.id) as examples
-                              FROM {checkmark_examples} as gex
+                            SELECT 0 id, COUNT(DISTINCT gex.id) examples
+                              FROM {checkmark_examples} gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkbids.'
                              UNION
-                            SELECT gex.checkmarkid as id, COUNT(DISTINCT gex.id) as examples
-                              FROM {checkmark_examples} as gex
+                            SELECT gex.checkmarkid id, COUNT(DISTINCT gex.id) examples
+                              FROM {checkmark_examples} gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkids.'
                           GROUP BY gex.checkmarkid', $params);
             $params['maxgrade'] = $grades[0];
@@ -209,40 +208,40 @@ class checkmarkreport {
                 $sort = ' ORDER BY '.$sort;
             }
             $sql = 'SELECT '.$ufields.' '.$useridentityfields.',
-                           100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
-                           COUNT( DISTINCT cchks.id ) as checks,
-                           100 * SUM( cex.grade ) / :maxgrade as percentgrade,
-                           SUM( cex.grade ) as checkgrade
-                      FROM {user} AS u
-                 LEFT JOIN {checkmark_submissions} AS s ON u.id = s.userid
+                           100 * COUNT( DISTINCT cchks.id) / :maxchecks percentchecked,
+                           COUNT( DISTINCT cchks.id ) checks,
+                           100 * SUM( cex.grade ) / :maxgrade percentgrade,
+                           SUM( cex.grade ) checkgrade
+                      FROM {user} u
+                 LEFT JOIN {checkmark_submissions} s ON u.id = s.userid
                                                        AND s.checkmarkid '.$sqlcheckmarkids.'
-                 LEFT JOIN {checkmark_checks} AS cchks ON cchks.submissionid = s.id
+                 LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id
                                                       AND cchks.state = 1
-                 LEFT JOIN {checkmark_examples} as cex ON cchks.exampleid = cex.id
+                 LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
                      WHERE u.id '.$sqluserids.'
                   GROUP BY u.id'.
                   $sort;
 
             $data = $DB->get_records_sql($sql, $params);
-            foreach($data as $key => $cur) {
+            foreach ($data as $key => $cur) {
                 $data[$key]->maxgrade = $grades[0];
                 $data[$key]->maxchecks = $examples[0];
                 $data[$key]->coursegrade = $gbgrades->grades[$key];
-                $data[$key]->coursesum = 0; // Sum it up during per-instance-data;
+                $data[$key]->coursesum = 0; // Sum it up during per-instance-data!
                 $data[$key]->overridden = false;
             }
 
             // Add per instance data!
             $sql = 'SELECT u.id,
-                           100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
-                           COUNT( DISTINCT cchks.id ) as checks,
-                           100 * SUM( cex.grade ) / :maxgrade as percentgrade,
-                           SUM( cex.grade ) as grade
-                      FROM {user} AS u
-                 LEFT JOIN {checkmark_submissions} AS s ON u.id = s.userid
+                           100 * COUNT( DISTINCT cchks.id) / :maxchecks percentchecked,
+                           COUNT( DISTINCT cchks.id ) checks,
+                           100 * SUM( cex.grade ) / :maxgrade percentgrade,
+                           SUM( cex.grade ) grade
+                      FROM {user} u
+                 LEFT JOIN {checkmark_submissions} s ON u.id = s.userid
                                                        AND s.checkmarkid = :chkmkid
-                 LEFT JOIN {checkmark_checks} AS cchks ON cchks.submissionid = s.id AND cchks.state = 1
-                 LEFT JOIN {checkmark_examples} as cex ON cchks.exampleid = cex.id
+                 LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id AND cchks.state = 1
+                 LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
                      WHERE u.id '.$sqluserids.'
                   GROUP BY u.id';
             $params = $userparams;
@@ -287,7 +286,7 @@ class checkmarkreport {
                 $sql .= $sort;
                 $instancedata[$chkmkid] = $DB->get_records_sql($sql, $params);
 
-                foreach($instancedata[$chkmkid] as $key => $cur) {
+                foreach ($instancedata[$chkmkid] as $key => $cur) {
                     $instancedata[$chkmkid][$key]->maxchecks = $examples[$chkmkid];
                     $instancedata[$chkmkid][$key]->maxgrade = $grades[$chkmkid];
                 }
@@ -344,11 +343,9 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
                         $returndata[$key]->instancedata[$chkmkid]->finalgrade = $gradinginfo[$chkmkid]->items[0]->grades[$key];
                         $returndata[$key]->instancedata[$chkmkid]->formatted_grade = round($finalgrade->grade, 2).
                                                                                      ' / '.round($grademax, 2);
-                        /*$lockedoroverridden[$chkmkid] = 'locked';
-                        if ($finalgrade->overridden) {
-                            $lockedoroverridden = 'overridden';
-                        }*/
-                        if (($finalgrade->locked || $finalgrade->overridden || ($finalgrade->grade != $grade)) && !is_null($finalgrade->grade)) {
+
+                        if (($finalgrade->locked || $finalgrade->overridden || ($finalgrade->grade != $grade))
+                             && !is_null($finalgrade->grade)) {
                             $returndata[$key]->coursesum += $finalgrade->grade;
                             $returndata[$key]->overridden = true;
                         } else {
@@ -357,8 +354,6 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
                     }
                 }
             }
-
-            //debugging("<pre>".print_r($returndata, true)."</pre>", DEBUG_DEVELOPER);
 
             return $returndata;
         }
@@ -371,10 +366,10 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
 
         // Get instances examples!
         $sql = 'SELECT ex.id, chks.state
-                  FROM {checkmark_examples} as ex
-             LEFT JOIN {checkmark_submissions} as sub ON sub.checkmarkid = ex.checkmarkid
+                  FROM {checkmark_examples} ex
+             LEFT JOIN {checkmark_submissions} sub ON sub.checkmarkid = ex.checkmarkid
                                                      AND sub.userid = :userid
-             LEFT JOIN {checkmark_checks} as chks ON chks.submissionid = sub.id
+             LEFT JOIN {checkmark_checks} chks ON chks.submissionid = sub.id
                                                  AND chks.exampleid = ex.id
                  WHERE ex.checkmarkid = :checkmarkid';
         $params = array('checkmarkid' => $checkmarkid,

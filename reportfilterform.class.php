@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * The variable name for the capability definitions array is $capabilities
@@ -164,24 +164,22 @@ class reportfilterform extends moodleform {
             $this->_customdata['header'] = get_string('additional_columns', 'local_checkmarkreport');
         }
 
-
         $addcolumns = array();
-        //$this->_customdata['header']
         $gradehelp = new help_icon('grade', 'local_checkmarkreport');
         $sumabshelp = new help_icon('sumabs', 'local_checkmarkreport');
         $sumrelhelp = new help_icon('sumrel', 'local_checkmarkreport');
 
-        $addcolumns[] =& $mform->createElement('advcheckbox', 'grade', '', get_string('showgrade', 'local_checkmarkreport').$OUTPUT->render($gradehelp));
+        $addcolumns[] =& $mform->createElement('advcheckbox', 'grade', '',
+                                               get_string('showgrade', 'local_checkmarkreport').$OUTPUT->render($gradehelp));
         $mform->setDefault('grade', get_user_preferences('checkmarkreport_showgrade'));
-        //$mform->addHelpButton('grade', 'grade', 'local_checkmarkreport');
         // Add x/y ex!
-        $addcolumns[] =& $mform->createElement('advcheckbox', 'sumabs', '', get_string('sumabs', 'local_checkmarkreport').$OUTPUT->render($sumabshelp));
+        $addcolumns[] =& $mform->createElement('advcheckbox', 'sumabs', '',
+                                               get_string('sumabs', 'local_checkmarkreport').$OUTPUT->render($sumabshelp));
         $mform->setDefault('sumabs', get_user_preferences('checkmarkreport_sumabs'));
-        //$mform->addHelpButton('sumabs', 'sumabs', 'local_checkmarkreport');
         // Add % ex!
-        $addcolumns[] =& $mform->createElement('advcheckbox', 'sumrel', '', get_string('sumrel', 'local_checkmarkreport').$OUTPUT->render($sumrelhelp));
+        $addcolumns[] =& $mform->createElement('advcheckbox', 'sumrel', '',
+                                               get_string('sumrel', 'local_checkmarkreport').$OUTPUT->render($sumrelhelp));
         $mform->setDefault('sumrel', get_user_preferences('checkmarkreport_sumrel'));
-        //$mform->addHelpButton('sumrel', 'sumrel', 'local_checkmarkreport');
 
         $mform->addGroup($addcolumns, 'additionalcolumns', $this->_customdata['header'], html_writer::empty_tag('br'), false);
 
@@ -191,9 +189,9 @@ class reportfilterform extends moodleform {
         $addsettings[] =& $mform->createElement('advcheckbox', 'showpoints', '',
                                                 get_string('showpoints', 'local_checkmarkreport').$OUTPUT->render($pointshelp));
         $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
-        //$mform->addHelpButton('showpoints', 'showpoints', 'local_checkmarkreport');
 
-        $mform->addGroup($addsettings, 'additionalsettings', get_string('additional_settings', 'local_checkmarkreport'), html_writer::empty_tag('br'), false);
+        $mform->addGroup($addsettings, 'additionalsettings', get_string('additional_settings', 'local_checkmarkreport'),
+                         html_writer::empty_tag('br'), false);
 
         $mform->addElement('submit', 'submitbutton', get_string('update', 'local_checkmarkreport'));
         $mform->disable_form_change_checker();

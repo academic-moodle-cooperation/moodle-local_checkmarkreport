@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 defined('MOODLE_INTERNAL') || die;
 
 /*
@@ -76,5 +76,5 @@ $string['useroverview_alt'] = 'Zeige Teilnehmer/innenübersicht';
 $string['userview'] = 'Kreuzerlübungsübersicht';
 $string['userview_alt'] = 'Zeige Kreuzerlübungsübersicht';
 
-// Deprecated since Moodle 2.8
+// Deprecated since Moodle 2.8!
 $string['xlsover256'] = 'Das XLS Dateiformat unterstützt nur maximal 256 Spalten. Die zu erstellende Datei überschreitet diese Grenze. Bitte wählen sie nur bestimmte Instanzen aus, oder vermeiden sie das XLS Dateiformat.';

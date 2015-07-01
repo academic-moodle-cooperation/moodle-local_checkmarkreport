@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Prints a list of all checkmarkreport instances in the given course (via id)
@@ -76,7 +76,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
 
         $jsarguments = array(
             'id'        => '#user-grades',
-            'cfg'       => array('ajaxenabled'=>false),
+            'cfg'       => array('ajaxenabled' => false),
             'items'     => array(),
             'users'     => array(),
             'grade'  => array()
@@ -273,7 +273,7 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             if (!empty($showgrade)) {
                 $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ?
                                                     0 : $curuser->checkgrade).' / '.$curuser->maxgrade);
-                // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
                 if ($curuser->overridden) {
                     $row['grade'] = new html_table_cell((empty($curuser->coursesum) ?
                                                         0 : round($curuser->coursesum, 2)).' / '.$curuser->maxgrade);
@@ -291,9 +291,9 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             }
             // Percent of course examples.
             if (!empty($showrel)) {
-                // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
                 if ($curuser->overridden) {
-                    $percgrade = empty($curuser->coursesum) ? 0 : 100*$curuser->coursesum/$curuser->maxgrade;
+                    $percgrade = empty($curuser->coursesum) ? 0 : 100 * $curuser->coursesum / $curuser->maxgrade;
                     $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.
                                                             round($percgrade, 2).' %)');
                     $row['percentex']->attributes['class'] = 'current';
@@ -310,36 +310,44 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             foreach ($instances as $instance) {
                 // Coursesum of course grade.
                 if (!empty($showgrade)) {
+                    $grade = $curuser->instancedata[$instance->id]->grade;
+                    $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                    $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
-                            || $curuser->instancedata[$instance->id]->finalgrade->locked
-                            || ($curuser->instancedata[$instance->id]->grade != $curuser->instancedata[$instance->id]->finalgrade->grade))
+                            || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
                         $grade = (empty($curuser->instancedata[$instance->id]->finalgrade->grade) ? 0 :
-                                  round($curuser->instancedata[$instance->id]->finalgrade->grade, 2)).' / '.$curuser->instancedata[$instance->id]->maxgrade;
+                                  round($curuser->instancedata[$instance->id]->finalgrade->grade, 2)).' / '.
+                                  $curuser->instancedata[$instance->id]->maxgrade;
                         // TODO add data to js arguments!
                         if (empty($jsarguments['users'][$userid])) {
-                            $userobj = $DB->get_record('user', array('id'=>$userid), 'id, '.implode(', ', get_all_user_name_fields()));
+                            $userobj = $DB->get_record('user', array('id' => $userid),
+                                                       'id, '.implode(', ', get_all_user_name_fields()));
                             $jsarguments['users'][$userid] = fullname($userobj);
                         }
                         if (empty($jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
-                            $userobj = $DB->get_record('user', array('id'=>$curuser->instancedata[$instance->id]->finalgrade->usermodified),
-                                                       'id, '.implode(', ', get_all_user_name_fields()));
-                            $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified] = fullname($userobj);
+                            $conditions = array('id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified);
+                            $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
+                            $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
+                            $jsarguments['users'][$usermodified] = fullname($userobj);
                         }
-                        $jsarguments['grade'][] = array('user'       => $curuser->id,
-                                                        'item'       => $instance->id,
-                                                        'dategraded' => userdate($curuser->instancedata[$instance->id]->finalgrade->dategraded),
-                                                        'grader'     => $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified]);
+                        $jsarguments['grade'][] = array(
+                            'user'       => $curuser->id,
+                            'item'       => $instance->id,
+                            'dategraded' => userdate($curuser->instancedata[$instance->id]->finalgrade->dategraded),
+                            'grader'     => $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified]);
                     } else {
                         $grade = (empty($curuser->instancedata[$instance->id]->grade) ?
                                   0 : $curuser->instancedata[$instance->id]->grade).
                                  ' / '.$curuser->instancedata[$instance->id]->maxgrade;
                     }
                     $row['grade'.$instance->id] = new html_table_cell($grade);
-                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
+                    $grade = $curuser->instancedata[$instance->id]->grade;
+                    $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                    $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
-                            || $curuser->instancedata[$instance->id]->finalgrade->locked
-                            || ($curuser->instancedata[$instance->id]->grade != $curuser->instancedata[$instance->id]->finalgrade->grade))
+                            || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
                         $row['grade'.$instance->id]->attributes['class'] = 'current';
                         // TODO add data to jsarguments!
@@ -354,37 +362,47 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
                 }
                 // Percent of course examples.
                 if (!empty($showrel)) {
+                    $grade = $curuser->instancedata[$instance->id]->grade;
+                    $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                    $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
                     $perccheck = empty($curuser->instancedata[$instance->id]->percentchecked) ?
                                  0 : $curuser->instancedata[$instance->id]->percentchecked;
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
-                            || $curuser->instancedata[$instance->id]->finalgrade->locked
-                            || ($curuser->instancedata[$instance->id]->grade != $curuser->instancedata[$instance->id]->finalgrade->grade))
+                            || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
                         // TODO add data to jsarguments!
-                        $percgrade = round(100*$curuser->instancedata[$instance->id]->finalgrade->grade/$curuser->instancedata[$instance->id]->maxgrade, 2);
+                        $grade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                        $maxgrade = $curuser->instancedata[$instance->id]->maxgrade;
+                        $rel = $grade / $maxgrade;
+                        $percgrade = round(100 * $rel, 2);
                         if (empty($jsarguments['users'][$userid])) {
-                            $userobj = $DB->get_record('user', array('id'=>$userid), 'id, '.implode(', ', get_all_user_name_fields()));
+                            $userobj = $DB->get_record('user', array('id' => $userid),
+                                                       'id, '.implode(', ', get_all_user_name_fields()));
                             $jsarguments['users'][$userid] = fullname($userobj);
                         }
                         if (empty($jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
-                            $userobj = $DB->get_record('user', array('id'=>$curuser->instancedata[$instance->id]->finalgrade->usermodified),
+                            $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
+                            $userobj = $DB->get_record('user', array('id' => $usermodified),
                                                        'id, '.implode(', ', get_all_user_name_fields()));
-                            $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified] = fullname($userobj);
+                            $jsarguments['users'][$usermodified] = fullname($userobj);
                         }
-                        $jsarguments['grade'][] = array('user'       => $curuser->id,
-                                                        'item'       => $instance->id,
-                                                        'dategraded' => userdate($curuser->instancedata[$instance->id]->finalgrade->dategraded),
-                                                        'grader'     => $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified]);
+                        $jsarguments['grade'][] = array(
+                            'user'       => $curuser->id,
+                            'item'       => $instance->id,
+                            'dategraded' => userdate($curuser->instancedata[$instance->id]->finalgrade->dategraded),
+                            'grader'     => $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified]);
                     } else {
                         $percgrade = empty($curuser->instancedata[$instance->id]->percentgrade) ?
                                      0 : $curuser->instancedata[$instance->id]->percentgrade;
                     }
                     $row['percentex'.$instance->id] = new html_table_cell(round($perccheck, 2).'% ('.
                                                                           round($percgrade, 2).'%)');
-                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
+                    $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                    $grade = $curuser->instancedata[$instance->id]->grade;
+                    $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
-                            || $curuser->instancedata[$instance->id]->finalgrade->locked
-                            || ($curuser->instancedata[$instance->id]->grade != $curuser->instancedata[$instance->id]->finalgrade->grade))
+                            || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
                         $row['percentex'.$instance->id]->attributes['class'] = 'current';
                         // TODO add data to jsarguments!
@@ -404,19 +422,11 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             $table->data[$userid]->cells = $row;
         }
         $performance->table_built = microtime(true);
-        /*debugging("<pre>--- Started at:".$performance->start."\n".
-                  ">".($performance->datafetched-$performance->start)."\n".
-                  "--- Data fetched: ".$performance->datafetched."\n".
-                  ">".($performance->table_built-$performance->datafetched)."\n".
-                  "--- Table Built: ".$performance->table_built."\n".
-                  "----------------------------------------------------\n".
-                  "Sum: ".($performance->table_built-$performance->start)."\n".
-                  "</pre>", DEBUG_DEVELOPER);*/
 
         $jsarguments['cfg']['ajaxenabled'] = true;
 
-        // Student grades and feedback are already at $jsarguments['feedback'] and $jsarguments['grades']
-        $jsarguments['cfg']['courseid'] =  $this->courseid;
+        // Student grades and feedback are already at $jsarguments['feedback'] and $jsarguments['grades']!
+        $jsarguments['cfg']['courseid'] = $this->courseid;
 
         $module = array(
             'name'      => 'local_checkmarkreport',
@@ -424,7 +434,6 @@ class checkmarkreport_overview extends checkmarkreport implements renderable {
             'requires'  => array('base', 'dom', 'event', 'event-mouseenter', 'event-key', 'io-queue', 'json-parse', 'overlay')
         );
         $PAGE->requires->js_init_call('M.local_checkmarkreport.init_report', $jsarguments, false, $module);
-        //$PAGE->requires->strings_for_js(array('ajaxchoosescale', 'ajaxclicktoclose', 'ajaxerror', 'ajaxfailedupdate', 'ajaxfieldchanged'), 'gradereport_grader');
 
         $PAGE->requires->string_for_js('overwritten', 'local_checkmarkreport');
         $PAGE->requires->string_for_js('by', 'local_checkmarkreport');
@@ -815,7 +824,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
 
         $jsarguments = array(
             'id'        => "#attempts-$userdata->id",
-            'cfg'       => array('ajaxenabled'=>false),
+            'cfg'       => array('ajaxenabled' => false),
             'items'     => array(),
             'users'     => array(),
             'grade'  => array()
@@ -969,41 +978,48 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                     $row['checked']->header = true;
                     $row['checked']->style = ' text-align: right; ';
                 }
-                $grade = empty($userdata->instancedata[$instance->id]->grade) ? 0 : $userdata->instancedata[$instance->id]->grade;
+                $grade = empty($userdata->instancedata[$instance->id]->grade) ?
+                         0 : $userdata->instancedata[$instance->id]->grade;
                 if (!empty($showgrade)) {
+                    $grade = $userdata->instancedata[$instance->id]->grade;
+                    $finalgrade = $userdata->instancedata[$instance->id]->finalgrade->grade;
+                    $locked = $userdata->instancedata[$instance->id]->finalgrade->locked;
                     if (($userdata->instancedata[$instance->id]->finalgrade->overridden
-                            || $userdata->instancedata[$instance->id]->finalgrade->locked
-                            || ($userdata->instancedata[$instance->id]->grade != $userdata->instancedata[$instance->id]->finalgrade->grade))
+                            || $locked || ($grade != $finalgrade))
                         && !is_null($userdata->instancedata[$instance->id]->finalgrade->grade)) {
-                        $gradetext = (empty($userdata->instancedata[$instance->id]->finalgrade->grade) ? 0 :
-                                     round($userdata->instancedata[$instance->id]->finalgrade->grade, 2)).' / '.$userdata->maxgrade;
+                        $gradetext = (empty($finalgrade) ? 0 : round($finalgrade, 2)).' / '.$userdata->maxgrade;
                         $class = "current";
                         // TODO add data to jsarguments!
                         $userid = $userdata->id;
                         if (empty($jsarguments['users'][$userid])) {
-                            $userobj = $DB->get_record('user', array('id'=>$userid), 'id, '.implode(', ', get_all_user_name_fields()));
+                            $userobj = $DB->get_record('user', array('id' => $userid),
+                                                       'id, '.implode(', ', get_all_user_name_fields()));
                             $jsarguments['users'][$userid] = fullname($userobj);
                         }
-                        if (empty($jsarguments['users'][$userdata->instancedata[$instance->id]->finalgrade->usermodified])) {
-                            $userobj = $DB->get_record('user', array('id'=>$userdata->instancedata[$instance->id]->finalgrade->usermodified),
+                        $usermodified = $userdata->instancedata[$instance->id]->finalgrade->usermodified;
+                        if (empty($jsarguments['users'][$usermodified])) {
+                            $userobj = $DB->get_record('user', array('id' => $usermodified),
                                                        'id, '.implode(', ', get_all_user_name_fields()));
-                            $jsarguments['users'][$userdata->instancedata[$instance->id]->finalgrade->usermodified] = fullname($userobj);
+                            $jsarguments['users'][$usermodified] = fullname($userobj);
                         }
+                        $dategraded = $userdata->instancedata[$instance->id]->finalgrade->dategraded;
                         $jsarguments['grade'][] = array('user'       => $userdata->id,
                                                         'item'       => $instance->id,
-                                                        'dategraded' => userdate($userdata->instancedata[$instance->id]->finalgrade->dategraded),
-                                                        'grader'     => $jsarguments['users'][$userdata->instancedata[$instance->id]->finalgrade->usermodified]);
+                                                        'dategraded' => userdate($dategraded),
+                                                        'grader'     => $jsarguments['users'][$usermodified]);
                     } else {
                         $gradetext = (empty($userdata->checkgrade) ? 0 :
                                      $userdata->checkgrade).'/'.$userdata->maxgrade;
                             $class = "";
                     }
                     if (!empty($showrel)) {
+                        $finalgrade = $userdata->instancedata[$instance->id]->finalgrade->grade;
+                        $grade = $userdata->instancedata[$instance->id]->grade;
+                        $locked = $userdata->instancedata[$instance->id]->finalgrade->locked;
                         if (($userdata->instancedata[$instance->id]->finalgrade->overridden
-                                || $userdata->instancedata[$instance->id]->finalgrade->locked
-                                || ($userdata->instancedata[$instance->id]->grade != $userdata->instancedata[$instance->id]->finalgrade->grade))
+                                || $locked || ($grade != $finalgrade))
                             && !is_null($userdata->instancedata[$instance->id]->finalgrade->grade)) {
-                            $percentgrade = round(100*$userdata->instancedata[$instance->id]->finalgrade->grade/$userdata->maxgrade, 2);
+                            $percentgrade = round(100 * $grade / $userdata->maxgrade, 2);
                         } else {
                             $percentgrade = round($userdata->instancedata[$instance->id]->percentgrade, 2);
                         }
@@ -1051,7 +1067,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
             if (!empty($showgrade)) {
                 // Coursesum of course grade.
                 if (!empty($showgrade)) {
-                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme (add "overridden" as class)
+                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
                     if ($userdata->overridden) {
                         $gradetext = (empty($userdata->coursesum) ? 0 :
                                      round($userdata->coursesum, 2)).' / '.$userdata->maxgrade;
@@ -1063,7 +1079,7 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
                 }
                 if (!empty($showrel)) {
                     if ($userdata->overridden) {
-                        $percgrade = empty($userdata->coursesum) ? 0 : 100*$userdata->coursesum/$userdata->maxgrade;
+                        $percgrade = empty($userdata->coursesum) ? 0 : 100 * $userdata->coursesum / $userdata->maxgrade;
                         $gradetext .= ' ('.round($percgrade, 2).'%)';
                     } else {
                         $gradetext .= ' ('.round($userdata->percentgrade, 2).'%)';
@@ -1081,8 +1097,8 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
 
         $jsarguments['cfg']['ajaxenabled'] = true;
 
-        // Student grades and feedback are already at $jsarguments['feedback'] and $jsarguments['grades']
-        $jsarguments['cfg']['courseid'] =  $this->courseid;
+        // Student grades and feedback are already at $jsarguments['feedback'] and $jsarguments['grades']!
+        $jsarguments['cfg']['courseid'] = $this->courseid;
 
         $module = array(
             'name'      => 'local_checkmarkreport',
@@ -1090,7 +1106,6 @@ class checkmarkreport_useroverview extends checkmarkreport implements renderable
             'requires'  => array('base', 'dom', 'event', 'event-mouseenter', 'event-key', 'io-queue', 'json-parse', 'overlay')
         );
         $PAGE->requires->js_init_call('M.local_checkmarkreport.init_report', $jsarguments, false, $module);
-        //$PAGE->requires->strings_for_js(array('ajaxchoosescale', 'ajaxclicktoclose', 'ajaxerror', 'ajaxfailedupdate', 'ajaxfieldchanged'), 'gradereport_grader');
 
         $PAGE->requires->string_for_js('overwritten', 'local_checkmarkreport');
         $PAGE->requires->string_for_js('by', 'local_checkmarkreport');
@@ -1452,7 +1467,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                                            html_writer::link($uri, '.TXT'),
                                            array('class' => 'downloadlink'));
 
-        $out .= html_writer::tag('div', $downloadlinks, array('class' => 'download'));
+        $out = html_writer::tag('div', $downloadlinks, array('class' => 'download'));
 
         // Render the table!
         $table = $report->get_table();

@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Library of interface functions and constants for module checkmarkreport
@@ -90,7 +90,7 @@ function local_checkmarkreport_extends_settings_navigation(settings_navigation $
             // Add as last if there's no node after Grades!
             $courseadmin->children->add($node);
         }
-    } //otherwise there's no courseadmin menu here...
+    } // Otherwise there's no courseadmin menu here!
 
     return;
 }

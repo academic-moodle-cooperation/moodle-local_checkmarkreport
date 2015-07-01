@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 defined('MOODLE_INTERNAL') || die;
 
 /*
@@ -76,5 +76,5 @@ $string['useroverview_alt'] = 'View checkmark userreport';
 $string['userview'] = 'Userview';
 $string['userview_alt'] = 'View my checkmark report';
 
-// Deprecated since Moodle 2.8
+// Deprecated since Moodle 2.8!
 $string['xlsover256'] = 'XLS file format only supports 256 columns at maximum. The file you\'re about to generate exceeds this limitation. Please deselect some instances or avoid using XLS.';

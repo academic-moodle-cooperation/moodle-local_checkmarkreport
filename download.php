@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Serves download-files
@@ -109,32 +109,32 @@ $output = $PAGE->get_renderer('local_checkmarkreport');
 
 switch($format) {
     case checkmarkreport::FORMAT_XML:
-        $format_readable = 'XML';
+        $formatreadable = 'XML';
     break;
     case checkmarkreport::FORMAT_TXT:
-        $format_readable = 'TXT';
+        $formatreadable = 'TXT';
     break;
     case checkmarkreport::FORMAT_ODS:
-        $format_readable = 'ODS';
+        $formatreadable = 'ODS';
     break;
     default:
     case checkmarkreport::FORMAT_XLSX:
-        $format_readable = 'XLSX';
+        $formatreadable = 'XLSX';
     break;
 }
 
 switch($tab) {
     case 'overview':
         $report = new checkmarkreport_overview($id, $groupings, $groups, $instances);
-        $event = \local_checkmarkreport\event\overview_exported::overview($course, $format, $format_readable);
+        $event = \local_checkmarkreport\event\overview_exported::overview($course, $format, $formatreadable);
     break;
     case 'useroverview':
         $report = new checkmarkreport_useroverview($id, $groupings, $groups, $users);
-        $event = \local_checkmarkreport\event\useroverview_exported::useroverview($course, $format, $format_readable);
+        $event = \local_checkmarkreport\event\useroverview_exported::useroverview($course, $format, $formatreadable);
     break;
     case 'userview':
         $report = new checkmarkreport_userview($id);
-        $event = \local_checkmarkreport\event\userview_exported::userview($course, $format, $format_readable);
+        $event = \local_checkmarkreport\event\userview_exported::userview($course, $format, $formatreadable);
     break;
     case 'noaccess':
         $notification = $output->notification(get_string('noaccess', 'local_checkmarkreport'), 'notifyproblem');

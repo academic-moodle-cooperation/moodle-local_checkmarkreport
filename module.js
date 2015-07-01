@@ -82,10 +82,11 @@ M.local_checkmarkreport = {
                 content += M.util.get_string('overwritten', 'local_checkmarkreport');
 
                 if (properties.grader != '') {
-                    content += '<div class="fullname">'+M.util.get_string('by', 'local_checkmarkreport')+'&nbsp;'+properties.grader+'</div>';
+                    content += '<div class="fullname">' + M.util.get_string('by', 'local_checkmarkreport') + '&nbsp;' +
+                               properties.grader + '</div>';
                 }
                 if (properties.dategraded != '') {
-                    content += '<div class="dategraded">'+properties.dategraded+'</div>';
+                    content += '<div class="dategraded">' + properties.dategraded + '</div>';
                 }
                 content += '</div>';
 
@@ -101,7 +102,8 @@ M.local_checkmarkreport = {
                     overlay.render(report.table.ancestor('div'));
                     return overlay;
                 })();
-                this.overlay.set('xy', [e.target.getX()+(e.target.get('offsetWidth')/2),e.target.getY()+e.target.get('offsetHeight')-5]);
+                this.overlay.set('xy', [e.target.getX() + (e.target.get('offsetWidth') / 2),
+                                        e.target.getY() + e.target.get('offsetHeight') - 5]);
                 this.overlay.set("bodyContent", content);
                 this.overlay.show();
                 this.overlay.get('boundingBox').setStyle('visibility', 'visible');
@@ -201,10 +203,10 @@ M.local_checkmarkreport.classes.report.prototype.table_highlight_row = function 
  */
 M.local_checkmarkreport.classes.report.prototype.table_highlight_column = function(e, cell) {
     // Among cell classes find the one that matches pattern / i[\d]+ /
-    var itemclass = (' '+cell.getAttribute('class')+' ').match(/ (i[\d]+) /);
+    var itemclass = (' ' + cell.getAttribute('class') + ' ').match(/ (i[\d]+) /);
     if (itemclass) {
         // Toggle class .vmarked for all cells in the table with the same class
-        this.table.all('.cell.'+itemclass[1]).toggleClass('vmarked');
+        this.table.all('.cell.' + itemclass[1]).toggleClass('vmarked');
     }
 };
 /**
@@ -219,7 +221,7 @@ M.local_checkmarkreport.classes.report.prototype.table_highlight_column = functi
  */
 M.local_checkmarkreport.classes.report.prototype.get_cell_info = function(arg) {
 
-    var userid= null;
+    var userid = null;
     var itemid = null;
     var grader = ''; // Don't default feedback to null or string comparisons become error prone
     var dategraded = '';
@@ -227,9 +229,6 @@ M.local_checkmarkreport.classes.report.prototype.get_cell_info = function(arg) {
     var i = null;
 
     if (arg instanceof this.Y.Node) {
-        /*if (arg.get('nodeName').toUpperCase() !== 'TD') {
-            arg = arg.ancestor('td.cell');
-        }*/
         var regexp = /^u(\d+)i(\d+)_.$/;
         var parts = regexp.exec(arg.getAttribute('id'));
         userid = parts[1];
@@ -238,7 +237,7 @@ M.local_checkmarkreport.classes.report.prototype.get_cell_info = function(arg) {
     } else {
         userid = arg[0];
         itemid = arg[1];
-        cell = this.Y.one('#u'+userid+'i'+itemid);
+        cell = this.Y.one('#u' + userid + 'i' + itemid);
     }
 
     if (!cell) {

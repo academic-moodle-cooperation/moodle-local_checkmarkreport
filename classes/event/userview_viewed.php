@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * The local_checkmarkreport_userview_viewed event.
@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class userview_viewed extends viewed_base {
     public static function userview(\stdClass $course) {
-        $event = \local_checkmarkreport\event\userview_viewed::create(array(
+        $event = self::create(array(
             'context'  => \context_course::instance($course->id),
             'other'    => array('tab' => 'userview'),
         ));

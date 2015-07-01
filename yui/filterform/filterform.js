@@ -11,7 +11,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 YUI.add('moodle-local_checkmarkreport-filterform', function(Y) {
     var MODULENAME = 'moodle-local_checkmarkreport-filterform';
     var oldusers = '';

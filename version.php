@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Defines the version of checkmarkreport
@@ -30,9 +30,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015061000;              // The current module version (Date: YYYYMMDDXX).
-$plugin->release = '2015-06-10 (00)';              // User-friendly version number.
+$plugin->version   = 2015061000;                                // The current module version (Date: YYYYMMDDXX).
+$plugin->release = '2015-06-10 (00)';                           // User-friendly version number.
 $plugin->maturity = MATURITY_STABLE;
-$plugin->requires  = 2014041100;              // Requires this Moodle version!
-$plugin->component = 'local_checkmarkreport'; // To check on upgrade, that module sits in correct place.
-$plugin->dependencies = array('mod_checkmark' => 2015011400); // FRANKENSTYLE + version number or ANY_VERSION
+$plugin->requires  = 2014041100;                                // Requires this Moodle version!
+$plugin->component = 'local_checkmarkreport';                   // To check on upgrade, that module sits in correct place.
+$plugin->dependencies = array('mod_checkmark' => 2015011400);   // FRANKENSTYLE + version number or ANY_VERSION.
