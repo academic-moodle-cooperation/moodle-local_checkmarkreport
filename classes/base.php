@@ -28,7 +28,7 @@
 require_once($CFG->dirroot.'/grade/lib.php');
 require_once($CFG->dirroot.'/grade/querylib.php');
 
-class checkmarkreport {
+class local_checkmarkreport_base {
 
     protected $courseid = 0;
 

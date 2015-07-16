@@ -38,55 +38,54 @@
     margin-bottom:2em;
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hiddencol .hidecol,
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .showcol,
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hiddencol .content {
-    display:none;
+.path-local-checkmarkreport #checkmarkreporttable table .hiddencol .hidecol,
+.path-local-checkmarkreport #checkmarkreporttable table .showcol,
+.path-local-checkmarkreport #checkmarkreporttable table .hiddencol .content {
+    display:none !important; /* We have to overwrite clean-themes styles here to hide column*/
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hiddencol .showcol,
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hidecol,
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .content {
-    display:block;
-    display:inline;
+.path-local-checkmarkreport #checkmarkreporttable table .hiddencol .showcol,
+.path-local-checkmarkreport #checkmarkreporttable table .hidecol,
+.path-local-checkmarkreport #checkmarkreporttable table .content {
+    display:inline !important;
     white-space:nowrap;
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hiddencol {
+.path-local-checkmarkreport #checkmarkreporttable table .hiddencol {
     margin:0px;
     padding:0px;
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hidecol {
+.path-local-checkmarkreport #checkmarkreporttable table .hidecol {
     margin-left:3px;
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows.userview th.cell {
+.path-local-checkmarkreport #checkmarkreporttable table.userview th.cell {
     text-align:center;
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows,
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows th,
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows td {
+.path-local-checkmarkreport #checkmarkreporttable table,
+.path-local-checkmarkreport #checkmarkreporttable table th,
+.path-local-checkmarkreport #checkmarkreporttable table td {
     border: 1px solid #BBB;
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .r0 {
+.path-local-checkmarkreport #checkmarkreporttable table .r0 {
     background-color: #f0f0f0;
     white-space:nowrap
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .r1 {
+.path-local-checkmarkreport #checkmarkreporttable table .r1 {
     background-color: #fafafa;
     white-space:nowrap
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows td {
+.path-local-checkmarkreport #checkmarkreporttable table td {
     text-align:center;
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows td.fullnameuser,
-.path-local-checkmarkreport #checkmarkreporttable table.coloredrows td.email {
+.path-local-checkmarkreport #checkmarkreporttable table td.fullnameuser,
+.path-local-checkmarkreport #checkmarkreporttable table td.email {
     text-align:left;
 }
 

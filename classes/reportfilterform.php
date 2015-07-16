@@ -38,7 +38,7 @@ require_once($CFG->libdir .'/formslib.php');
  * @since         Moodle 2.5.3
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class reportfilterform extends moodleform {
+class local_checkmarkreport_reportfilterform extends moodleform {
     /**
      * Definition of filter form
      *

@@ -38,7 +38,7 @@ $showgrade = optional_param('showgrade', true, PARAM_BOOL);
 $showabs = optional_param('showabs', true, PARAM_BOOL);
 $showrel = optional_param('showrel', true, PARAM_BOOL);
 $showpoints = optional_param('showpoints', false, PARAM_BOOL);
-$format = optional_param('format', checkmarkreport::FORMAT_XLSX, PARAM_INT);
+$format = optional_param('format', local_checkmarkreport_base::FORMAT_XLSX, PARAM_INT);
 
 $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
@@ -108,32 +108,32 @@ if (count($tabs) > 1) {
 $output = $PAGE->get_renderer('local_checkmarkreport');
 
 switch($format) {
-    case checkmarkreport::FORMAT_XML:
+    case local_checkmarkreport_base::FORMAT_XML:
         $formatreadable = 'XML';
     break;
-    case checkmarkreport::FORMAT_TXT:
+    case local_checkmarkreport_base::FORMAT_TXT:
         $formatreadable = 'TXT';
     break;
-    case checkmarkreport::FORMAT_ODS:
+    case local_checkmarkreport_base::FORMAT_ODS:
         $formatreadable = 'ODS';
     break;
     default:
-    case checkmarkreport::FORMAT_XLSX:
+    case local_checkmarkreport_base::FORMAT_XLSX:
         $formatreadable = 'XLSX';
     break;
 }
 
 switch($tab) {
     case 'overview':
-        $report = new checkmarkreport_overview($id, $groupings, $groups, $instances);
+        $report = new local_checkmarkreport_overview($id, $groupings, $groups, $instances);
         $event = \local_checkmarkreport\event\overview_exported::overview($course, $format, $formatreadable);
     break;
     case 'useroverview':
-        $report = new checkmarkreport_useroverview($id, $groupings, $groups, $users);
+        $report = new local_checkmarkreport_useroverview($id, $groupings, $groups, $users);
         $event = \local_checkmarkreport\event\useroverview_exported::useroverview($course, $format, $formatreadable);
     break;
     case 'userview':
-        $report = new checkmarkreport_userview($id);
+        $report = new local_checkmarkreport_userview($id);
         $event = \local_checkmarkreport\event\userview_exported::userview($course, $format, $formatreadable);
     break;
     case 'noaccess':
@@ -153,17 +153,17 @@ switch($tab) {
 $event->trigger();
 
 switch($format) {
-    case checkmarkreport::FORMAT_XML:
+    case local_checkmarkreport_base::FORMAT_XML:
         $report->get_xml();
     break;
-    case checkmarkreport::FORMAT_TXT:
+    case local_checkmarkreport_base::FORMAT_TXT:
         $report->get_txt();
     break;
-    case checkmarkreport::FORMAT_ODS:
+    case local_checkmarkreport_base::FORMAT_ODS:
         $report->get_ods();
     break;
     default:
-    case checkmarkreport::FORMAT_XLSX:
+    case local_checkmarkreport_base::FORMAT_XLSX:
         $report->get_xlsx();
     break;
 }

@@ -34,8 +34,6 @@ defined('MOODLE_INTERNAL') || die();
 
 define('CHECKMARKREPORT_GODMODE', true);
 
-require_once($CFG->dirroot.'/local/checkmarkreport/checkmarkreport.class.php');
-
 /*******************************************************************************
  * Moodle core API                                                             *
  *******************************************************************************/

@@ -25,7 +25,6 @@
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->dirroot.'/local/checkmarkreport/lib.php');
-require_once($CFG->dirroot.'/local/checkmarkreport/reportfilterform.class.php');
 
 $id = required_param('id', PARAM_INT);   // Course.
 
@@ -114,7 +113,7 @@ if (! $checkmarks = get_all_instances_in_course('checkmark', $course)) {
 
 switch($tab) {
     case 'overview':
-        $mform = new reportfilterform($PAGE->url, array('courseid'   => $id,
+        $mform = new local_checkmarkreport_reportfilterform($PAGE->url, array('courseid'   => $id,
                                                         'hideusers' => true), 'get');
         if ($data = $mform->get_data()) {
             set_user_preference('checkmarkreport_showgrade', $data->grade);
@@ -142,7 +141,7 @@ switch($tab) {
                                          'checkmarks' => $instances));
         $PAGE->set_url($PAGE->url.'&'.$arrays);
         $mform->display();
-        $checkmarkreport = new checkmarkreport_overview($id, $groupings, $groups, $instances);
+        $checkmarkreport = new local_checkmarkreport_overview($id, $groupings, $groups, $instances);
         // Trigger the event!
         \local_checkmarkreport\event\overview_viewed::overview($course)->trigger();
     break;
@@ -151,7 +150,7 @@ switch($tab) {
                             'hideinstances' => true,
                             'header'        => get_string('additional_information',
                                                           'local_checkmarkreport'));
-        $mform = new reportfilterform($PAGE->url, $customdata, 'get');
+        $mform = new local_checkmarkreport_reportfilterform($PAGE->url, $customdata, 'get');
         if ($data = $mform->get_data()) {
             set_user_preference('checkmarkreport_showgrade', $data->grade);
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
@@ -197,12 +196,12 @@ switch($tab) {
                                          'users'     => $users));
         $PAGE->set_url($PAGE->url.'&'.$arrays);
 
-        $checkmarkreport = new checkmarkreport_useroverview($id, $groupings, $groups, $users);
+        $checkmarkreport = new local_checkmarkreport_useroverview($id, $groupings, $groups, $users);
         // Trigger the event!
         \local_checkmarkreport\event\useroverview_viewed::useroverview($course)->trigger();
     break;
     case 'userview':
-        $checkmarkreport = new checkmarkreport_userview($id);
+        $checkmarkreport = new local_checkmarkreport_userview($id);
         // Trigger the event!
         \local_checkmarkreport\event\userview_viewed::userview($course)->trigger();
     break;
