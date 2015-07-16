@@ -27,74 +27,75 @@
  */
 
 /** General Styles **/
-div.scrollforced {
+.path-local-checkmarkreport div.scrollforced {
     width:100%;
     overflow-x:scroll;
 }
 
-span.downloadlink {
+.path-local-checkmarkreport span.downloadlink {
     margin-left:1em;
     margin-right:1em;
     margin-bottom:2em;
 }
 
-#checkmarkreporttable table.coloredrows .hiddencol .hidecol,
-#checkmarkreporttable table.coloredrows .showcol,
-#checkmarkreporttable table.coloredrows .hiddencol .content {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hiddencol .hidecol,
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .showcol,
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hiddencol .content {
     display:none;
 }
 
-#checkmarkreporttable table.coloredrows .hiddencol .showcol,
-#checkmarkreporttable table.coloredrows .hidecol,
-#checkmarkreporttable table.coloredrows .content {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hiddencol .showcol,
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hidecol,
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .content {
     display:block;
     display:inline;
     white-space:nowrap;
 }
 
-#checkmarkreporttable table.coloredrows .hiddencol {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hiddencol {
     margin:0px;
     padding:0px;
 }
 
-#checkmarkreporttable table.coloredrows .hidecol {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .hidecol {
     margin-left:3px;
 }
 
-#checkmarkreporttable table.coloredrows.userview th.cell {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows.userview th.cell {
     text-align:center;
 }
 
-#checkmarkreporttable table.coloredrows,
-#checkmarkreporttable table.coloredrows th,
-#checkmarkreporttable table.coloredrows td {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows,
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows th,
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows td {
     border: 1px solid #BBB;
 }
 
-#checkmarkreporttable table.coloredrows .r0 {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .r0 {
     background-color: #f0f0f0;
     white-space:nowrap
 }
 
-#checkmarkreporttable table.coloredrows .r1 {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows .r1 {
     background-color: #fafafa;
     white-space:nowrap
 }
 
-#checkmarkreporttable table.coloredrows td {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows td {
     text-align:center;
 }
 
-#checkmarkreporttable table.coloredrows td.fullnameuser,
-#checkmarkreporttable table.coloredrows td.email {
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows td.fullnameuser,
+.path-local-checkmarkreport #checkmarkreporttable table.coloredrows td.email {
     text-align:left;
 }
 
-#checkmarkreporttable .overview .current, #checkmarkreporttable .useroverview .current {
+.path-local-checkmarkreport #checkmarkreporttable .overview .current,
+.path-local-checkmarkreport #checkmarkreporttable .useroverview .current {
     background: #f3e4c0;
 }
 
-#checkmarkreporttable .yui3-overlay {
+.path-local-checkmarkreport #checkmarkreporttable .yui3-overlay {
     background-color: #ffee69;
     border-color: #d4c237 #a6982b #a6982b;
     border-style: solid;
