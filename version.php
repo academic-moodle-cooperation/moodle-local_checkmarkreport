@@ -30,8 +30,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015061000;                                // The current module version (Date: YYYYMMDDXX).
-$plugin->release = '2015-06-10 (00)';                           // User-friendly version number.
+$plugin->version   = 2015071500;                                // The current module version (Date: YYYYMMDDXX).
+$plugin->release = '2015-07-15 (00)';                           // User-friendly version number.
 $plugin->maturity = MATURITY_STABLE;
 $plugin->requires  = 2014041100;                                // Requires this Moodle version!
 $plugin->component = 'local_checkmarkreport';                   // To check on upgrade, that module sits in correct place.
