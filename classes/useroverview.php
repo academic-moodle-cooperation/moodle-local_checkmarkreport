@@ -519,10 +519,21 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         // Initialise everything!
         $worksheets = array();
         $data = $this->get_coursedata();
+        $sheetnames = array();
         foreach ($data as $userid => $userdata) {
             $x = 0;
             $y = 0;
-            $worksheets[$userid] = $workbook->add_worksheet(fullname($userdata));
+            $i=0;
+            while(in_array(!empty($i) ? fullname($userdata).' '.$i : fullname($userdata), $sheetnames)) {
+                $i++;
+            }
+            if (!empty($i)) {
+                $worksheets[$userid] = $workbook->add_worksheet(fullname($userdata).' '.$i);
+                $sheetnames[] = fullname($userdata).' '.$i;
+            } else {
+                $worksheets[$userid] = $workbook->add_worksheet(fullname($userdata));
+                $sheetnames[] = fullname($userdata);
+            }
             $table = $this->get_table($userdata);
             $worksheets[$userid]->write_string($y, $x, strip_tags(fullname($data[$userid])));
             $y++;
