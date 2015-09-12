@@ -46,7 +46,7 @@ function local_checkmarkreport_extends_settings_navigation(settings_navigation $
     global $CFG, $PAGE, $USER;
 
     // Only add this settings item on non-site course pages.
-    if (!$PAGE->course or $PAGE->course->id == 1) {
+    if (!$PAGE->course or $PAGE->course->id == SITEID) {
         return;
     }
 
