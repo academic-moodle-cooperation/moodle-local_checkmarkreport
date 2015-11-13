@@ -38,11 +38,7 @@ define('CHECKMARKREPORT_GODMODE', true);
  * Moodle core API                                                             *
  *******************************************************************************/
 
-function local_checkmarkreport_extends_navigation(global_navigation $navigation) {
-    return;
-}
-
-function local_checkmarkreport_extends_settings_navigation(settings_navigation $setnav, $context) {
+function local_checkmarkreport_extend_settings_navigation(settings_navigation $setnav, $context) {
     global $CFG, $PAGE, $USER;
 
     // Only add this settings item on non-site course pages.
