@@ -295,7 +295,6 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                                                             round($percgrade, 2).' %)');
                     $row['percentex']->attributes['class'] = 'current';
                     $row['percentex']->id = "u".$curuser->id."i0_r";
-                    // TODO add data to jsarguments!
                 } else {
                     $percgrade = empty($curuser->percentgrade) ? 0 : $curuser->percentgrade;
                     $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.
@@ -316,23 +315,18 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $grade = (empty($curuser->instancedata[$instance->id]->finalgrade->grade) ? 0 :
                                   round($curuser->instancedata[$instance->id]->finalgrade->grade, 2)).' / '.
                                   $curuser->instancedata[$instance->id]->maxgrade;
-                        // TODO add data to js arguments!
-                        if (empty($jsarguments['users'][$userid])) {
-                            $userobj = $DB->get_record('user', array('id' => $userid),
-                                                       'id, '.implode(', ', get_all_user_name_fields()));
-                            $jsarguments['users'][$userid] = fullname($userobj);
-                        }
-                        if (empty($jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
+                        if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
                             $conditions = array('id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified);
                             $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
                             $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                            $jsarguments['users'][$usermodified] = fullname($userobj);
+                            $users[$usermodified] = fullname($userobj);
                         }
-                        $jsarguments['grade'][] = array(
-                            'user'       => $curuser->id,
-                            'item'       => $instance->id,
-                            'dategraded' => userdate($curuser->instancedata[$instance->id]->finalgrade->dategraded),
-                            'grader'     => $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified]);
+                        if (empty($users[$curuser->id])) {
+                            $conditions = array('id' => $curuser->id);
+                            $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
+                            $userid = $curuser->id;
+                            $users[$userid] = fullname($userobj);
+                        }
                     } else {
                         $grade = (empty($curuser->instancedata[$instance->id]->grade) ?
                                   0 : $curuser->instancedata[$instance->id]->grade).
@@ -347,8 +341,15 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                             || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
                         $row['grade'.$instance->id]->attributes['class'] = 'current';
-                        // TODO add data to jsarguments!
+
+                        $dategraded = $curuser->instancedata[$instance->id]->finalgrade->dategraded;
+                        $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
                         $row['grade'.$instance->id]->id = "u".$curuser->id."i".$instance->id."_a";
+                        $row['grade'.$instance->id]->attributes['data-user'] = $curuser->id;
+                        $row['grade'.$instance->id]->attributes['data-username'] = fullname($users[$curuser->id]);
+                        $row['grade'.$instance->id]->attributes['data-item'] = $instance->id;
+                        $row['grade'.$instance->id]->attributes['data-dategraded'] = userdate($dategraded);
+                        $row['grade'.$instance->id]->attributes['data-grader'] = $users[$usermodified];
                     }
                 }
                 // Coursesum of course examples.
@@ -372,22 +373,18 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $maxgrade = $curuser->instancedata[$instance->id]->maxgrade;
                         $rel = $grade / $maxgrade;
                         $percgrade = round(100 * $rel, 2);
-                        if (empty($jsarguments['users'][$userid])) {
-                            $userobj = $DB->get_record('user', array('id' => $userid),
-                                                       'id, '.implode(', ', get_all_user_name_fields()));
-                            $jsarguments['users'][$userid] = fullname($userobj);
-                        }
-                        if (empty($jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
+                        if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
+                            $conditions = array('id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified);
+                            $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
                             $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                            $userobj = $DB->get_record('user', array('id' => $usermodified),
-                                                       'id, '.implode(', ', get_all_user_name_fields()));
-                            $jsarguments['users'][$usermodified] = fullname($userobj);
+                            $users[$usermodified] = fullname($userobj);
                         }
-                        $jsarguments['grade'][] = array(
-                            'user'       => $curuser->id,
-                            'item'       => $instance->id,
-                            'dategraded' => userdate($curuser->instancedata[$instance->id]->finalgrade->dategraded),
-                            'grader'     => $jsarguments['users'][$curuser->instancedata[$instance->id]->finalgrade->usermodified]);
+                        if (empty($users[$curuser->id])) {
+                            $conditions = array('id' => $curuser->id);
+                            $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
+                            $userid = $curuser->id;
+                            $users[$userid] = fullname($userobj);
+                        }
                     } else {
                         $percgrade = empty($curuser->instancedata[$instance->id]->percentgrade) ?
                                      0 : $curuser->instancedata[$instance->id]->percentgrade;
@@ -402,8 +399,15 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                             || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
                         $row['percentex'.$instance->id]->attributes['class'] = 'current';
-                        // TODO add data to jsarguments!
+
+                        $dategraded = $curuser->instancedata[$instance->id]->finalgrade->dategraded;
+                        $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
                         $row['percentex'.$instance->id]->id = "u".$curuser->id."i".$instance->id."_r";
+                        $row['percentex'.$instance->id]->attributes['data-user'] = $curuser->id;
+                        $row['percentex'.$instance->id]->attributes['data-username'] = fullname($users[$curuser->id]);
+                        $row['percentex'.$instance->id]->attributes['data-item'] = $instance->id;
+                        $row['percentex'.$instance->id]->attributes['data-dategraded'] = userdate($dategraded);
+                        $row['percentex'.$instance->id]->attributes['data-grader'] = $users[$usermodified];
                     }
                 }
                 // Dynamically add examples!
@@ -420,20 +424,10 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         }
         $performance->table_built = microtime(true);
 
-        $jsarguments['cfg']['ajaxenabled'] = true;
-
-        // Student grades and feedback are already at $jsarguments['feedback'] and $jsarguments['grades']!
-        $jsarguments['cfg']['courseid'] = $this->courseid;
-
-        $module = array(
-            'name'      => 'local_checkmarkreport',
-            'fullpath'  => '/local/checkmarkreport/module.js',
-            'requires'  => array('base', 'dom', 'event', 'event-mouseenter', 'event-key', 'io-queue', 'json-parse', 'overlay')
-        );
-        $PAGE->requires->js_init_call('M.local_checkmarkreport.init_report', $jsarguments, false, $module);
-
-        $PAGE->requires->string_for_js('overwritten', 'local_checkmarkreport');
-        $PAGE->requires->string_for_js('by', 'local_checkmarkreport');
+        // Init JS!
+        $params = new \stdClass();
+        $params->id  = $table->id;
+        $PAGE->requires->js_call_amd('local_checkmarkreport/report', 'initializer', array($params));
 
         return $table;
     }

@@ -67,14 +67,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
 
         $table = new html_table();
 
-        $jsarguments = array(
-            'id'        => "#attempts-$userdata->id",
-            'cfg'       => array('ajaxenabled' => false),
-            'items'     => array(),
-            'users'     => array(),
-            'grade'  => array()
-        );
-        $jsscales = array();
+        $users = array();
 
         $table->id = "attempts-$userdata->id";
         if (!isset($table->attributes)) {
@@ -225,6 +218,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
                 $grade = empty($userdata->instancedata[$instance->id]->grade) ?
                          0 : $userdata->instancedata[$instance->id]->grade;
+                $data = array();
                 if (!empty($showgrade)) {
                     $grade = $userdata->instancedata[$instance->id]->grade;
                     $finalgrade = $userdata->instancedata[$instance->id]->finalgrade->grade;
@@ -234,24 +228,24 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         && !is_null($userdata->instancedata[$instance->id]->finalgrade->grade)) {
                         $gradetext = (empty($finalgrade) ? 0 : round($finalgrade, 2)).' / '.$userdata->maxgrade;
                         $class = "current";
-                        // TODO add data to jsarguments!
                         $userid = $userdata->id;
-                        if (empty($jsarguments['users'][$userid])) {
+                        if (empty($users[$userid])) {
                             $userobj = $DB->get_record('user', array('id' => $userid),
                                                        'id, '.implode(', ', get_all_user_name_fields()));
-                            $jsarguments['users'][$userid] = fullname($userobj);
+                            $users[$userid] = fullname($userobj);
                         }
                         $usermodified = $userdata->instancedata[$instance->id]->finalgrade->usermodified;
-                        if (empty($jsarguments['users'][$usermodified])) {
+                        if (empty($users[$usermodified])) {
                             $userobj = $DB->get_record('user', array('id' => $usermodified),
                                                        'id, '.implode(', ', get_all_user_name_fields()));
-                            $jsarguments['users'][$usermodified] = fullname($userobj);
+                            $users[$usermodified] = fullname($userobj);
                         }
                         $dategraded = $userdata->instancedata[$instance->id]->finalgrade->dategraded;
-                        $jsarguments['grade'][] = array('user'       => $userdata->id,
-                                                        'item'       => $instance->id,
-                                                        'dategraded' => userdate($dategraded),
-                                                        'grader'     => $jsarguments['users'][$usermodified]);
+                        $data['user'] = $userdata->id;
+                        $data['username'] = $users[$userdata->id];
+                        $data['item'] = $instance->id;
+                        $data['dategraded'] = userdate($dategraded);
+                        $data['grader'] = $users[$usermodified];
                     } else {
                         $gradetext = (empty($userdata->checkgrade) ? 0 :
                                      $userdata->checkgrade).'/'.$userdata->maxgrade;
@@ -275,6 +269,11 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     $row['points']->attributes['class'] = $class;
                     $row['points']->id = "u".$userdata->id."i".$instance->id."_a";
                     $row['points']->style = ' text-align: right; ';
+                    if (!empty($data)) {
+                        foreach ($data as $attr => $cur) {
+                            $row['points']->attributes['data-'.$attr] = $cur;
+                        }
+                    }
                 }
                 $table->data[$i] = new html_table_row();
                 $table->data[$i]->cells = $row;
@@ -316,7 +315,6 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     if ($userdata->overridden) {
                         $gradetext = (empty($userdata->coursesum) ? 0 :
                                      round($userdata->coursesum, 2)).' / '.$userdata->maxgrade;
-                        // TODO add data to jsarguments!
                     } else {
                         $gradetext = (empty($userdata->checkgrade) ? 0 :
                                      $userdata->checkgrade).'/'.$userdata->maxgrade;
@@ -340,20 +338,10 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $table->data[$i]->cells = $row;
         }
 
-        $jsarguments['cfg']['ajaxenabled'] = true;
-
-        // Student grades and feedback are already at $jsarguments['feedback'] and $jsarguments['grades']!
-        $jsarguments['cfg']['courseid'] = $this->courseid;
-
-        $module = array(
-            'name'      => 'local_checkmarkreport',
-            'fullpath'  => '/local/checkmarkreport/module.js',
-            'requires'  => array('base', 'dom', 'event', 'event-mouseenter', 'event-key', 'io-queue', 'json-parse', 'overlay')
-        );
-        $PAGE->requires->js_init_call('M.local_checkmarkreport.init_report', $jsarguments, false, $module);
-
-        $PAGE->requires->string_for_js('overwritten', 'local_checkmarkreport');
-        $PAGE->requires->string_for_js('by', 'local_checkmarkreport');
+        // Init JS!
+        $params = new \stdClass();
+        $params->id  = $table->id;
+        $PAGE->requires->js_call_amd('local_checkmarkreport/report', 'initializer', array($params));
 
         return $table;
     }
@@ -523,8 +511,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         foreach ($data as $userid => $userdata) {
             $x = 0;
             $y = 0;
-            $i=0;
-            while(in_array(!empty($i) ? fullname($userdata).' '.$i : fullname($userdata), $sheetnames)) {
+            $i = 0;
+            while (in_array(!empty($i) ? fullname($userdata).' '.$i : fullname($userdata), $sheetnames)) {
                 $i++;
             }
             if (!empty($i)) {

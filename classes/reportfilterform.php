@@ -195,11 +195,9 @@ class local_checkmarkreport_reportfilterform extends moodleform {
 
         $mform->addElement('submit', 'submitbutton', get_string('update', 'local_checkmarkreport'));
         $mform->disable_form_change_checker();
-        $PAGE->requires->string_for_js('all', 'moodle');
-        $PAGE->requires->string_for_js('users', 'moodle');
-        $PAGE->requires->string_for_js('loading', 'local_checkmarkreport');
-        $PAGE->requires->string_for_js('error_retriefing_members', 'local_checkmarkreport');
-        $PAGE->requires->yui_module('moodle-local_checkmarkreport-filterform',
-                                    'M.local_checkmarkreport.init_filterform');
+
+        $params = new stdClass();
+        $params->ajaxloader = false;
+        $PAGE->requires->js_call_amd('local_checkmarkreport/filterform', 'initializer', array($params));
     }
 }
