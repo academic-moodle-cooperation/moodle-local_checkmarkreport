@@ -26,7 +26,7 @@
  */
 
 # ---------------------------------------------------------------
-# FOR Moodle 2.7+
+# FOR Moodle 2.9+
 # ---------------------------------------------------------------
 
 Checkmarkreport plugin
@@ -38,7 +38,7 @@ OVERVIEW
 
 REQUIREMENTS
 ================================================================================
-    Moodle 2.7 or later
+    Moodle 2.9 or later
 
 INSTALLATION
 ================================================================================
@@ -57,6 +57,32 @@ INSTALLATION
 
 CHANGELOG
 ================================================================================
+v 2015121700
+-------------------------
+*) prevent collapsed columns from being exported (just hidden in ODS and XLSX)
+*) update for 2.9 compatibility
+
+v 2015112700
+-------------------------
+*) fix multiple users with the same name corrupting ODS files
+*) fix hard coded site ID 1 with constant SITEID
+*) replace local_checkmarkreport_extends_settings_navigation with unified API
+*) rewrite JS as AMD modules and use AMD-Modules/JQuery when possible
+*) add a bunch of PHPDoc comments and improve code quality (codechecker)
+
+v 2015071500
+-------------------------
+*) improve coding style (codechecker)
+*) ensure css selectors are scoped to only affect checkmarkreport
+*) remove empty and unused files
+*) make use of automatic class loading - therefore refactoring some classes
+
+v 2015061000
+-------------------------
+*) fixed typo in CSS destroying themes
+*) update for 2.8 compatibility
+*) remove XLS support and deprecate some strings
+
 v 2015011400
 -------------------------
 *) Replace add_to_log with triggered events
