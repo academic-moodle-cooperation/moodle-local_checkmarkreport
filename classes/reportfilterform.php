@@ -151,6 +151,7 @@ class local_checkmarkreport_reportfilterform extends moodleform {
                                    get_string('modulenameplural', 'checkmark'),
                                    $checkmarkselects, array('size' => 5));
                 $instances->setMultiple(true);
+                $mform->addRule('instances', get_string('required'), 'required', '', 'client');
             }
         }
 
