@@ -243,15 +243,15 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
                 $grade = empty($userdata->instancedata[$instance->id]->grade) ?
                          0 : $userdata->instancedata[$instance->id]->grade;
+                $maxgrade = $userdata->instancedata[$instance->id]->maxgrade;
                 $data = array();
                 if (!empty($showgrade)) {
-                    $grade = $userdata->instancedata[$instance->id]->grade;
                     $finalgrade = $userdata->instancedata[$instance->id]->finalgrade->grade;
                     $locked = $userdata->instancedata[$instance->id]->finalgrade->locked;
                     if (($userdata->instancedata[$instance->id]->finalgrade->overridden
                             || $locked || ($grade != $finalgrade))
-                        && !is_null($userdata->instancedata[$instance->id]->finalgrade->grade)) {
-                        $gradetext = (empty($finalgrade) ? 0 : round($finalgrade, 2)).' / '.$userdata->maxgrade;
+                        && !is_null($finalgrade)) {
+                        $gradetext = (empty($finalgrade) ? 0 : round($finalgrade, 2)).' / '.$maxgrade;
                         $class = "current";
                         $userid = $userdata->id;
                         if (empty($users[$userid])) {
@@ -272,8 +272,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         $data['dategraded'] = userdate($dategraded);
                         $data['grader'] = $users[$usermodified];
                     } else {
-                        $gradetext = (empty($userdata->checkgrade) ? 0 :
-                                     $userdata->checkgrade).'/'.$userdata->maxgrade;
+                        $gradetext = (empty($userdata->instancedata[$instance->id]->grade) ? 0 :
+                                     $userdata->instancedata[$instance->id]->grade).'/'.$maxgrade;
                             $class = "";
                     }
                     if (!empty($showrel)) {
