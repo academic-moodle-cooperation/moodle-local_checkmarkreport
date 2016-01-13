@@ -191,9 +191,5 @@ class local_checkmarkreport_reportfilterform extends moodleform {
 
         $mform->addElement('submit', 'submitbutton', get_string('update', 'local_checkmarkreport'));
         $mform->disable_form_change_checker();
-
-        $params = new stdClass();
-        $params->ajaxloader = false;
-        $PAGE->requires->js_call_amd('local_checkmarkreport/filterform', 'initializer', array($params));
     }
 }
