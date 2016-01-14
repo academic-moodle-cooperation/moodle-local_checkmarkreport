@@ -468,48 +468,81 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $xml = '';
         $examplenames = array();
         $instances = $this->get_courseinstances();
-        foreach ($data as $userid => $row) {
-            $xml .= "\t".html_writer::start_tag('user')."\n".
-                    "\t\t".html_writer::tag('id', $userid)."\n".
-                    "\t\t".html_writer::tag('fullname', fullname($row))."\n";
-            foreach ($row->userdata as $key => $cur) {
-                $xml .= "\t\t".html_writer::tag($key, $cur)."\n";
-            }
-            $xml .= "\t\t".html_writer::tag('checkedgrade',
-                                     empty($row->checkgrade) ? 0 : $row->checkgrade)."\n";
-            $xml .= "\t\t".html_writer::tag('maxgrade',
-                                     empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
-            $xml .= "\t\t".html_writer::tag('checks', $row->checks)."\n";
-            $xml .= "\t\t".html_writer::tag('maxchecks', $row->maxchecks)."\n";
 
-            $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
-            $xml .= "\t\t".html_writer::tag('percentchecked', $row->percentchecked.'%')."\n";
-            $xml .= "\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
+        $showgrade = get_user_preferences('checkmarkreport_showgrade');
+        $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrel = get_user_preferences('checkmarkreport_sumrel');
+
+        foreach ($data as $userid => $row) {
+            $xml .= "\t".html_writer::start_tag('user')."\n";
+            if (!$this->column_is_hidden('id')) {
+                $xml .= "\t\t".html_writer::tag('id', $userid)."\n";
+            }
+            if (!$this->column_is_hidden('fullnameuser')) {
+                $xml .= "\t\t".html_writer::tag('fullname', fullname($row))."\n";
+            }
+            foreach ($row->userdata as $key => $cur) {
+                if (!$this->column_is_hidden($key)) {
+                    $xml .= "\t\t".html_writer::tag($key, $cur)."\n";
+                }
+            }
+            if (!$this->column_is_hidden('grade') && $showgrade) {
+                $xml .= "\t\t".html_writer::tag('checkedgrade', empty($row->checkgrade) ? 0 : $row->checkgrade)."\n";
+                $xml .= "\t\t".html_writer::tag('maxgrade', empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
+            }
+            if (!$this->column_is_hidden('examples') && $showabs) {
+                $xml .= "\t\t".html_writer::tag('checks', $row->checks)."\n";
+                $xml .= "\t\t".html_writer::tag('maxchecks', $row->maxchecks)."\n";
+            }
+            if (!$this->column_is_hidden('percentex') && $showrel) {
+                $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
+                $xml .= "\t\t".html_writer::tag('percentchecked', $row->percentchecked.'%')."\n";
+                $xml .= "\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
+            }
             $xml .= "\t\t".html_writer::start_tag('instances')."\n";
+            $examplecounter = 1;
             foreach ($instances as $instance) {
                 if (!isset($examplenames[$instance->id])) {
                     $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
                 }
+                if ($this->column_is_hidden('instance'.$instance->id)) {
+                    foreach ($examplenames[$instance->id] as $key => $example) {
+                        $examplecounter++;
+                    }
+                    continue;
+                }
                 $instancedata = $row->instancedata[$instance->id];
                 $xml .= "\t\t\t".html_writer::start_tag('instance')."\n";
                 $xml .= "\t\t\t\t".html_writer::tag('name', $instance->name)."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('checkedgrade',
-                                         empty($instancedata->grade) ? 0 : $instancedata->grade)."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('maxgrade',
-                                         empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade)."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('checks', $instancedata->checked)."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('maxchecks', $instancedata->maxchecked)."\n";
-
-                $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
-                $xml .= "\t\t\t\t".html_writer::tag('percentchecked', $instancedata->percentchecked.'%')."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
+                if (!$this->column_is_hidden('grade'.$instance->id) && $showgrade) {
+                    $xml .= "\t\t\t\t".
+                            html_writer::tag('checkedgrade', empty($instancedata->grade) ? 0 : $instancedata->grade)."\n";
+                    $xml .= "\t\t\t\t".
+                            html_writer::tag('maxgrade', empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade)."\n";
+                }
+                if (!$this->column_is_hidden('examples'.$instance->id) && $showabs) {
+                    $xml .= "\t\t\t\t".html_writer::tag('checks', $instancedata->checked)."\n";
+                    $xml .= "\t\t\t\t".html_writer::tag('maxchecks', $instancedata->maxchecked)."\n";
+                }
+                if (!$this->column_is_hidden('percentex'.$instance->id) && $showrel) {
+                    $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
+                    if ($showabs) {
+                        $xml .= "\t\t\t\t".html_writer::tag('percentchecked', $instancedata->percentchecked.'%')."\n";
+                    }
+                    if ($showgrade) {
+                        $xml .= "\t\t\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
+                    }
+                }
                 $xml .= "\t\t\t\t".html_writer::start_tag('examples')."\n";
                 foreach ($instancedata->examples as $key => $example) {
-                    $xml .= "\t\t\t\t\t".html_writer::start_tag('example')."\n";
-                    $xml .= "\t\t\t\t\t\t".html_writer::tag('name', $examplenames[$instance->id][$key]->name)."\n";
-                    $xml .= "\t\t\t\t\t\t".html_writer::tag('state', $example ? 1 : 0)."\n";
-                    $xml .= "\t\t\t\t\t\t".html_writer::tag('statesymbol', $example ? "☒" : "☐")."\n";
-                    $xml .= "\t\t\t\t\t".html_writer::end_tag('example')."\n";
+                    if (!$this->column_is_hidden('example'.$examplecounter)) {
+                        $xml .= "\t\t\t\t\t".html_writer::start_tag('example')."\n";
+                        $xml .= "\t\t\t\t\t\t".html_writer::tag('name', $examplenames[$instance->id][$key]->name)."\n";
+                        $xml .= "\t\t\t\t\t\t".html_writer::tag('state', $example ? 1 : 0)."\n";
+                        $xml .= "\t\t\t\t\t\t".html_writer::tag('statesymbol', $example ? "☒" : "☐")."\n";
+                        $xml .= "\t\t\t\t\t".html_writer::end_tag('example')."\n";
+                    }
+                    $examplecounter++;
                 }
                 $xml .= "\t\t\t\t".html_writer::end_tag('examples')."\n";
                 $xml .= "\t\t\t".html_writer::end_tag('instance')."\n";
@@ -540,6 +573,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $data = $this->get_coursedata();
         $course = $DB->get_record('course', array('id' => $this->courseid));
         $context = context_course::instance($this->courseid);
+
+        $showgrade = get_user_preferences('checkmarkreport_showgrade');
+        $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrel = get_user_preferences('checkmarkreport_sumrel');
+        $showpoints = get_user_preferences('checkmarkreport_showpoints');
+
         $txt = '';
         $examplenames = array();
         $instances = $this->get_courseinstances();
@@ -547,60 +586,103 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         // Header.
         $txt .= get_string('pluginname', 'local_checkmarkreport').': '.$course->fullname."\n";
         // Title.
-        $txt .= get_string('fullname');
+        if (!$this->column_is_hidden('fullnameuser')) {
+            $txt .= get_string('fullname');
+        }
         $useridentity = get_extra_user_fields($context);
         foreach ($useridentity as $cur) {
-            $txt .= "\t".(($cur == 'phone1') ? get_string('phone') : get_string($cur));
+            if (!$this->column_is_hidden($cur)) {
+                $txt .= "\t".(($cur == 'phone1') ? get_string('phone') : get_string($cur));
+            }
         }
-        $txt .= "\tS ".get_string('grade');
-        $txt .= "\tS ".get_string('examples', 'local_checkmarkreport');
-        $txt .= "\tS % ".get_string('examples', 'local_checkmarkreport');
+        if (!$this->column_is_hidden('grade') && $showgrade) {
+            $txt .= "\tS ".get_string('grade');
+        }
+        if (!$this->column_is_hidden('examples') && $showabs) {
+            $txt .= "\tS ".get_string('examples', 'local_checkmarkreport');
+        }
+        if (!$this->column_is_hidden('percentex') && $showrel) {
+            $txt .= "\t";
+            $txt .= 'S % '.get_string('examples', 'local_checkmarkreport').' (S % '.get_string('grade').')';
+        }
 
         $instances = $this->get_courseinstances();
+        $examplecounter = 1;
         foreach ($instances as $instance) {
-            $txt .= "\t".$instance->name.' '.get_string('grade');
-            $txt .= "\t".$instance->name.' '.get_string('examples', 'local_checkmarkreport');
-            $txt .= "\t".$instance->name.' % '.get_string('examples', 'local_checkmarkreport');
-            // Dynamically add examples!
             // Get example data!
             if (!isset($examplenames[$instance->id])) {
                 $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
             }
+            if ($this->column_is_hidden('instance'.$instance->id)) {
+                foreach ($examplenames[$instance->id] as $key => $example) {
+                    $examplecounter++;
+                }
+                continue;
+            }
+            if (!$this->column_is_hidden('grade'.$instance->id) && $showgrade) {
+                $txt .= "\t".$instance->name.' '.get_string('grade');
+            }
+            if (!$this->column_is_hidden('examples'.$instance->id) && $showabs) {
+                $txt .= "\t".$instance->name.' '.get_string('examples', 'local_checkmarkreport');
+            }
+            if (!$this->column_is_hidden('percentex'.$instance->id) && $showrel) {
+                $txt .= "\t";
+                $txt .= $instance->name.' S % '.get_string('examples', 'local_checkmarkreport').' (S % '.get_string('grade').')';
+            }
+            // Dynamically add examples!
             foreach ($examplenames[$instance->id] as $key => $example) {
-                $txt .= "\t".$instance->name.' '.$example->name." (".$example->grade.'P)';
+                if (!$this->column_is_hidden('example'.$examplecounter)) {
+                    $txt .= "\t".$instance->name.' '.$example->name." (".$example->grade.'P)';
+                }
+                $examplecounter++;
             }
         }
         $txt .= "\n";
 
         // Data.
         foreach ($data as $userid => $row) {
-            $txt .= fullname($row);
-            foreach ($row->userdata as $key => $cur) {
-                $txt .= "\t".html_writer::tag($key, $cur);
+            if (!$this->column_is_hidden('fullnameuser')) {
+                $txt .= fullname($row);
             }
-            $txt .= "\t".(empty($row->checkgrade) ? 0 : $row->checkgrade);
-            $txt .= "\t".(empty($row->maxgrade) ? 0 : $row->maxgrade);
-            $txt .= "\t".$row->checks;
-            $txt .= "\t".$row->maxchecks;
-
-            $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
-            $txt .= "\t".$row->percentchecked.'%';
-            $txt .= "\t".$percgrade.'%';
+            foreach ($row->userdata as $key => $cur) {
+                if (!$this->column_is_hidden($key)) {
+                    $txt .= "\t".html_writer::tag($key, $cur);
+                }
+            }
+            if (!$this->column_is_hidden('grade') && $showgrade) {
+                $txt .= "\t".(empty($row->checkgrade) ? 0 : $row->checkgrade)."/".(empty($row->maxgrade) ? 0 : $row->maxgrade);
+            }
+            if (!$this->column_is_hidden('examples') && $showabs) {
+                $txt .= "\t".$row->checks."/".$row->maxchecks;
+            }
+            if (!$this->column_is_hidden('percentex') && $showrel) {
+                $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
+                $txt .= "\t";
+                $txt .= $row->percentchecked.'% ('.$percgrade.'%)';
+            }
+            $examplecount = 1;
             foreach ($instances as $instance) {
                 if (!isset($examplenames[$instance->id])) {
                     $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
                 }
                 $instancedata = $row->instancedata[$instance->id];
-                $txt .= "\t".(empty($instancedata->grade) ? 0 : $instancedata->grade);
-                $txt .= "\t".(empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
-                $txt .= "\t".$instancedata->checked;
-                $txt .= "\t".$instancedata->maxchecked;
-
-                $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
-                $txt .= "\t".$instancedata->percentchecked.'%';
-                $txt .= "\t".$percgrade.'%';
+                if (!$this->column_is_hidden('grade'.$instance->id)) {
+                    $txt .= "\t".(empty($instancedata->grade) ? 0 : $instancedata->grade)."/".
+                            (empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
+                }
+                if (!$this->column_is_hidden('examples'.$instance->id)) {
+                    $txt .= "\t".$instancedata->checked."/".$instancedata->maxchecked;
+                }
+                if (!$this->column_is_hidden('percentex'.$instance->id) && $showrel) {
+                    $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
+                    $txt .= "\t";
+                    $txt .= $instancedata->percentchecked.'% ('.$percgrade.'%)';
+                }
                 foreach ($instancedata->examples as $key => $example) {
-                    $txt .= "\t".($example ? "☒" : "☐");
+                    if (!$this->column_is_hidden('example'.$examplecount)) {
+                        $txt .= "\t".($example ? "☒" : "☐");
+                    }
+                    $examplecount++;
                 }
             }
             $txt .= "\n";
@@ -707,7 +789,6 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         if (!empty($table->head)) {
             $countrows = count($table->head);
-
             foreach ($table->head as $headrow) {
                 $x = 0;
                 $keys = array_keys($headrow->cells);
@@ -747,12 +828,30 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     }
                     $worksheet->merge_cells($y, $x, $y + $heading->rowspan - 1, $x + $heading->colspan - 1);
                     $worksheet->write_string($y, $x, strip_tags($heading->text));
+                    if ($this->column_is_hidden($key)) {
+                        // Hide column in worksheet!
+                        $worksheet->set_column($x, $x + $heading->colspan - 1, 0, null, true);
+                    }
+
                     $x++;
                 }
                 $y++;
             }
         }
+
         if (!empty($table->data)) {
+            if (empty($table->head)) {
+                // Head was empty, we have to check this here!
+                $x = 0;
+                foreach (current($table->data) as $key => $cur) {
+                    if ($this->column_is_hidden($key)) {
+                        // Hide column in worksheet!
+                        $worksheet->set_column($x, $x, 0, null, true);
+                    }
+                    $x++;
+                }
+            }
+
             $oddeven    = 1;
             $keys       = array_keys($table->data);
             $lastrowkey = end($keys);

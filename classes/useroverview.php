@@ -380,6 +380,11 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         global $CFG, $DB;
         $data = $this->get_coursedata();
         $course = $DB->get_record('course', array('id' => $this->courseid));
+
+        $showgrade = get_user_preferences('checkmarkreport_showgrade');
+        $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrel = get_user_preferences('checkmarkreport_sumrel');
+
         $xml = '';
         $examplenames = array();
         $instances = $this->get_courseinstances();
@@ -390,16 +395,22 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             foreach ($row->userdata as $key => $cur) {
                 $xml .= "\t\t".html_writer::tag($key, $cur)."\n";
             }
-            $xml .= "\t\t".html_writer::tag('checkedgrade',
-                                     empty($row->checkgrade) ? 0 : $row->checkgrade)."\n";
-            $xml .= "\t\t".html_writer::tag('maxgrade',
-                                     empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
-            $xml .= "\t\t".html_writer::tag('checks', $row->checks)."\n";
-            $xml .= "\t\t".html_writer::tag('maxchecks', $row->maxchecks)."\n";
+            if (!$this->column_is_hidden('points') && $showgrade) {
+                $xml .= "\t\t".html_writer::tag('checkedgrade', empty($row->checkgrade) ? 0 : $row->checkgrade)."\n";
+                $xml .= "\t\t".html_writer::tag('maxgrade', empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
+            }
+            if (!$this->column_is_hidden('checked') && $showabs) {
+                $xml .= "\t\t".html_writer::tag('checks', $row->checks)."\n";
+                $xml .= "\t\t".html_writer::tag('maxchecks', $row->maxchecks)."\n";
+            }
 
             $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
-            $xml .= "\t\t".html_writer::tag('percentchecked', $row->percentchecked.'%')."\n";
-            $xml .= "\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
+            if (!$this->column_is_hidden('checked') && $showrel) {
+                $xml .= "\t\t".html_writer::tag('percentchecked', $row->percentchecked.'%')."\n";
+            }
+            if (!$this->column_is_hidden('points') && $showrel) {
+                $xml .= "\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
+            }
             $xml .= "\t\t".html_writer::start_tag('instances')."\n";
             foreach ($instances as $instance) {
                 if (!isset($examplenames[$instance->id])) {
@@ -407,26 +418,42 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
                 $instancedata = $row->instancedata[$instance->id];
                 $xml .= "\t\t\t".html_writer::start_tag('instance')."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('name', $instance->name)."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('checkedgrade',
-                                         empty($instancedata->grade) ? 0 : $instancedata->grade)."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('maxgrade',
-                                         empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade)."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('checks', $instancedata->checked)."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('maxchecks', $instancedata->maxchecked)."\n";
+                if ($this->column_is_hidden('checkmark')) {
+                    $xml .= "\t\t\t\t".html_writer::tag('name', $instance->name)."\n";
+                }
+                if (!$this->column_is_hidden('points')) {
+                    $xml .= "\t\t\t\t".
+                            html_writer::tag('checkedgrade', empty($instancedata->grade) ? 0 : $instancedata->grade)."\n";
+                    $xml .= "\t\t\t\t".
+                            html_writer::tag('maxgrade', empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade)."\n";
+                }
+                if (!$this->column_is_hidden('checked') && $showabs) {
+                    $xml .= "\t\t\t\t".html_writer::tag('checks', $instancedata->checked)."\n";
+                    $xml .= "\t\t\t\t".html_writer::tag('maxchecks', $instancedata->maxchecked)."\n";
+                }
 
                 $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
-                $xml .= "\t\t\t\t".html_writer::tag('percentchecked', $instancedata->percentchecked.'%')."\n";
-                $xml .= "\t\t\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
-                $xml .= "\t\t\t\t".html_writer::start_tag('examples')."\n";
-                foreach ($instancedata->examples as $key => $example) {
-                    $xml .= "\t\t\t\t\t".html_writer::start_tag('example')."\n";
-                    $xml .= "\t\t\t\t\t\t".html_writer::tag('name', $examplenames[$instance->id][$key]->name)."\n";
-                    $xml .= "\t\t\t\t\t\t".html_writer::tag('state', $example ? 1 : 0)."\n";
-                    $xml .= "\t\t\t\t\t\t".html_writer::tag('statesymbol', $example ? "☒" : "☐")."\n";
-                    $xml .= "\t\t\t\t\t".html_writer::end_tag('example')."\n";
+                if (!$this->column_is_hidden('checked') && $showrel) {
+                    $xml .= "\t\t\t\t".html_writer::tag('percentchecked', $instancedata->percentchecked.'%')."\n";
                 }
-                $xml .= "\t\t\t\t".html_writer::end_tag('examples')."\n";
+                if (!$this->column_is_hidden('points') && $showrel) {
+                    $xml .= "\t\t\t\t".html_writer::tag('percentgrade', $percgrade.'%')."\n";
+                }
+                if (!$this->column_is_hidden('examples') || !$this->column_is_hidden('checked')) {
+                    $xml .= "\t\t\t\t".html_writer::start_tag('examples')."\n";
+                    foreach ($instancedata->examples as $key => $example) {
+                        $xml .= "\t\t\t\t\t".html_writer::start_tag('example')."\n";
+                        if (!$this->column_is_hidden('examples')) {
+                            $xml .= "\t\t\t\t\t\t".html_writer::tag('name', $examplenames[$instance->id][$key]->name)."\n";
+                        }
+                        if (!$this->column_is_hidden('checked')) {
+                            $xml .= "\t\t\t\t\t\t".html_writer::tag('state', $example ? 1 : 0)."\n";
+                            $xml .= "\t\t\t\t\t\t".html_writer::tag('statesymbol', $example ? "☒" : "☐")."\n";
+                        }
+                        $xml .= "\t\t\t\t\t".html_writer::end_tag('example')."\n";
+                    }
+                    $xml .= "\t\t\t\t".html_writer::end_tag('examples')."\n";
+                }
                 $xml .= "\t\t\t".html_writer::end_tag('instance')."\n";
             }
             $xml .= "\t\t".html_writer::end_tag('instances')."\n";
@@ -454,6 +481,11 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         global $CFG, $DB;
         $data = $this->get_coursedata();
         $course = $DB->get_record('course', array('id' => $this->courseid));
+
+        $showgrade = get_user_preferences('checkmarkreport_showgrade');
+        $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrel = get_user_preferences('checkmarkreport_sumrel');
+
         $txt = '';
         $examplenames = array();
         $instances = $this->get_courseinstances();
@@ -463,12 +495,18 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         // Data.
         foreach ($data as $userid => $row) {
             $txt .= get_string('fullname').': '.fullname($row)."\n";
-            $txt .= "S ".get_string('grade')."\t".(empty($row->checkgrade) ? 0 : $row->checkgrade).
-                    '/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
-            $txt .= "S ".get_string('examples', 'local_checkmarkreport')."\t".$row->checks.'/'.$row->maxchecks."\n";
-            $txt .= "S % ".get_string('examples', 'local_checkmarkreport')."\t".$row->percentchecked.'%'."\n";
-            $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
-            $txt .= "S % ".get_string('grade', 'local_checkmarkreport')."\t".$percgrade.'%'."\n";
+            if (!$this->column_is_hidden('points') && $showgrade) {
+                $txt .= "S ".get_string('grade')."\t".(empty($row->checkgrade) ? 0 : $row->checkgrade).
+                        '/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
+            }
+            if (!$this->column_is_hidden('checked') && $showabs) {
+                $txt .= "S ".get_string('examples', 'local_checkmarkreport')."\t".$row->checks.'/'.$row->maxchecks."\n";
+            }
+            if ($showrel) {
+                $txt .= "S % ".get_string('examples', 'local_checkmarkreport')."\t".$row->percentchecked.'%'."\n";
+                $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
+                $txt .= "S % ".get_string('grade', 'local_checkmarkreport')."\t".$percgrade.'%'."\n";
+            }
             $instances = $this->get_courseinstances();
             foreach ($instances as $instance) {
                 $txt .= $instance->name."\n";
@@ -478,19 +516,51 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
                 }
                 $instancedata = $row->instancedata[$instance->id];
-                foreach ($examplenames[$instance->id] as $key => $example) {
-                    $txt .= "\t".$examplenames[$instance->id][$key]->name." (".$examplenames[$instance->id][$key]->grade.'P)';
-                    $txt .= "\t".($instancedata->examples[$key] ? "☒" : "☐");
-                    $txt .= "\t".($instancedata->examples[$key] ? $examplenames[$instance->id][$key]->grade : 0).'/'.
-                            $examplenames[$instance->id][$key]->grade."\n";
+                if (!$this->column_is_hidden('examples')
+                    || !$this->column_is_hidden('checked')
+                    || (!$this->column_is_hidden('points') && $showgrade)) {
+                    foreach ($examplenames[$instance->id] as $key => $example) {
+                        if (!$this->column_is_hidden('examples')) {
+                            $txt .= "\t".$examplenames[$instance->id][$key]->name.
+                                    " (".$examplenames[$instance->id][$key]->grade.'P)';
+                        }
+                        if (!$this->column_is_hidden('checked')) {
+                            $txt .= "\t".($instancedata->examples[$key] ? "☒" : "☐");
+                        }
+                        if (!$this->column_is_hidden('points') && $showgrade) {
+                            $txt .= "\t".($instancedata->examples[$key] ? $examplenames[$instance->id][$key]->grade : 0).'/'.
+                                    $examplenames[$instance->id][$key]->grade;
+                        }
+                        $txt .= "\n";
+                    }
                 }
-                $txt .= "S ".$instance->name;
-                $txt .= "\t".$instancedata->checked.'/'.$instancedata->maxchecked.
-                        '('.round($instancedata->percentchecked, 2).'%)';
-                $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
-                $txt .= "\t".(empty($instancedata->grade) ? 0 : $instancedata->grade).'/'.
-                        (empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade).
-                        '('.$percgrade." %)\n";
+                if (!$this->column_is_hidden('examples')) {
+                    $txt .= "S ".$instance->name;
+                }
+                if (!$this->column_is_hidden('checked')) {
+                    if ($showabs && $showrel) {
+                        $txt .= "\t".$instancedata->checked.'/'.$instancedata->maxchecked.
+                                ' ('.round($instancedata->percentchecked, 2).'%)';
+                    } else if ($showabs) {
+                        $txt .= "\t".$instancedata->checked.'/'.$instancedata->maxchecked;
+                    } else if ($showrel) {
+                        $txt .= "\t".round($instancedata->percentchecked, 2).'%';
+                    }
+                }
+                if (!$this->column_is_hidden('points')) {
+                    $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
+                    if ($showabs && $showrel) {
+                        $txt .= "\t".(empty($instancedata->grade) ? 0 : $instancedata->grade).'/'.
+                                (empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade).
+                                '('.$percgrade." %)";
+                    } else if ($showabs) {
+                        $txt .= "\t".(empty($instancedata->grade) ? 0 : $instancedata->grade).'/'.
+                                (empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
+                    } else if ($showrel) {
+                        $txt .= "\t".$percgrade." %";
+                    }
+                }
+                $txt .= "\n";
             }
 
             $txt .= "\n";
@@ -575,6 +645,25 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             }
             $table = $this->get_table($userdata);
             $worksheets[$userid]->write_string($y, $x, strip_tags(fullname($data[$userid])));
+            $worksheets[$userid]->merge_cells($y, $x, $y, $x + 3);
+
+            if ($this->column_is_hidden('checkmarks')) {
+                // Hide column in worksheet!
+                $worksheets[$userid]->set_column(0, 0, 0, null, true);
+            }
+            if ($this->column_is_hidden('examples')) {
+                // Hide column in worksheet!
+                $worksheets[$userid]->set_column(1, 1, 0, null, true);
+            }
+            if ($this->column_is_hidden('checked')) {
+                // Hide column in worksheet!
+                $worksheets[$userid]->set_column(2, 2, 0, null, true);
+            }
+            if ($this->column_is_hidden('points')) {
+                // Hide column in worksheet!
+                $worksheets[$userid]->set_column(3, 3, 0, null, true);
+            }
+
             $y++;
             // We may use additional table data to format sheets!
             if (!empty($table->align)) {
