@@ -395,8 +395,13 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         // TODO add data to jsarguments!
                         $grade = $curuser->instancedata[$instance->id]->finalgrade->grade;
                         $maxgrade = $curuser->instancedata[$instance->id]->maxgrade;
-                        $rel = $grade / $maxgrade;
-                        $percgrade = round(100 * $rel, 2);
+                        if ($maxgrade > 0) {
+                            $rel = $grade / $maxgrade;
+                            $percgrade = round(100 * $rel, 2);
+                        } else {
+                            $percgrade = '-';
+                            $rel = '-';
+                        }
                         if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
                             $conditions = array('id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified);
                             $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
@@ -413,8 +418,10 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $percgrade = empty($curuser->instancedata[$instance->id]->percentgrade) ?
                                      0 : $curuser->instancedata[$instance->id]->percentgrade;
                     }
-                    $row['percentex'.$instance->id] = new html_table_cell(round($perccheck, 2).'% ('.
-                                                                          round($percgrade, 2).'%)');
+                    if (is_numeric($percgrade)) {
+                        $percgrade = round($percgrade, 2).'%';
+                    }
+                    $row['percentex'.$instance->id] = new html_table_cell(round($perccheck, 2).'% ('.$percgrade.')');
                     // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
                     $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
                     $grade = $curuser->instancedata[$instance->id]->grade;
