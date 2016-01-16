@@ -267,8 +267,8 @@ class local_checkmarkreport_base {
                            100 * SUM( cex.grade ) / :maxgrade percentgrade,
                            SUM( cex.grade ) checkgrade
                       FROM {user} u
-                 LEFT JOIN {checkmark_submissions} s ON u.id = s.userid
-                                                       AND s.checkmarkid '.$sqlcheckmarkids.'
+                 LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid '.$sqlcheckmarkids.'
+                 LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid '.$sqlcheckmarkbids.'
                  LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id
                                                       AND cchks.state = 1
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
@@ -292,8 +292,8 @@ class local_checkmarkreport_base {
                            100 * SUM( cex.grade ) / :maxgrade percentgrade,
                            SUM( cex.grade ) grade
                       FROM {user} u
-                 LEFT JOIN {checkmark_submissions} s ON u.id = s.userid
-                                                       AND s.checkmarkid = :chkmkid
+                 LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid = :chkmkid
+                 LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid = :chkmkidb
                  LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id AND cchks.state = 1
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
                      WHERE u.id '.$sqluserids.'
@@ -429,8 +429,7 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
         // Get instances examples!
         $sql = 'SELECT ex.id, chks.state
                   FROM {checkmark_examples} ex
-             LEFT JOIN {checkmark_submissions} sub ON sub.checkmarkid = ex.checkmarkid
-                                                     AND sub.userid = :userid
+             LEFT JOIN {checkmark_submissions} sub ON sub.checkmarkid = ex.checkmarkid AND sub.userid = :userid
              LEFT JOIN {checkmark_checks} chks ON chks.submissionid = sub.id
                                                  AND chks.exampleid = ex.id
                  WHERE ex.checkmarkid = :checkmarkid';
