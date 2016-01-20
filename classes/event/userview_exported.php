@@ -27,7 +27,26 @@
 namespace local_checkmarkreport\event;
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Event class for exported userview reports
+ *
+ * @package       local_checkmarkreport
+ * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
+ * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
+ * @author        Philipp Hager
+ * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class userview_exported extends exported_base {
+    /**
+     * Static convenience method to create event from objects
+     *
+     * @param \stdClass $course course object
+     * @param int $format export format (local_checkmarkreport_base::FORMAT_XLSX, local_checkmarkreport_base::FORMAT_ODS,
+     *                                   local_checkmarkreport_base::FORMAT_XML, local_checkmarkreport_base::FORMAT_TXT)
+     * @param string $formatreadable human readable representation of export format
+     * @return userview_exported event object
+     */
     public static function userview(\stdClass $course, $format, $formatreadable) {
         $event = self::create(array(
             'context'  => \context_course::instance($course->id),

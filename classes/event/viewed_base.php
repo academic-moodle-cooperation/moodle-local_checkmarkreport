@@ -27,7 +27,22 @@
 namespace local_checkmarkreport\event;
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * The (abstract) base class for checkmarkreports view events.
+ *
+ * @package       local_checkmarkreport
+ * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
+ * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
+ * @author        Philipp Hager
+ * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 abstract class viewed_base extends \core\event\base {
+    /**
+     * Init method.
+     *
+     * @return void
+     */
     protected function init() {
         $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_OTHER;

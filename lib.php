@@ -32,12 +32,15 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+/** CHECKMARKREPORT_GODMODE is used to determine whether admins should have all capabilities by default **/
 define('CHECKMARKREPORT_GODMODE', true);
 
-/*******************************************************************************
- * Moodle core API                                                             *
- *******************************************************************************/
-
+/**
+ * Inject new menu element in course administration linking to checkmark report!
+ *
+ * @param settings_navigation $setnav settins navigation object
+ * @param object $context current page context, not used here, we operate on course level all the time!
+ */
 function local_checkmarkreport_extend_settings_navigation(settings_navigation $setnav, $context) {
     global $CFG, $PAGE, $USER;
 

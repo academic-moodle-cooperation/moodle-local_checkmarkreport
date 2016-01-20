@@ -41,11 +41,6 @@ require_once($CFG->libdir .'/formslib.php');
 class local_checkmarkreport_reportfilterform extends moodleform {
     /**
      * Definition of filter form
-     *
-     * @global object $CFG
-     * @global object $COURSE
-     * @global object $DB
-     * @global object $PAGE
      */
     protected function definition() {
         global $CFG, $COURSE, $DB, $PAGE, $USER, $OUTPUT;

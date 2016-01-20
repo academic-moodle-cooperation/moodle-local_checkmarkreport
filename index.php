@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Shows reports and filter forms
+ *
  * @package       local_checkmarkreport
  * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
  * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)

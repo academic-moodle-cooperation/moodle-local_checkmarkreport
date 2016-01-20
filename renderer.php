@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Prints a list of all checkmarkreport instances in the given course (via id)
+ * Contains the renderer class for local_checkmarkreport
  *
  * @package       local_checkmarkreport
  * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
@@ -26,8 +26,24 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Renderer class for checkmarkreports
+ *
+ * @package       local_checkmarkreport
+ * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
+ * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
+ * @author        Philipp Hager
+ * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class local_checkmarkreport_renderer extends plugin_renderer_base {
 
+    /**
+     * Renders the overview report (big html table with all users and all instances - except of filtered ones)
+     *
+     * @param local_checkmarkreport_overview $report The checkmarkreport to render.
+     * @return string HTML snippet
+     */
     protected function render_local_checkmarkreport_overview(local_checkmarkreport_overview $report) {
         global $CFG, $DB;
 
@@ -75,6 +91,13 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         return $this->output->container($out, 'submission', 'checkmarkreporttable');
     }
 
+    /**
+     * Renders the useroverview report (for all users and all checkmark instances, one html table per user - except filtered)
+     *
+     * @param local_checkmarkreport_useroverview $report The checkmarkreport to render.
+     * @param bool $hidefilter (optional) if true, surpresses wrapper output and won't show filter form
+     * @return string HTML snippet
+     */
     protected function render_local_checkmarkreport_useroverview(local_checkmarkreport_useroverview $report, $hidefilter = false) {
         global $CFG, $DB, $PAGE, $COURSE;
 
@@ -143,6 +166,12 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         return $this->output->container($out, 'report course-content', 'checkmarkreporttable');
     }
 
+    /**
+     * Renders the userview report (for the current user and all checkmark instances without filter form - except filtered)
+     *
+     * @param local_checkmarkreport_userview $report The checkmarkreport to render.
+     * @return string HTML snippet
+     */
     protected function render_local_checkmarkreport_userview(local_checkmarkreport_userview $report) {
         // Render the table!
         $out = $this->render_local_checkmarkreport_useroverview($report, true);
@@ -159,7 +188,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      * and memory consumption reasons.
      *
      * @param html_table $table data to be rendered
-     * @param checkmarkreport $report optional if given table can hide columns
+     * @param local_checkmarkreport_base $report optional if given table can hide columns
      * @return string HTML code
      */
     protected function table(html_table $table, local_checkmarkreport_base $report = null) {
@@ -435,6 +464,14 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         return $output;
     }
 
+    /**
+     * Helper method to render the toggle links used in the table header
+     *
+     * @param string $column internal column name
+     * @param string $columnstring displayed column name
+     * @param local_checkmarkreport_base $report needed to determine if the column is hidden
+     * @return string HTML snippet
+     */
     protected function get_toggle_links($column = '', $columnstring = '', local_checkmarkreport_base $report = null) {
         global $PAGE;
         $html = '';

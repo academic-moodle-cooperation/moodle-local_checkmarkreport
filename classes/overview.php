@@ -26,10 +26,29 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * local_checkmarkreport_overview class, handles checkmarkreport overview content and export
+ *
+ * @package       local_checkmarkreport
+ * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
+ * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
+ * @author        Philipp Hager
+ * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class local_checkmarkreport_overview extends local_checkmarkreport_base implements renderable {
 
+    /** @var string classes to assign to the reporttable */
     protected $tableclass = 'table table-condensed table-hover table-striped overview';
 
+    /**
+     * Constructor
+     *
+     * @param int $id course id
+     * @param int[] $groupings (optional) groupings to include
+     * @param int[] $groups (optional) groups to include
+     * @param int[] $instances (optional) instances to include
+     */
     public function __construct($id, $groupings=array(0), $groups=array(0), $instances=array(0)) {
         global $DB;
 
@@ -52,6 +71,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         parent::__construct($id, $groups, $users, $instances);
     }
 
+    /**
+     * get html table object representing report data
+     *
+     * @return html_table report as html_table object
+     */
     public function get_table() {
         global $CFG, $DB, $SESSION, $PAGE;
 
@@ -432,6 +456,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         return $table;
     }
 
+    /**
+     * get data as xml file (sends to browser, forces download)
+     *
+     * @return void
+     */
     public function get_xml() {
         global $CFG, $DB;
         $data = $this->get_coursedata();
@@ -501,6 +530,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         echo $xml;
     }
 
+    /**
+     * get report data as plain text file (sends to browser, forces download)
+     *
+     * @return void
+     */
     public function get_txt() {
         global $CFG, $DB;
         $data = $this->get_coursedata();
@@ -582,6 +616,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         echo $txt;
     }
 
+    /**
+     * get report as open document file (sends to browser, forces download)
+     *
+     * @return void
+     */
     public function get_ods() {
         global $CFG, $DB;
 
@@ -598,6 +637,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $workbook->close();
     }
 
+    /**
+     * get report as xml based excel file (sends to browser, forces download)
+     *
+     * @return void
+     */
     public function get_xlsx() {
         global $CFG, $DB;
 
@@ -614,6 +658,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $workbook->close();
     }
 
+    /**
+     * Write report data to workbook
+     *
+     * @param MoodleExcelWorkbook|MoodleODSWorkbook $workbook object to write data into
+     * @return void
+     */
     public function fill_workbook($workbook) {
         $x = $y = 0;
 

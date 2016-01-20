@@ -27,11 +27,19 @@
 namespace local_checkmarkreport\event;
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * The (abstract) base class for checkmarkreports export events.
+ *
+ * @package       local_checkmarkreport
+ * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
+ * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
+ * @author        Philipp Hager
+ * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 abstract class exported_base extends \core\event\base {
     /**
      * Init method.
-     *
-     * Please override this in extending class and specify objecttable.
      *
      * @return void
      */

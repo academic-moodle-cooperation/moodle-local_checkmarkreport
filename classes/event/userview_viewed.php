@@ -27,7 +27,23 @@
 namespace local_checkmarkreport\event;
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Event class for viewed userview reports
+ *
+ * @package       local_checkmarkreport
+ * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
+ * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
+ * @author        Philipp Hager
+ * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class userview_viewed extends viewed_base {
+    /**
+     * Static convenience method to create event from objects
+     *
+     * @param \stdClass $course course object
+     * @return userview_viewed event object
+     */
     public static function userview(\stdClass $course) {
         $event = self::create(array(
             'context'  => \context_course::instance($course->id),

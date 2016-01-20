@@ -26,10 +26,26 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * local_checkmarkreport_useroverview class, handles checkmarkreport useroverview content
+ *
+ * @package       local_checkmarkreport
+ * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
+ * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
+ * @author        Philipp Hager
+ * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class local_checkmarkreport_userview extends local_checkmarkreport_useroverview implements renderable {
 
+    /** @var string classes to assign to the reporttables */
     protected $tableclass = 'table table-condensed table-hover table-striped userview';
 
+    /**
+     * Constructor
+     *
+     * @param int $id course id
+     */
     public function __construct($id) {
         global $USER;
         set_user_preference('checkmarkreport_showgrade', 1);

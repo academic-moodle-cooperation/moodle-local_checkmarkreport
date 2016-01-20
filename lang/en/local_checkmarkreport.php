@@ -13,9 +13,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-defined('MOODLE_INTERNAL') || die;
 
-/*
+/**
  * Strings for component 'local_checkmarkreport', language 'en', branch 'MOODLE_26_STABLE'
  *
  * @package       local_checkmarkreport
@@ -25,6 +24,7 @@ defined('MOODLE_INTERNAL') || die;
  * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die;
 
 $string['checkmarkreport:view'] = 'View checkmark report';
 $string['checkmarkreport:view_courseoverview'] = 'View checkmark coursereport';

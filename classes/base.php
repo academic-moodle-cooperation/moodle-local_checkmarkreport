@@ -24,25 +24,54 @@
  * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/grade/lib.php');
 require_once($CFG->dirroot.'/grade/querylib.php');
 
+/**
+ * Base class for checkmarkreports with common logic and definitions
+ *
+ * @package       local_checkmarkreport
+ * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
+ * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
+ * @author        Philipp Hager
+ * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class local_checkmarkreport_base {
 
+    /** @var protected the courses id */
     protected $courseid = 0;
 
+    /** xml based excel format */
     const FORMAT_XLSX = 0;
-    const FORMAT_XLS = 1; // Unused since 2.8!
+    /** binary excel format - unused since 2.8! */
+    const FORMAT_XLS = 1;
+    /** open document format */
     const FORMAT_ODS = 2;
+    /** xml format */
     const FORMAT_XML = 3;
+    /** plain text file format */
     const FORMAT_TXT = 4;
 
+    /** @var object[] report's data */
     protected $data = null;
+    /** @var int[] groups */
     protected $groups = array(0);
+    /** @var int[] user ids */
     protected $users = array(0);
+    /** @var int[] instance ids */
     protected $instances = array(0);
 
+    /**
+     * Base constructor
+     *
+     * @param int $id course id
+     * @param int[] $groups (optional) array of groups to include
+     * @param int[] $users (optional) array of users to include
+     * @param int[] $instances (optional) array of checkmark instances to include
+     */
     public function __construct($id, $groups=array(0), $users=array(0), $instances=array(0)) {
         $this->courseid = $id;
         $this->groups = $groups;
@@ -52,18 +81,38 @@ class local_checkmarkreport_base {
         $this->init_sortby();
     }
 
+    /**
+     * returns instances to include
+     *
+     * @return int[]
+     */
     public function get_instances() {
         return $this->instances;
     }
 
+    /**
+     * returns users to include
+     *
+     * @return int[]
+     */
     public function get_user() {
         return $this->users;
     }
 
+    /**
+     * returns groups to include
+     *
+     * @return int[]
+     */
     public function get_groups() {
         return $this->groups;
     }
 
+    /**
+     * Get's the course data from the DB, saves it and returns it
+     *
+     * @return object[]
+     */
     public function get_coursedata() {
         global $PAGE, $DB;
 
@@ -115,8 +164,13 @@ class local_checkmarkreport_base {
         return $this->data;
     }
 
-    /*
-     * TODO document this function
+    /**
+     * Get's the general data from the DB, saves it and returns it
+     *
+     * @param object $course (optional) course object
+     * @param int[] $userids (optional) array of user ids to include
+     * @param int[] $instances (optional) array of checkmark ids to include
+     * @return object[]|null
      */
     public function get_general_data($course = null, $userids=0, $instances = array(0)) {
         global $DB, $COURSE, $CFG, $SESSION;
@@ -361,6 +415,14 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
         return null;
     }
 
+    /**
+     * Get's the examples data for 1 user in 1 checkmark instance
+     *
+     * @param int $checkmarkid (optional) id of checkmark instance to fetch data for
+     * @param int $userid (optional) id of user to fetch data for
+     *
+     * @return int[] associative array of example-states indexed by example ids
+     */
     public function get_examples_data($checkmarkid=0, $userid=0) {
         global $DB;
 
@@ -378,6 +440,11 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
         return $DB->get_records_sql_menu($sql, $params);
     }
 
+    /**
+     * Get all checkmark instances in course indexed by checkmark id
+     *
+     * @return object[] associative array of checkmark instances indexed by checkmark ids
+     */
     public function get_courseinstances() {
         global $DB;
         if (!empty($this->courseid)) {
@@ -401,10 +468,20 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
         }
     }
 
+    /**
+     * Get's the course id
+     *
+     * @return int course id
+     */
     public function get_courseid() {
         return $this->courseid;
     }
 
+    /**
+     * Prepares session object to contain data about hidden columns
+     *
+     * @return void
+     */
     public function init_hidden() {
         global $SESSION;
         $thide = optional_param('thide', null, PARAM_ALPHANUM);
@@ -430,6 +507,11 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
         }
     }
 
+    /**
+     * Prepares session object to contain data about sorting order of the report table
+     *
+     * @return void
+     */
     public function init_sortby() {
         global $SESSION;
 
@@ -480,6 +562,14 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
         }
     }
 
+    /**
+     * Returns link to change sort order of the table including icon to visualize current sorting
+     *
+     * @param string $column internal column name
+     * @param string $text displayed column name / link text
+     * @param string|moodle_url $url the base url for all links
+     * @return string HTML snippet
+     */
     public function get_sortlink($column, $text, $url) {
         global $SESSION, $OUTPUT;
         // Sortarray has to be initialized!
@@ -510,6 +600,12 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
         return $sortlink;
     }
 
+    /**
+     * Checks if a column is currently hidden
+     *
+     * @param string $column internal column name
+     * @return bool true if column is hidden
+     */
     public function column_is_hidden($column='nonexistend') {
         global $SESSION;
         if (!isset($SESSION->checkmarkreport)) {
