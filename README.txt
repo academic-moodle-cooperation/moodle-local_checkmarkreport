@@ -57,6 +57,14 @@ INSTALLATION
 
 CHANGELOG
 ================================================================================
+v 2016012000
+-------------------------
+*) prevent overview without selected instances
+*) fix bug in calculation of gradesums in useroverview
+*) remove auto-submit from filterform
+*) changes due to split submissions and feedbacks tables in checkmark
+*) fix divided by 0 warning for instances with empty grades
+
 v 2015121700
 -------------------------
 *) prevent collapsed columns from being exported (just hidden in ODS and XLSX)
