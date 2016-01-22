@@ -271,8 +271,8 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
 
             $output .= html_writer::start_tag('thead', array()) . "\n";
 
-            $output .= html_writer::start_tag('tr', array()) . "\n";
             foreach ($table->head as $headrow) {
+                $output .= html_writer::start_tag('tr', array()) . "\n";
                 $keys = array_keys($headrow->cells);
                 $lastkey = end($keys);
                 $countcols = count($headrow->cells);
@@ -356,9 +356,11 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
 
             foreach ($table->data as $key => $row) {
                 if (($row === 'hr') && ($countcols)) {
-                    $output .= html_writer::tag('td', html_writer::tag('div', '',
+                    $output .= html_writer::start_tag('tr').
+                               html_writer::tag('td', html_writer::tag('div', '',
                                                                        array('class' => 'tabledivider')),
-                                                array('colspan' => $countcols));
+                                                array('colspan' => $countcols)).
+                               html_writer::end_tag('tr') . "\n";;
                 } else {
                     $idx = 0;
                     // Convert array rows to html_table_rows and cell strings to html_table_cell objects!
@@ -382,11 +384,6 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                     $row->attributes['class'] .= ' r' . $oddeven;
                     if ($key == $lastrowkey) {
                         $row->attributes['class'] .= ' lastrow';
-                    }
-
-                    if ($heading->text == null) {
-                        $idx++;
-                        continue;
                     }
 
                     $output .= html_writer::start_tag('tr', array('class' => trim($row->attributes['class']),

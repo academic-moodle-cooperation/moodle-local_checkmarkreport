@@ -89,6 +89,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $showabs = get_user_preferences('checkmarkreport_sumabs');
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
+        $signature = get_user_preferences('checkmarkreport_signature');
 
         $table = new html_table();
 
@@ -361,6 +362,19 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             }
             $table->data[$i] = new html_table_row();
             $table->data[$i]->cells = $row;
+        }
+
+        if ($signature) {
+            $i++;
+            $table->data[$i] = new html_table_row(array(''));
+            $table->data[$i]->cells[0]->colspan = count($table->data[0]->cells);
+            $i++;
+            $table->data[$i] = new html_table_row();
+            $table->data[$i]->cells = array('checkmark' => new html_table_cell(get_string('signature', 'local_checkmarkreport')),
+                                            'examples' => new html_table_cell(''));
+            $table->data[$i]->cells['checkmark']->header = true;
+            $table->data[$i]->cells['checkmark']->style = ' text-align: left; ';
+            $table->data[$i]->cells['examples']->colspan = count($table->data[0]->cells) - 1;
         }
 
         // Init JS!

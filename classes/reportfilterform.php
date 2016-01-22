@@ -184,7 +184,11 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $pointshelp = new help_icon('showpoints', 'local_checkmarkreport');
         $addsettings[] =& $mform->createElement('advcheckbox', 'showpoints', '',
                                                 get_string('showpoints', 'local_checkmarkreport').$OUTPUT->render($pointshelp));
+        $sighelp = new help_icon('signature', 'local_checkmarkreport');
+        $addsettings[] =& $mform->createElement('advcheckbox', 'signature', '',
+                                                get_string('showsignature', 'local_checkmarkreport').$OUTPUT->render($sighelp));
         $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
+        $mform->setDefault('signature', get_user_preferences('checkmarkreport_signature'));
 
         $mform->addGroup($addsettings, 'additionalsettings', get_string('additional_settings', 'local_checkmarkreport'),
                          html_writer::empty_tag('br'), false);

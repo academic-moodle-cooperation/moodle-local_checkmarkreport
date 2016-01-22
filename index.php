@@ -122,6 +122,7 @@ switch($tab) {
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
             set_user_preference('checkmarkreport_sumrel', $data->sumrel);
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+            set_user_preference('checkmarkreport_signature', $data->signature);
             $groupings = empty($data->groupings) ? array(0) : $data->groupings;
             if (!is_array($groupings)) {
                 $groupings = array($groupings);
@@ -158,6 +159,7 @@ switch($tab) {
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
             set_user_preference('checkmarkreport_sumrel', $data->sumrel);
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+            set_user_preference('checkmarkreport_signature', $data->signature);
             $groupings = empty($data->groupings) ? array(0) : $data->groupings;
             if (!is_array($groupings)) {
                 $groupings = array($groupings);

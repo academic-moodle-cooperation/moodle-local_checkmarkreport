@@ -92,6 +92,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showabs = get_user_preferences('checkmarkreport_sumabs');
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
+        $signature = get_user_preferences('checkmarkreport_signature');
 
         $table = new html_table();
 
@@ -274,6 +275,18 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $table->colgroups[] = array('span' => $span,
                                         'class' => 'instancegroup');
         }
+
+        if ($signature) {
+            $tableheaders['sig'] = new html_table_cell(get_string('signature', 'local_checkmarkreport'));
+            $tableheaders['sig']->header = true;
+            $tablecolumns[] = 'sig';
+            $tableheaders['sig']->rowspan = 2;
+            $tableheaders2['sig'] = null;
+            $table->colgroups[] = array('span' => 1,
+                                        'class' => 'sig');
+            $table->colclasses['sig'] = 'sig';
+        }
+
         $table->head = array();
         $table->head[0] = new html_table_row();
         $table->head[0]->cells = $tableheaders;
@@ -450,6 +463,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     }
                 }
             }
+
+            if ($signature) {
+                $row['sig'] = new html_table_cell('');
+            }
+
             $table->data[$userid] = new html_table_row();
             $table->data[$userid]->cells = $row;
         }
