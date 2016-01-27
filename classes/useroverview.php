@@ -284,7 +284,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         if (($userdata->instancedata[$instance->id]->finalgrade->overridden
                                 || $locked || ($grade != $finalgrade))
                             && !is_null($userdata->instancedata[$instance->id]->finalgrade->grade)) {
-                            $percentgrade = round(100 * $grade / $userdata->maxgrade, 2);
+                            $percentgrade = round(100 * $finalgrade / $maxgrade, 2);
                         } else {
                             $percentgrade = round($userdata->instancedata[$instance->id]->percentgrade, 2);
                         }
