@@ -261,6 +261,10 @@ class local_checkmarkreport_base {
             if (!empty($sort)) {
                 $sort = ' ORDER BY '.$sort;
             }
+
+            /* TODO: If there are overwritten grades we have to somewhat sort it later on again,
+             * because we can't tell which overwritten grades here are!
+             */
             $sql = 'SELECT '.$ufields.' '.$useridentityfields.',
                            100 * COUNT( DISTINCT cchks.id) / :maxchecks percentchecked,
                            COUNT( DISTINCT cchks.id ) checks,
@@ -268,7 +272,6 @@ class local_checkmarkreport_base {
                            SUM( cex.grade ) checkgrade
                       FROM {user} u
                  LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid '.$sqlcheckmarkids.'
-                 LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid '.$sqlcheckmarkbids.'
                  LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id
                                                       AND cchks.state = 1
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
@@ -365,6 +368,7 @@ SELECT id
 ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
                 }
                 foreach ($userids as $key) {
+                    // If we have to reorder $returndata is empty now, otherwise the data's already set.
                     if ($reorder !== false) {
                         $returndata[$key] = $data[$key];
                     }
