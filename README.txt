@@ -15,7 +15,7 @@
 
 /**
  * README.txt
- * @version       2015-01-14
+ * @version       2016-03-14
  * @package       local_checkmarkreport
  * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
  * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
@@ -26,7 +26,7 @@
  */
 
 # ---------------------------------------------------------------
-# FOR Moodle 2.9+
+# FOR Moodle 3.0+
 # ---------------------------------------------------------------
 
 Checkmarkreport plugin
@@ -38,7 +38,7 @@ OVERVIEW
 
 REQUIREMENTS
 ================================================================================
-    Moodle 2.9 or later
+    Moodle 3.0 or later
 
 INSTALLATION
 ================================================================================
