@@ -57,6 +57,11 @@ INSTALLATION
 
 CHANGELOG
 ================================================================================
+v 2016031401
+-------------------------
+*) Codechecker cleanup
+*) Update to 3.0!
+
 v 2016012001
 -------------------------
 *) fix another bug in calculation of gradesums
