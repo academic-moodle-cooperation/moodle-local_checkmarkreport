@@ -27,8 +27,7 @@
  /**
   * @module local_checkmarkreport/report
   */
-define(['jquery', 'jqueryui', 'core/str', 'core/log'],
-       function($, jqueryui, str, log) {
+define(['jquery', 'jqueryui', 'core/str', 'core/log'], function($, jqueryui, str, log) {
 
     /**
      * @constructor
@@ -54,44 +53,45 @@ define(['jquery', 'jqueryui', 'core/str', 'core/log'],
 
         log.info('Initialize report JS!', 'local_checkmarkreport');
 
-        str.get_strings([{key: 'overwritten', component: 'local_checkmarkreport'},
-                         {key: 'by', component: 'local_checkmarkreport'}]).done(function(s) {
-                log.info('Successfully acquired strings: ' + s, 'local_checkmarkreport');
-                log.info('Register tooltips!', 'local_checkmarkreport');
+        var stringstofetch = [{key: 'overwritten', component: 'local_checkmarkreport'},
+                              {key: 'by', component: 'local_checkmarkreport'}];
+        str.get_strings(stringstofetch).done(function(s) {
+            log.info('Successfully acquired strings: ' + s, 'local_checkmarkreport');
+            log.info('Register tooltips!', 'local_checkmarkreport');
 
-                $( ".path-local-checkmarkreport #checkmarkreporttable" ).tooltip({
-                    items: ".current",
-                    track: true,
-                    content: function() {
-                        var element = $( this );
+            $( ".path-local-checkmarkreport #checkmarkreporttable" ).tooltip({
+                items: ".current",
+                track: true,
+                content: function() {
+                    var element = $( this );
 
-                        var dategraded = element.data('dategraded');
-                        var grader = element.data('grader');
+                    var dategraded = element.data('dategraded');
+                    var grader = element.data('grader');
 
-                        var content = '<div class="checkmarkreportoverlay" role="tooltip" ' +
-                                            'aria-describedby="' + element.attr('id') + '">';
-                        content += s[0]; // ['overwritten', 'local_checkmarkreport']
+                    var content = '<div class="checkmarkreportoverlay" role="tooltip" ';
+                    content += 'aria-describedby="' + element.attr('id') + '">';
+                    content += s[0]; // Equals language string ['overwritten', 'local_checkmarkreport']!
 
-                        if ( !element.is( "[data-username][data-grader][data-dategraded]" ) ) {
-                            return content + '</div>';
-                        }
-
-                        if (grader !== '') {
-                            content += '<div class="fullname">' + s[1] + //['by', 'local_checkmarkreport']
-                                       '&nbsp;' + grader + '</div>';
-                        }
-                        if (dategraded !== '') {
-                            content += '<div class="dategraded">' + dategraded + '</div>';
-                        }
-
-                        content += '</div>';
-
-                        return content;
+                    if ( !element.is( "[data-username][data-grader][data-dategraded]" ) ) {
+                        return content + '</div>';
                     }
-                });
-            }).fail(function(ex) {
-                log.error("Error getting strings: " + ex, "local_checkmarkreport");
+
+                    if (grader !== '') {
+                        content += '<div class="fullname">' + s[1] + // Equals language string ['by', 'local_checkmarkreport']!
+                                   '&nbsp;' + grader + '</div>';
+                    }
+                    if (dategraded !== '') {
+                        content += '<div class="dategraded">' + dategraded + '</div>';
+                    }
+
+                    content += '</div>';
+
+                    return content;
+                }
             });
+        }).fail(function(ex) {
+            log.error("Error getting strings: " + ex, "local_checkmarkreport");
+        });
     };
 
     return instance;

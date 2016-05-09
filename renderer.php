@@ -428,13 +428,12 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                         $tdstyle .= isset($table->size[$key]) ? $table->size[$key] : '';
                         $tdstyle .= isset($table->wrap[$key]) ? $table->wrap[$key] : '';
                         $cell->attributes['class'] = trim($cell->attributes['class']);
-                        $tdattributes = array_merge($cell->attributes,
-                                                    array('style'   => $tdstyle . $cell->style,
-                                                          'colspan' => $cell->colspan,
-                                                          'rowspan' => $cell->rowspan,
-                                                          'id'      => $cell->id,
-                                                          'abbr'    => $cell->abbr,
-                                                          'scope'   => $cell->scope));
+                        $tdattributes = array_merge($cell->attributes, array('style'   => $tdstyle . $cell->style,
+                                                                             'colspan' => $cell->colspan,
+                                                                             'rowspan' => $cell->rowspan,
+                                                                             'id'      => $cell->id,
+                                                                             'abbr'    => $cell->abbr,
+                                                                             'scope'   => $cell->scope));
                         $tagtype = 'td';
                         if ($cell->header === true) {
                             $tagtype = 'th';

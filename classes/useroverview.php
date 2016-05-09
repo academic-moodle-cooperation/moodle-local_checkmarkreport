@@ -199,17 +199,13 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     $row['examples'] = new html_table_cell($examplenames[$instance->id][$exid]->name.
                                                            ' ('.$examplenames[$instance->id][$exid]->grade.')');
                     if ($showpoints) {
-                        $row['checked'] = new html_table_cell($example ?
-                                                              $examplenames[$instance->id][$exid]->grade :
-                                                              0);
+                        $row['checked'] = new html_table_cell($example ? $examplenames[$instance->id][$exid]->grade : 0);
                     } else {
                         $row['checked'] = new html_table_cell($example ? "☒" : "☐");
                     }
                     if (!empty($showgrade)) {
-                        $row['points'] = new html_table_cell(($example ?
-                                                              $examplenames[$instance->id][$exid]->grade :
-                                                              0).'/'.
-                                                              $examplenames[$instance->id][$exid]->grade);
+                        $row['points'] = new html_table_cell(($example ? $examplenames[$instance->id][$exid]->grade : 0).'/'.
+                                                             $examplenames[$instance->id][$exid]->grade);
                     }
                     $table->data[$i] = new html_table_row();
                     $table->data[$i]->cells = $row;
@@ -242,8 +238,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     $row['checked']->header = true;
                     $row['checked']->style = ' text-align: right; ';
                 }
-                $grade = empty($userdata->instancedata[$instance->id]->grade) ?
-                         0 : $userdata->instancedata[$instance->id]->grade;
+                $grade = empty($userdata->instancedata[$instance->id]->grade) ? 0 : $userdata->instancedata[$instance->id]->grade;
                 $maxgrade = $userdata->instancedata[$instance->id]->maxgrade;
                 $data = array();
                 if (!empty($showgrade)) {
@@ -273,9 +268,10 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         $data['dategraded'] = userdate($dategraded);
                         $data['grader'] = $users[$usermodified];
                     } else {
-                        $gradetext = (empty($userdata->instancedata[$instance->id]->grade) ? 0 :
-                                     $userdata->instancedata[$instance->id]->grade).'/'.$maxgrade;
-                            $class = "";
+                        $cond = empty($userdata->instancedata[$instance->id]->grade);
+                        $gradetext = ($cond ? 0 : $userdata->instancedata[$instance->id]->grade).'/'.$maxgrade;
+                        unset($cond);
+                        $class = "";
                     }
                     if (!empty($showrel)) {
                         $finalgrade = $userdata->instancedata[$instance->id]->finalgrade->grade;
@@ -339,11 +335,9 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 if (!empty($showgrade)) {
                     // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
                     if ($userdata->overridden) {
-                        $gradetext = (empty($userdata->coursesum) ? 0 :
-                                     round($userdata->coursesum, 2)).' / '.$userdata->maxgrade;
+                        $gradetext = (empty($userdata->coursesum) ? 0 : round($userdata->coursesum, 2)).' / '.$userdata->maxgrade;
                     } else {
-                        $gradetext = (empty($userdata->checkgrade) ? 0 :
-                                     $userdata->checkgrade).'/'.$userdata->maxgrade;
+                        $gradetext = (empty($userdata->checkgrade) ? 0 : $userdata->checkgrade).'/'.$userdata->maxgrade;
                     }
                 }
                 if (!empty($showrel)) {

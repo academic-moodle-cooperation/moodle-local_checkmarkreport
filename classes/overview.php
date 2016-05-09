@@ -305,17 +305,17 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
             // Coursesum of course grade.
             if (!empty($showgrade)) {
-                $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ?
-                                                    0 : $curuser->checkgrade).' / '.$curuser->maxgrade);
+                $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ? 0 : $curuser->checkgrade).
+                                                    ' / '.$curuser->maxgrade);
                 // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
                 if ($curuser->overridden) {
-                    $row['grade'] = new html_table_cell((empty($curuser->coursesum) ?
-                                                        0 : round($curuser->coursesum, 2)).' / '.$curuser->maxgrade);
+                    $row['grade'] = new html_table_cell((empty($curuser->coursesum) ? 0 : round($curuser->coursesum, 2)).
+                                                        ' / '.$curuser->maxgrade);
                     $row['grade']->attributes['class'] = 'current';
                     $row['grade']->id = "u".$curuser->id."i0_a";
                 } else {
-                    $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ?
-                                                        0 : $curuser->checkgrade).' / '.$curuser->maxgrade);
+                    $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ? 0 : $curuser->checkgrade).
+                                                        ' / '.$curuser->maxgrade);
                 }
                 $row['grade']->attributes['id'] = 'u'.$curuser->id.'i0';
             }
@@ -349,8 +349,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
                             || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
-                        $grade = (empty($curuser->instancedata[$instance->id]->finalgrade->grade) ? 0 :
-                                  round($curuser->instancedata[$instance->id]->finalgrade->grade, 2)).' / '.
+                        $grade = (empty($finalgrade) ? 0 : round($finalgrade, 2)).' / '.
                                   $curuser->instancedata[$instance->id]->maxgrade;
                         if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
                             $conditions = array('id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified);
@@ -365,9 +364,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                             $users[$userid] = fullname($userobj);
                         }
                     } else {
-                        $grade = (empty($curuser->instancedata[$instance->id]->grade) ?
-                                  0 : $curuser->instancedata[$instance->id]->grade).
-                                 ' / '.$curuser->instancedata[$instance->id]->maxgrade;
+                        $grade = (empty($grade) ? 0 : $grade).' / '.$curuser->instancedata[$instance->id]->maxgrade;
                     }
                     $row['grade'.$instance->id] = new html_table_cell($grade);
                     // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
@@ -400,8 +397,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $grade = $curuser->instancedata[$instance->id]->grade;
                     $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
                     $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
-                    $perccheck = empty($curuser->instancedata[$instance->id]->percentchecked) ?
-                                 0 : $curuser->instancedata[$instance->id]->percentchecked;
+                    $perccheck = $curuser->instancedata[$instance->id]->percentchecked;
+                    $perccheck = empty($perccheck) ? 0 : $perccheck;
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
                             || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
@@ -428,8 +425,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                             $users[$userid] = fullname($userobj);
                         }
                     } else {
-                        $percgrade = empty($curuser->instancedata[$instance->id]->percentgrade) ?
-                                     0 : $curuser->instancedata[$instance->id]->percentgrade;
+                        $percgrade = $curuser->instancedata[$instance->id]->percentgrade;
+                        $percgrade = empty($percgrade) ? 0 : $percgrade;
                     }
                     if (is_numeric($percgrade)) {
                         $percgrade = round($percgrade, 2).'%';

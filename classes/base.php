@@ -380,19 +380,19 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
                     $data[$key]->instancedata = array();
                     foreach ($checkmarkids as $chkmkid) {
                         $returndata[$key]->instancedata[$chkmkid] = new stdClass();
-                        $grade = empty($instancedata[$chkmkid][$key]->grade) ?
-                                 0 : $instancedata[$chkmkid][$key]->grade;
+                        $grade = empty($instancedata[$chkmkid][$key]->grade) ? 0 : $instancedata[$chkmkid][$key]->grade;
                         $returndata[$key]->instancedata[$chkmkid]->grade = $grade;
                         $returndata[$key]->instancedata[$chkmkid]->maxgrade = $instancedata[$chkmkid][$key]->maxgrade;
-                        $checks = empty($instancedata[$chkmkid][$key]->checks) ?
-                                  0 : $instancedata[$chkmkid][$key]->checks;
+                        $checks = empty($instancedata[$chkmkid][$key]->checks) ? 0 : $instancedata[$chkmkid][$key]->checks;
                         $returndata[$key]->instancedata[$chkmkid]->checked = $checks;
                         $returndata[$key]->instancedata[$chkmkid]->maxchecked = $instancedata[$chkmkid][$key]->maxchecks;
-                        $percentchecked = empty($instancedata[$chkmkid][$key]->percentchecked) ?
-                                          0 : $instancedata[$chkmkid][$key]->percentchecked;
+                        $percentcheckedtmp = $instancedata[$chkmkid][$key]->percentchecked;
+                        $percentchecked = empty($percentcheckedtmp) ? 0 : $percentcheckedtmp;
+                        unset($percentcheckedtmp);
                         $returndata[$key]->instancedata[$chkmkid]->percentchecked = $percentchecked;
-                        $percentgrade = empty($instancedata[$chkmkid][$key]->percentgrade) ?
-                                        0 : $instancedata[$chkmkid][$key]->percentgrade;
+                        $percentgradetmp = $instancedata[$chkmkid][$key]->percentgrade;
+                        $percentgrade = empty($percentgradetmp) ? 0 : $percentgradetmp;
+                        unset($percentgradetmp);
                         $returndata[$key]->instancedata[$chkmkid]->percentgrade = $percentgrade;
                         $returndata[$key]->instancedata[$chkmkid]->cmid = $cmids[$chkmkid];
 
@@ -403,7 +403,7 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
                                                                                      ' / '.round($grademax, 2);
 
                         if (($finalgrade->locked || $finalgrade->overridden || ($finalgrade->grade != $grade))
-                             && !is_null($finalgrade->grade)) {
+                                && !is_null($finalgrade->grade)) {
                             $returndata[$key]->coursesum += $finalgrade->grade;
                             $returndata[$key]->overridden = true;
                         } else {

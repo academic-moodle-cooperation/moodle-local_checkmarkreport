@@ -52,13 +52,12 @@ $PAGE->set_pagelayout('popup');
 $arrays = http_build_query(array('groups'    => $groups,
                                  'users'     => $users,
                                  'instances' => $instances));
-$PAGE->set_url('/local/checkmarkreport/download.php?'.$arrays,
-               array('id'         => $id,
-                     'showgrade'  => $showgrade,
-                     'showabs'    => $showabs,
-                     'showrel'    => $showrel,
-                     'showpoints' => $showpoints,
-                     'format'     => $format));
+$PAGE->set_url('/local/checkmarkreport/download.php?'.$arrays, array('id'         => $id,
+                                                                     'showgrade'  => $showgrade,
+                                                                     'showabs'    => $showabs,
+                                                                     'showrel'    => $showrel,
+                                                                     'showpoints' => $showpoints,
+                                                                     'format'     => $format));
 
 // Get Tabs according to capabilities!
 $tabs = array();
