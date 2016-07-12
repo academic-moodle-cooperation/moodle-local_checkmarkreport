@@ -749,4 +749,36 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
             return $return;
         }
     }
+
+    /**
+     * Outputs XML for download with filename as specified!
+     *
+     * @param string $xml XML string
+     * @param string $filename filename for download
+     */
+    public function output_xml_with_headers($xml, $filename) {
+        header("Content-type: application/xml; charset=utf-8");
+        header('Content-Length: ' . strlen($xml));
+        header('Content-Disposition: attachment;filename="'.$filename.'.xml";'.
+                                               'filename*="'.rawurlencode($filename).'.xml"');
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Encoding: utf-8');
+        echo $xml;
+    }
+
+    /**
+     * Outputs plain text for download with filename as specified!
+     *
+     * @param string $text File content
+     * @param string $filename filename for download
+     */
+    public function output_text_with_headers($text, $filename) {
+        header("Content-type: text/txt; charset=utf-8");
+        header('Content-Length: ' . strlen($txt));
+        header('Content-Disposition: attachment;filename="'.$filename.'.txt";'.
+                                               'filename*="'.rawurlencode($filename).'.txt"');
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Encoding: utf-8');
+        echo $txt;
+    }
 }

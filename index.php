@@ -46,50 +46,7 @@ $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 
 // Get Tabs according to capabilities!
-$tabs = array();
-$availabletabs = array();
-if (has_capability('local/checkmarkreport:view_courseoverview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
-    $tabs[] = new tabobject('overview',
-                           $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
-                           '&amp;tab=overview',
-                           get_string('overview', 'local_checkmarkreport'),
-                           get_string('overview_alt', 'local_checkmarkreport'),
-                           false);
-    $availabletabs[] = 'overview';
-}
-
-if (has_capability('local/checkmarkreport:view_students_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
-    $tabs[] = new tabobject('useroverview',
-                           $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
-                           '&amp;tab=useroverview',
-                           get_string('useroverview', 'local_checkmarkreport'),
-                           get_string('useroverview_alt', 'local_checkmarkreport'),
-                           false);
-    $availabletabs[] = 'useroverview';
-}
-
-if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
-    $tabs[] = new tabobject('userview',
-                           $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
-                           '&amp;tab=userview',
-                           get_string('userview', 'local_checkmarkreport'),
-                           get_string('userview_alt', 'local_checkmarkreport'),
-                           false);
-    $availabletabs[] = 'userview';
-}
-
-if (count($tabs) > 1) {
-    $newtab = optional_param('tab', null, PARAM_ALPHAEXT);
-    if (!empty($newtab)) {
-        $tab = $newtab;
-    } else if (!isset($tab)) {
-        $tab = current($availabletabs);
-    }
-} else if (count($tabs) == 1) {
-    $tab = current($availabletabs);
-} else {
-    $tab = 'noaccess';
-}
+list($tabs, $availabletabs, $tab) = local_checkmarkreport_get_tabs($coursecontext, $id);
 
 $PAGE->set_url('/local/checkmarkreport/index.php', array('id' => $id, 'tab' => $tab));
 $PAGE->navbar->add(get_string('pluginname', 'local_checkmarkreport'),
@@ -112,79 +69,40 @@ if (! $checkmarks = get_all_instances_in_course('checkmark', $course)) {
     notice(get_string('nocheckmarks', 'checkmark'), new moodle_url('/course/view.php',
                                                                    array('id' => $course->id)));
 }
-
-switch($tab) {
-    case 'overview':
-        $mform = new local_checkmarkreport_reportfilterform($PAGE->url, array('courseid'   => $id,
-                                                        'hideusers' => true), 'get');
-        if ($data = $mform->get_data()) {
-            set_user_preference('checkmarkreport_showexamples', $data->showexamples);
-            set_user_preference('checkmarkreport_showgrade', $data->grade);
-            set_user_preference('checkmarkreport_sumabs', $data->sumabs);
-            set_user_preference('checkmarkreport_sumrel', $data->sumrel);
-            set_user_preference('checkmarkreport_showpoints', $data->showpoints);
-            set_user_preference('checkmarkreport_showattendances', $data->showattendances);
-            set_user_preference('checkmarkreport_signature', $data->signature);
-            $groupings = empty($data->groupings) ? array(0) : $data->groupings;
-            if (!is_array($groupings)) {
-                $groupings = array($groupings);
-            }
-            $groups = empty($data->groups) ? array(0) : $data->groups;
-            if (!is_array($groups)) {
-                $groups = array($groups);
-            }
+if ($tab == 'overview') {
+    $customdata = array('courseid'  => $id,
+                        'hideusers' => true);
+} else if ($tab == 'useroverview') {
+    $customdata = array('courseid'      => $id,
+                        'hideinstances' => true,
+                        'header'        => get_string('additional_information', 'local_checkmarkreport'));
+}
+if ($tab == 'overview' || $tab == 'useroverview') {
+    $mform = new local_checkmarkreport_reportfilterform($PAGE->url, $customdata, 'get');
+    if ($data = $mform->get_data()) {
+        set_user_preference('checkmarkreport_showexamples', $data->showexamples);
+        set_user_preference('checkmarkreport_showgrade', $data->grade);
+        set_user_preference('checkmarkreport_sumabs', $data->sumabs);
+        set_user_preference('checkmarkreport_sumrel', $data->sumrel);
+        set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+        set_user_preference('checkmarkreport_showattendances', $data->showattendances);
+        set_user_preference('checkmarkreport_signature', $data->signature);
+        $groupings = empty($data->groupings) ? array(0) : $data->groupings;
+        if (!is_array($groupings)) {
+            $groupings = array($groupings);
+        }
+        $groups = empty($data->groups) ? array(0) : $data->groups;
+        if (!is_array($groups)) {
+            $groups = array($groups);
+        }
+        if ($tab == 'overview') {
             $instances = $data->instances;
         } else {
-            $groupings = optional_param_array('groupings', array(0), PARAM_INT);
-            $groups = optional_param_array('groups', array(0), PARAM_INT);
-            $instances = optional_param_array('instances', array(0), PARAM_INT);
-            $mform->set_data(array('groupings' => $groupings,
-                                  'instances' => $instances));
-        }
-        $arrays = http_build_query(array('groupings'  => $groupings,
-                                         'groups'     => $groups,
-                                         'checkmarks' => $instances));
-        $PAGE->set_url($PAGE->url.'&'.$arrays);
-        $mform->display();
-        $checkmarkreport = new local_checkmarkreport_overview($id, $groupings, $groups, $instances);
-        // Trigger the event!
-        \local_checkmarkreport\event\overview_viewed::overview($course)->trigger();
-    break;
-    case 'useroverview':
-        $customdata = array('courseid'      => $id,
-                            'hideinstances' => true,
-                            'header'        => get_string('additional_information',
-                                                          'local_checkmarkreport'));
-        $mform = new local_checkmarkreport_reportfilterform($PAGE->url, $customdata, 'get');
-        if ($data = $mform->get_data()) {
-            set_user_preference('checkmarkreport_showexamples', $data->showexamples);
-            set_user_preference('checkmarkreport_showgrade', $data->grade);
-            set_user_preference('checkmarkreport_sumabs', $data->sumabs);
-            set_user_preference('checkmarkreport_sumrel', $data->sumrel);
-            set_user_preference('checkmarkreport_showpoints', $data->showpoints);
-            set_user_preference('checkmarkreport_showattendances', $data->showattendances);
-            set_user_preference('checkmarkreport_signature', $data->signature);
-            $groupings = empty($data->groupings) ? array(0) : $data->groupings;
-            if (!is_array($groupings)) {
-                $groupings = array($groupings);
-            }
-            $groups = empty($data->groups) ? array(0) : $data->groups;
-            if (!is_array($groups)) {
-                $groups = array($groups);
-            }
             $users = empty($data->users) ? array(0) : $data->users;
             if (!is_array($users)) {
                 $users = array($users);
             }
-        } else {
-            $groupings = optional_param_array('groupings', array(0), PARAM_INT);
-            $groups = optional_param_array('groups', array(0), PARAM_INT);
-            $users = optional_param_array('users', array(0), PARAM_INT);
-            $mform->set_data(array('groupings' => $groupings,
-                                   'groups'    => $groups,
-                                   'users'     => $users));
         }
-
         if (empty($groupings)) {
             $groupings = array(0);
         }
@@ -196,14 +114,40 @@ switch($tab) {
         if (empty($users)) {
             $users = array(0);
         }
-
-        $mform->display();
-
+    } else {
+        $groupings = optional_param_array('groupings', array(0), PARAM_INT);
+        $groups = optional_param_array('groups', array(0), PARAM_INT);
+        if ($tab == 'overview') {
+            $instances = optional_param_array('instances', array(0), PARAM_INT);
+            $mform->set_data(array('groupings' => $groupings,
+                                   'instances' => $instances));
+        } else {
+            $users = optional_param_array('users', array(0), PARAM_INT);
+            $mform->set_data(array('groupings' => $groupings,
+                                   'groups'    => $groups,
+                                   'users'     => $users));
+        }
+    }
+    if ($tab == 'overview') {
+        $arrays = http_build_query(array('groupings'  => $groupings,
+                                         'groups'     => $groups,
+                                         'checkmarks' => $instances));
+    } else {
         $arrays = http_build_query(array('groupings' => $groupings,
                                          'groups'    => $groups,
                                          'users'     => $users));
-        $PAGE->set_url($PAGE->url.'&'.$arrays);
+    }
+    $PAGE->set_url($PAGE->url.'&'.$arrays);
+    $mform->display();
+}
 
+switch($tab) {
+    case 'overview':
+        $checkmarkreport = new local_checkmarkreport_overview($id, $groupings, $groups, $instances);
+        // Trigger the event!
+        \local_checkmarkreport\event\overview_viewed::overview($course)->trigger();
+    break;
+    case 'useroverview':
         $checkmarkreport = new local_checkmarkreport_useroverview($id, $groupings, $groups, $users);
         // Trigger the event!
         \local_checkmarkreport\event\useroverview_viewed::useroverview($course)->trigger();

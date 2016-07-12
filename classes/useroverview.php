@@ -572,13 +572,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $xml = '<?xml version="1.0"  encoding="utf-8" ?>'."\n".html_writer::tag('report', "\n".$xml);
         $filename = get_string('pluginname', 'local_checkmarkreport').'_'.
                     $course->shortname.'_'.userdate(time());
-        header("Content-type: application/xml; charset=utf-8");
-        header('Content-Length: ' . strlen($xml));
-        header('Content-Disposition: attachment;filename="'.$filename.'.xml";'.
-                                               'filename*="'.rawurlencode($filename).'.xml"');
-        header('Content-Transfer-Encoding: binary');
-        header('Content-Encoding: utf-8');
-        echo $xml;
+        $this->output_xml_with_headers($xml, $filename);
     }
 
     /**
@@ -676,13 +670,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         }
         $filename = get_string('pluginname', 'local_checkmarkreport').'_'.
                     $course->shortname.'_'.userdate(time());
-        header("Content-type: text/txt; charset=utf-8");
-        header('Content-Length: ' . strlen($txt));
-        header('Content-Disposition: attachment;filename="'.$filename.'.txt";'.
-                                               'filename*="'.rawurlencode($filename).'.txt"');
-        header('Content-Transfer-Encoding: binary');
-        header('Content-Encoding: utf-8');
-        echo $txt;
+        $this->output_text_with_headers($txt, $filename);
     }
 
     /**

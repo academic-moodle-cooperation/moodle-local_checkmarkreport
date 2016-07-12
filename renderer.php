@@ -37,7 +37,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_checkmarkreport_renderer extends plugin_renderer_base {
-
     /**
      * Renders the overview report (big html table with all users and all instances - except of filtered ones)
      *
@@ -60,27 +59,9 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                       'format'     => local_checkmarkreport_base::FORMAT_XLSX);
         $groups = $report->get_groups();
         $checkmarks = $report->get_instances();
-        $arrays = http_build_query(array('groups'     => $groups,
-                                         'checkmarks' => $checkmarks));
-        $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
-        $downloadlinks = get_string('exportas', 'local_checkmarkreport');
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.XLSX'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_ODS));
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.ODS'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_XML));
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.XML'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_TXT));
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.TXT'),
-                                           array('class' => 'downloadlink'));
-
-        $out = html_writer::tag('div', $downloadlinks, array('class' => 'download'));
+        $out = html_writer::tag('div', $this->downloadlinks(array('groups' => $groups,
+                                                                  'checkmarks' => $checkmarks), $data),
+                                                            array('class' => 'download'));
 
         // Render the table!
         $table = $report->get_table();
@@ -118,26 +99,9 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                       'format'     => local_checkmarkreport_base::FORMAT_XLSX);
         $groups = $report->get_groups();
         $users = $report->get_user();
-        $arrays = http_build_query(array('groups' => $groups,
-                                         'users'  => $users));
-        $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
-        $downloadlinks = get_string('exportas', 'local_checkmarkreport');
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.XLSX'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_ODS));
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.ODS'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_XML));
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.XML'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_TXT));
-        $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.TXT'),
-                                           array('class' => 'downloadlink'));
-        $out .= html_writer::tag('div', $downloadlinks, array('class' => 'download'));
+        $out .= html_writer::tag('div', $this->get_downloadlinks(array('groups' => $groups,
+                                                                       'users'  => $users), $data),
+                                                                 array('class' => 'download'));
 
         // Render the tables!
         $data = $report->get_coursedata();
@@ -177,6 +141,35 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $out = $this->render_local_checkmarkreport_useroverview($report, true);
 
         return $this->output->container($out, 'submission', 'checkmarkreporttable');
+    }
+
+    /**
+     * Helper function to return the download links
+     *
+     * @param mixed[] $arrays arrays to include in get parameters
+     * @param mixed[] $data array of data to include in get parameters
+     * @return string HTML snippet
+     */
+    private function get_downloadlinks($arrays, $data) {
+        $arrays = http_build_query($arrays);
+        $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
+        $downloadlinks = get_string('exportas', 'local_checkmarkreport');
+        $downloadlinks .= html_writer::tag('span',
+                                           html_writer::link($uri, '.XLSX'),
+                                           array('class' => 'downloadlink'));
+        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_ODS));
+        $downloadlinks .= html_writer::tag('span',
+                                           html_writer::link($uri, '.ODS'),
+                                           array('class' => 'downloadlink'));
+        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_XML));
+        $downloadlinks .= html_writer::tag('span',
+                                           html_writer::link($uri, '.XML'),
+                                           array('class' => 'downloadlink'));
+        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_TXT));
+        $downloadlinks .= html_writer::tag('span',
+                                           html_writer::link($uri, '.TXT'),
+                                           array('class' => 'downloadlink'));
+        return $downloadlinks;
     }
 
     /**

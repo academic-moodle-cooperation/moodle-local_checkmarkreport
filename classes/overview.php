@@ -369,6 +369,18 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $instances = $this->get_courseinstances();
             foreach ($instances as $instance) {
                 // Coursesum of course grade.
+                if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
+                    $conditions = array('id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified);
+                    $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
+                    $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
+                    $users[$usermodified] = fullname($userobj);
+                }
+                if (empty($users[$curuser->id])) {
+                    $conditions = array('id' => $curuser->id);
+                    $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
+                    $userid = $curuser->id;
+                    $users[$userid] = fullname($userobj);
+                }
                 if (!empty($showgrade)) {
                     $grade = $curuser->instancedata[$instance->id]->grade;
                     $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
@@ -381,18 +393,6 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         } else {
                             $grade = round($curuser->instancedata[$instance->id]->finalgrade->grade, 2).' / '.
                                      $curuser->instancedata[$instance->id]->maxgrade;
-                        }
-                        if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
-                            $conditions = array('id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified);
-                            $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
-                            $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                            $users[$usermodified] = fullname($userobj);
-                        }
-                        if (empty($users[$curuser->id])) {
-                            $conditions = array('id' => $curuser->id);
-                            $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
-                            $userid = $curuser->id;
-                            $users[$userid] = fullname($userobj);
                         }
                     } else {
                         if (empty($curuser->instancedata[$instance->id]->grade)) {
@@ -450,18 +450,6 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         } else {
                             $percgrade = '-';
                             $rel = '-';
-                        }
-                        if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
-                            $conditions = array('id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified);
-                            $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
-                            $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                            $users[$usermodified] = fullname($userobj);
-                        }
-                        if (empty($users[$curuser->id])) {
-                            $conditions = array('id' => $curuser->id);
-                            $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
-                            $userid = $curuser->id;
-                            $users[$userid] = fullname($userobj);
                         }
                     } else {
                         if (empty($curuser->instancedata[$instance->id]->percentgrade)) {
@@ -626,13 +614,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $xml = '<?xml version="1.0"  encoding="utf-8" ?>'."\n".html_writer::tag('report', "\n".$xml);
         $filename = get_string('pluginname', 'local_checkmarkreport').'_'.
                     $course->shortname.'_'.userdate(time());
-        header("Content-type: application/xml; charset=utf-8");
-        header('Content-Length: ' . strlen($xml));
-        header('Content-Disposition: attachment;filename="'.$filename.'.xml";'.
-                                               'filename*="'.rawurlencode($filename).'.xml"');
-        header('Content-Transfer-Encoding: binary');
-        header('Content-Encoding: utf-8');
-        echo $xml;
+        $this->output_xml_with_headers($xml, $filename);
     }
 
     /**
@@ -761,13 +743,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         }
         $filename = get_string('pluginname', 'local_checkmarkreport').'_'.
                     $course->shortname.'_'.userdate(time());
-        header("Content-type: text/txt; charset=utf-8");
-        header('Content-Length: ' . strlen($txt));
-        header('Content-Disposition: attachment;filename="'.$filename.'.txt";'.
-                                               'filename*="'.rawurlencode($filename).'.txt"');
-        header('Content-Transfer-Encoding: binary');
-        header('Content-Encoding: utf-8');
-        echo $txt;
+        $this->output_text_with_headers($txt, $filename);
     }
 
     /**

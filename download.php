@@ -60,50 +60,8 @@ $PAGE->set_url('/local/checkmarkreport/download.php?'.$arrays, array('id'       
                                                                      'format'     => $format));
 
 // Get Tabs according to capabilities!
-$tabs = array();
-$availabletabs = array();
-if (has_capability('local/checkmarkreport:view_courseoverview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
-    $tabs[] = new tabobject('overview',
-                           $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
-                           '&amp;tab=overview',
-                           get_string('overview', 'local_checkmarkreport'),
-                           get_string('overview_alt', 'local_checkmarkreport'),
-                           false);
-    $availabletabs[] = 'overview';
-}
+list($tabs, $availabletabs, $tab) = local_checkmarkreport_get_tabs($coursecontext, $id);
 
-if (has_capability('local/checkmarkreport:view_students_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
-    $tabs[] = new tabobject('useroverview',
-                           $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
-                           '&amp;tab=useroverview',
-                           get_string('useroverview', 'local_checkmarkreport'),
-                           get_string('useroverview_alt', 'local_checkmarkreport'),
-                           false);
-    $availabletabs[] = 'useroverview';
-}
-
-if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
-    $tabs[] = new tabobject('userview',
-                           $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
-                           '&amp;tab=userview',
-                           get_string('userview', 'local_checkmarkreport'),
-                           get_string('userview_alt', 'local_checkmarkreport'),
-                           false);
-    $availabletabs[] = 'userview';
-}
-
-if (count($tabs) > 1) {
-    $newtab = optional_param('tab', null, PARAM_ALPHAEXT);
-    if (!empty($newtab)) {
-        $tab = $newtab;
-    } else if (!isset($tab)) {
-        $tab = current($availabletabs);
-    }
-} else if (count($tabs) == 1) {
-    $tab = current($availabletabs);
-} else {
-    $tab = 'noaccess';
-}
 $output = $PAGE->get_renderer('local_checkmarkreport');
 
 switch($format) {
