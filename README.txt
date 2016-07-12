@@ -15,7 +15,7 @@
 
 /**
  * README.txt
- * @version       2015-01-14
+ * @version       2016-07-12
  * @package       local_checkmarkreport
  * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
  * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
@@ -26,7 +26,7 @@
  */
 
 # ---------------------------------------------------------------
-# FOR Moodle 2.9+
+# FOR Moodle 3.1+
 # ---------------------------------------------------------------
 
 Checkmarkreport plugin
@@ -38,7 +38,7 @@ OVERVIEW
 
 REQUIREMENTS
 ================================================================================
-    Moodle 2.9 or later
+    Moodle 3.1 or later
 
 INSTALLATION
 ================================================================================
@@ -57,6 +57,12 @@ INSTALLATION
 
 CHANGELOG
 ================================================================================
+v 2016071200
+-------------------------
+*) Add support for mod_checkmark's attendance tracking
+*) Make examples columns optional (will be displayed by default)
+*) Update to Moodle 3.1!
+
 v 2016012000
 -------------------------
 *) prevent overview without selected instances

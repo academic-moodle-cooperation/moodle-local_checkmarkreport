@@ -30,9 +30,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2016012000;                             // The current module version (Date: YYYYMMDDXX).
-$plugin->release      = 'v2.9';                                 // User-friendly version number.
+$plugin->version      = 2016071200;                             // The current module version (Date: YYYYMMDDXX).
+$plugin->release      = 'v3.1.0';                                 // User-friendly version number.
 $plugin->maturity     = MATURITY_STABLE;
-$plugin->requires     = 2015051100;                             // Requires this Moodle version!
+$plugin->requires     = 2016052300;                             // Requires this Moodle version!
 $plugin->component    = 'local_checkmarkreport';                // To check on upgrade, that module sits in correct place.
-$plugin->dependencies = array('mod_checkmark' => 2016012000);   // FRANKENSTYLE + version number or ANY_VERSION.
+$plugin->dependencies = array('mod_checkmark' => 2016071200);   // FRANKENSTYLE + version number or ANY_VERSION.
