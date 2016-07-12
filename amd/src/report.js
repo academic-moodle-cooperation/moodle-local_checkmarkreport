@@ -27,8 +27,7 @@
  /**
   * @module local_checkmarkreport/report
   */
-define(['jquery', 'jqueryui', 'core/str', 'core/log'],
-       function($, jqueryui, str, log) {
+define(['jquery', 'jqueryui', 'core/str', 'core/log'], function($, jqueryui, str, log) {
 
     /**
      * @constructor
@@ -54,44 +53,46 @@ define(['jquery', 'jqueryui', 'core/str', 'core/log'],
 
         log.info('Initialize report JS!', 'local_checkmarkreport');
 
-        str.get_strings([{key: 'overwritten', component: 'local_checkmarkreport'},
-                         {key: 'by', component: 'local_checkmarkreport'}]).done(function(s) {
-                log.info('Successfully acquired strings: ' + s, 'local_checkmarkreport');
-                log.info('Register tooltips!', 'local_checkmarkreport');
+        var tofetch = [{key: 'overwritten', component: 'local_checkmarkreport'},
+                       {key: 'by', component: 'local_checkmarkreport'}];
+        str.get_strings(tofetch).done(function(s) {
 
-                $( ".path-local-checkmarkreport #checkmarkreporttable" ).tooltip({
-                    items: ".current",
-                    track: true,
-                    content: function() {
-                        var element = $( this );
+            log.info('Successfully acquired strings: ' + s, 'local_checkmarkreport');
+            log.info('Register tooltips!', 'local_checkmarkreport');
 
-                        var dategraded = element.data('dategraded');
-                        var grader = element.data('grader');
+            $( ".path-local-checkmarkreport #checkmarkreporttable" ).tooltip({
+                items: ".current",
+                track: true,
+                content: function() {
+                    var element = $( this );
 
-                        var content = '<div class="checkmarkreportoverlay" role="tooltip" ' +
-                                            'aria-describedby="' + element.attr('id') + '">';
-                        content += s[0]; // ['overwritten', 'local_checkmarkreport']
+                    var dategraded = element.data('dategraded');
+                    var grader = element.data('grader');
 
-                        if ( !element.is( "[data-username][data-grader][data-dategraded]" ) ) {
-                            return content + '</div>';
-                        }
+                    var content = '<div class="checkmarkreportoverlay" role="tooltip" ';
+                    content += 'aria-describedby="' + element.attr('id') + '">';
+                    content += s[0]; // Is string 'overwritten' from 'local_checkmarkreport'!
 
-                        if (grader !== '') {
-                            content += '<div class="fullname">' + s[1] + //['by', 'local_checkmarkreport']
-                                       '&nbsp;' + grader + '</div>';
-                        }
-                        if (dategraded !== '') {
-                            content += '<div class="dategraded">' + dategraded + '</div>';
-                        }
-
-                        content += '</div>';
-
-                        return content;
+                    if ( !element.is( "[data-username][data-grader][data-dategraded]" ) ) {
+                        return content + '</div>';
                     }
-                });
-            }).fail(function(ex) {
-                log.error("Error getting strings: " + ex, "local_checkmarkreport");
+
+                    if (grader !== '') {
+                        content += '<div class="fullname">' + s[1] + // Is string 'by' from 'local_checkmarkreport']!
+                                   '&nbsp;' + grader + '</div>';
+                    }
+                    if (dategraded !== '') {
+                        content += '<div class="dategraded">' + dategraded + '</div>';
+                    }
+
+                    content += '</div>';
+
+                    return content;
+                }
             });
+        }).fail(function(ex) {
+            log.error("Error getting strings: " + ex, "local_checkmarkreport");
+        });
     };
 
     return instance;
