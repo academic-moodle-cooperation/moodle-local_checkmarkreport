@@ -59,9 +59,8 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                       'format'     => local_checkmarkreport_base::FORMAT_XLSX);
         $groups = $report->get_groups();
         $checkmarks = $report->get_instances();
-        $out = html_writer::tag('div', $this->downloadlinks(array('groups' => $groups,
-                                                                  'checkmarks' => $checkmarks), $data),
-                                                            array('class' => 'download'));
+        $out = html_writer::tag('div', $this->get_downloadlinks(array('groups' => $groups, 'checkmarks' => $checkmarks), $data),
+                                array('class' => 'download'));
 
         // Render the table!
         $table = $report->get_table();
