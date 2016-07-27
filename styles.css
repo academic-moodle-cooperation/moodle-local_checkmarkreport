@@ -94,6 +94,19 @@
     background: #f3e4c0;
 }
 
+.path-local-checkmarkreport #checkmarkreporttable .useroverview .checked,
+.path-local-checkmarkreport #checkmarkreporttable .useroverview .points,
+.path-local-checkmarkreport #checkmarkreporttable .useroverview .attendance {
+    /* Minimum width for these cells */
+    width: 1%;
+    white-space: nowrap;
+}
+
+.path-local-checkmarkreport #checkmarkreporttable .useroverview .attendance {
+    text-align: center;
+    vertical-align: middle;
+}
+
 .path-local-checkmarkreport .ui-tooltip {
     background-color: #ffee69;
     border-color: #d4c237 #a6982b #a6982b;

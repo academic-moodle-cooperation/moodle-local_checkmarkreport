@@ -64,6 +64,13 @@ class local_checkmarkreport_base {
     /** @var int[] instance ids */
     protected $instances = array(0);
 
+    /** @var int tracksattendances amount of attendance tracking instances */
+    protected $trackattendances = null;
+    /** @var bool attendancestracked tells if at least 1 instance tracks attendance */
+    protected $attendancestracked = null;
+    /** @var bool[] tracksattendance boolean array stating which instances track attendance */
+    protected $tracksattendance = null;
+
     /**
      * Base constructor
      *
@@ -106,6 +113,91 @@ class local_checkmarkreport_base {
      */
     public function get_groups() {
         return $this->groups;
+    }
+
+    /**
+     * returns if at least 1 instance in course uses attendance tracking
+     *
+     * @return bool True if at least 1 instance in course uses attendance tracking
+     */
+    public static function attendancestrackedincourse($courseid) {
+        global $DB;
+
+        return $DB->record_exists("checkmark", array('trackattendance' => 1, 'course' => $courseid)) ? true : false;
+    }
+
+    /**
+     * returns if at least 1 instance uses attendance tracking
+     *
+     * @return bool True if at least 1 instance in course/from selected instances uses attendance tracking
+     */
+    public function attendancestracked() {
+        global $DB;
+
+        if ($this->attendancestracked === null) {
+            if (!in_array(0, $this->instances)) {
+                list($select, $params) = $DB->get_in_or_equal($this->instances);
+                $select = "trackattendance = 1 AND id ".$select;
+            } else {
+                $select = "trackattendance = 1";
+                $params = array();
+            }
+
+            $this->attendancestracked = $DB->record_exists_select("checkmark", $select, $params) ? true : false;
+        }
+
+        return $this->attendancestracked;
+    }
+
+    /**
+     * returns how many instances track attendance
+     *
+     * @return int amount of instances tracking attendance (with filters applied)
+     */
+    public function trackingattendances() {
+        global $DB, $COURSE;
+
+        if ($this->attendancestracked() === false) {
+            $this->trackingattendances = 0;
+        } else {
+            if (!in_array(0, $this->instances)) {
+                list($select, $params) = $DB->get_in_or_equal($this->instances);
+                $select = "trackattendance = 1 AND course = ? AND id ".$select;
+                $params = array_merge(array($COURSE->id), $params);
+            } else {
+                $select = "trackattendance = 1 AND course = ?";
+                $params = array($COURSE->id);
+            }
+
+            $this->trackingattendances = $DB->count_records_select("checkmark", $select, $params);
+        }
+
+        return $this->trackingattendances;
+    }
+
+    /**
+     * returns which instances track attendance
+     *
+     * @return bool[]|bool array of bool values for each instance or bool value if filtered for 1 instance
+     */
+    public function tracksattendance($chkmkid = 0) {
+        global $DB, $COURSE;
+
+        if ($this->tracksattendance === null) {
+            $select = "course = ?";
+            $params = array($COURSE->id);
+            $this->tracksattendance = $DB->get_records_select_menu("checkmark", $select, $params, '', "id, trackattendance");
+        }
+
+        if (!empty($chkmkid) && !array_key_exists($chkmkid, $this->tracksattendance)) {
+            return false;
+        }
+
+        if (empty($chkmkid)) {
+            return $this->tracksattendance;
+        } else {
+            return $this->tracksattendance[$chkmkid];
+        }
     }
 
     /**
@@ -239,6 +331,7 @@ class local_checkmarkreport_base {
                               FROM {checkmark_examples} gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkids.'
                           GROUP BY gex.checkmarkid', $params);
+
             $params['maxgrade'] = $grades[0];
             $params['maxgradeb'] = $grades[0];
             $params['maxchecks'] = $examples[0];
@@ -262,10 +355,10 @@ class local_checkmarkreport_base {
                 $sort = ' ORDER BY '.$sort;
             }
             $sql = 'SELECT '.$ufields.' '.$useridentityfields.',
-                           100 * COUNT( DISTINCT cchks.id) / :maxchecks percentchecked,
-                           COUNT( DISTINCT cchks.id ) checks,
-                           100 * SUM( cex.grade ) / :maxgrade percentgrade,
-                           SUM( cex.grade ) checkgrade
+                           100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
+                           COUNT( DISTINCT cchks.id ) AS checks,
+                           100 * SUM( cex.grade ) / :maxgrade AS percentgrade,
+                           SUM( cex.grade ) AS checkgrade
                       FROM {user} u
                  LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid '.$sqlcheckmarkids.'
                  LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid '.$sqlcheckmarkbids.'
@@ -276,21 +369,34 @@ class local_checkmarkreport_base {
                   GROUP BY u.id'.
                   $sort;
 
+            $attendances = "SELECT u.id, SUM( f.attendance ) AS attendances
+                              FROM {user} u
+                         LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ".$sqlcheckmarkids."
+                             WHERE u.id ".$sqluserids."
+                          GROUP BY u.id";
+            $attendances = $DB->get_records_sql_menu($attendances, array_merge($checkmarkparams, $userparams));
+
             $data = $DB->get_records_sql($sql, $params);
             foreach ($data as $key => $cur) {
                 $data[$key]->maxgrade = $grades[0];
                 $data[$key]->maxchecks = $examples[0];
                 $data[$key]->coursegrade = $gbgrades->grades[$key];
                 $data[$key]->coursesum = 0; // Sum it up during per-instance-data!
+                $data[$key]->maxattendances = $this->trackingattendances();
+                $data[$key]->attendances = $attendances[$key];
+                if ($data[$key]->attendances == null) {
+                    $data[$key]->attendances = 0;
+                }
                 $data[$key]->overridden = false;
             }
 
             // Add per instance data!
             $sql = 'SELECT u.id,
-                           100 * COUNT( DISTINCT cchks.id) / :maxchecks percentchecked,
-                           COUNT( DISTINCT cchks.id ) checks,
-                           100 * SUM( cex.grade ) / :maxgrade percentgrade,
-                           SUM( cex.grade ) grade
+                           100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
+                           COUNT( DISTINCT cchks.id ) AS checks,
+                           100 * SUM( cex.grade ) / :maxgrade AS percentgrade,
+                           SUM( cex.grade ) AS grade,
+                           f.attendance AS attendance
                       FROM {user} u
                  LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid = :chkmkid
                  LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid = :chkmkidb
@@ -337,6 +443,10 @@ class local_checkmarkreport_base {
                     $sort = ' ORDER BY percentgrade '.current($sortarr);
                     $reorder = $chkmkid;
                 }
+                if ($primesort == 'attendance'.$chkmkid) {
+                    $sort = ' ORDER BY attendance '.current($sortarr);
+                    $reorder = $chkmkid;
+                }
                 $sql .= $sort;
                 $instancedata[$chkmkid] = $DB->get_records_sql($sql, $params);
 
@@ -376,21 +486,27 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
                     $data[$key]->instancedata = array();
                     foreach ($checkmarkids as $chkmkid) {
                         $returndata[$key]->instancedata[$chkmkid] = new stdClass();
-                        $grade = empty($instancedata[$chkmkid][$key]->grade) ?
-                                 0 : $instancedata[$chkmkid][$key]->grade;
+                        $grade = empty($instancedata[$chkmkid][$key]->grade) ? 0 : $instancedata[$chkmkid][$key]->grade;
                         $returndata[$key]->instancedata[$chkmkid]->grade = $grade;
                         $returndata[$key]->instancedata[$chkmkid]->maxgrade = $instancedata[$chkmkid][$key]->maxgrade;
-                        $checks = empty($instancedata[$chkmkid][$key]->checks) ?
-                                  0 : $instancedata[$chkmkid][$key]->checks;
+                        $checks = empty($instancedata[$chkmkid][$key]->checks) ? 0 : $instancedata[$chkmkid][$key]->checks;
                         $returndata[$key]->instancedata[$chkmkid]->checked = $checks;
                         $returndata[$key]->instancedata[$chkmkid]->maxchecked = $instancedata[$chkmkid][$key]->maxchecks;
-                        $percentchecked = empty($instancedata[$chkmkid][$key]->percentchecked) ?
-                                          0 : $instancedata[$chkmkid][$key]->percentchecked;
+                        if (empty($instancedata[$chkmkid][$key]->percentchecked)) {
+                            $percentchecked = 0;
+                        } else {
+                            $percentchecked = $instancedata[$chkmkid][$key]->percentchecked;
+                        }
                         $returndata[$key]->instancedata[$chkmkid]->percentchecked = $percentchecked;
-                        $percentgrade = empty($instancedata[$chkmkid][$key]->percentgrade) ?
-                                        0 : $instancedata[$chkmkid][$key]->percentgrade;
+                        if (empty($instancedata[$chkmkid][$key]->percentgrade)) {
+                            $percentgrade = 0;
+                        } else {
+                            $percentgrade = $instancedata[$chkmkid][$key]->percentgrade;
+                        }
                         $returndata[$key]->instancedata[$chkmkid]->percentgrade = $percentgrade;
                         $returndata[$key]->instancedata[$chkmkid]->cmid = $cmids[$chkmkid];
+
+                        $returndata[$key]->instancedata[$chkmkid]->attendance = $instancedata[$chkmkid][$key]->attendance;
 
                         // Add gradebook data!
                         $finalgrade = $gradinginfo[$chkmkid]->items[0]->grades[$key];

@@ -85,10 +85,12 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
     public function get_table($userdata) {
         global $CFG, $DB, $PAGE;
 
+        $showexamples = get_user_preferences('checkmarkreport_showexamples', 1);
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
+        $showattendances = get_user_preferences('checkmarkreport_showattendances');
         $signature = get_user_preferences('checkmarkreport_signature');
 
         $table = new html_table();
@@ -127,21 +129,25 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                     'class' => 'checkmark');
         $table->colclasses['checkmark'] = 'checkmark';
 
-        $tableheaders['examples'] = new html_table_cell(get_string('example', 'local_checkmarkreport'));
-        $tableheaders['examples']->header = true;
-        $table->align['examples'] = 'center';
-        $tablecolumns[] = 'examples';
-        $table->colgroups[] = array('span' => '1',
-                                    'class' => 'examples');
-        $table->colclasses['examples'] = 'examples';
+        if (!empty($showexamples)) {
+            $tableheaders['examples'] = new html_table_cell(get_string('example', 'local_checkmarkreport'));
+            $tableheaders['examples']->header = true;
+            $table->align['examples'] = 'left';
+            $tablecolumns[] = 'examples';
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => 'examples');
+            $table->colclasses['examples'] = 'examples';
+        }
 
-        $tableheaders['checked'] = new html_table_cell(get_string('status', 'local_checkmarkreport'));
-        $tableheaders['checked']->header = true;
-        $table->align['checked'] = 'center';
-        $tablecolumns[] = 'checked';
-        $table->colgroups[] = array('span' => '1',
-                                    'class' => 'checked');
-        $table->colclasses['checked'] = 'checked';
+        if (!empty($showabs) || !empty($showrel)) {
+            $tableheaders['checked'] = new html_table_cell(get_string('status', 'local_checkmarkreport'));
+            $tableheaders['checked']->header = true;
+            $table->align['checked'] = 'center';
+            $tablecolumns[] = 'checked';
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => 'checked');
+            $table->colclasses['checked'] = 'checked';
+        }
 
         if (!empty($showgrade)) {
             $tableheaders['points'] = new html_table_cell(get_string('grade', 'local_checkmarkreport'));
@@ -153,6 +159,16 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $table->colclasses['points'] = 'points';
         }
 
+        if (!empty($showattendances) && $this->attendancestracked()) {
+            $tableheaders['attendance'] = new html_table_cell(get_string('attendance', 'checkmark'));
+            $tableheaders['attendance']->header = true;
+            $table->align['attendance'] = 'left';
+            $tablecolumns[] = 'attendance';
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => 'attendance');
+            $table->colclasses['attendance'] = 'attendance';
+        }
+
         $table->head = array();
         $table->head[0] = new html_table_row();
         $table->head[0]->cells = $tableheaders;
@@ -160,56 +176,67 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $instances = $this->get_courseinstances();
         $i = 0;
 
+        $attendantstr = strtolower(get_string('attendant', 'checkmark'));
+        $absentstr = strtolower(get_string('absent', 'checkmark'));
+        $unknownstr = strtolower(get_string('unknown', 'checkmark'));
+
         foreach ($userdata->instancedata as $key => $instancedata) {
             $instance = $instances[$key];
             $idx = 0;
             if (!isset($examplenames[$instance->id])) {
                 $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
             }
-            if (count($userdata->instancedata[$instance->id]->examples) == 0) {
-                $row = array();
-                $instanceurl = new moodle_url('/mod/checmark/view.php',
-                                              array('id' => $instance->coursemodule));
-                $instancelink = html_writer::link($instanceurl, $instance->name);
-                $row['checkmark'] = new html_table_cell($instancelink);
-                $row['checkmark']->colspan = 4;
-                $row['checkmark']->header = true;
-                $row['checkmark']->style = ' text-align: left; ';
-                $row['examples'] = null;
-                $row['checked'] = null;
-                if (!empty($showpoints)) {
-                    $row['points'] = null;
-                }
-                $table->data[$i] = new html_table_row();
-                $table->data[$i]->cells = $row;
-                $i++;
-            } else {
+
+            // We continue this row with the first example data if there are examples and they are shown, else we display sums!
+            $row = array();
+
+            $instanceurl = new moodle_url('/mod/checkmark/view.php',
+                                          array('id' => $instance->coursemodule));
+            $instancelink = html_writer::link($instanceurl, $instance->name);
+            $row['checkmark'] = new html_table_cell($instancelink);
+            $row['checkmark']->header = true;
+            $row['checkmark']->style = ' text-align: left; ';
+
+            if (!empty($showexamples) && !(count($userdata->instancedata[$instance->id]->examples) == 0)) {
                 foreach ($userdata->instancedata[$instance->id]->examples as $exid => $example) {
-                    $row = array();
-                    if ($idx == 0) {
-                        $instanceurl = new moodle_url('/mod/checkmark/view.php',
-                                                      array('id' => $instance->coursemodule));
-                        $instancelink = html_writer::link($instanceurl, $instance->name);
-                        $row['checkmark'] = new html_table_cell($instancelink);
-                        $row['checkmark']->header = true;
-                        $row['checkmark']->style = ' text-align: left; ';
-                    } else {
+                    if ($idx != 0) {
                         $row['checkmark'] = null;
                     }
-                    $row['examples'] = new html_table_cell($examplenames[$instance->id][$exid]->name.
-                                                           ' ('.$examplenames[$instance->id][$exid]->grade.')');
+                    if (!empty($showexamples)) {
+                        $row['examples'] = new html_table_cell($examplenames[$instance->id][$exid]->name.
+                                                               ' ('.$examplenames[$instance->id][$exid]->grade.')');
+                    }
                     if ($showpoints) {
-                        $row['checked'] = new html_table_cell($example ?
-                                                              $examplenames[$instance->id][$exid]->grade :
-                                                              0);
+                        $row['checked'] = new html_table_cell($example ? $examplenames[$instance->id][$exid]->grade : 0);
                     } else {
                         $row['checked'] = new html_table_cell($example ? "☒" : "☐");
                     }
                     if (!empty($showgrade)) {
-                        $row['points'] = new html_table_cell(($example ?
-                                                              $examplenames[$instance->id][$exid]->grade :
-                                                              0).'/'.
-                                                              $examplenames[$instance->id][$exid]->grade);
+                        $row['points'] = new html_table_cell(($example ? $examplenames[$instance->id][$exid]->grade : 0).'/'.
+                                                             $examplenames[$instance->id][$exid]->grade);
+                    }
+                    if ($idx == 0) {
+                        if (!empty($showattendances)) {
+                            if ($this->tracksattendance($instance->id)) {
+                                $attendance = $userdata->instancedata[$instance->id]->attendance;
+                                if ($attendance == 1) {
+                                    $attendancestr = $attendantstr;
+                                } else if (($attendance == 0) && ($attendance != null)) {
+                                    $attendancestr = $absentstr;
+                                } else {
+                                    $attendancestr = $unknownstr;
+                                }
+                                $attendance = checkmark_get_attendance_symbol($userdata->instancedata[$instance->id]->attendance).
+                                              $attendancestr;
+                            } else {
+                                $attendance = '';
+                            }
+                            $row['attendance'] = new html_table_cell($attendance);
+                        }
+                    } else {
+                        if (!empty($showattendances)) {
+                            $row['attendance'] = null;
+                        }
                     }
                     $table->data[$i] = new html_table_row();
                     $table->data[$i]->cells = $row;
@@ -217,14 +244,23 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     $idx++;
                 }
                 $table->data[$i - $idx]->cells['checkmark']->rowspan = $idx;
+                if (!empty($showattendances)) {
+                    $table->data[$i - $idx]->cells['attendance']->rowspan = $idx;
+                }
+                // If the examples are shown and the examplecount is gt 0 we start a new line for sums!
+                if (!empty($showexamples) && (!empty($showabs) || !empty($showrel) || !empty($showgrade))) {
+                    $row = array();
+                    $row['checkmark'] = new html_table_cell('S '.$instance->name);
+                    $row['checkmark']->header = true;
+                    $row['checkmark']->colspan = 2;
+                    $row['checkmark']->style = ' text-align: left; ';
+                    $row['examples'] = null;
+                }
             }
-            if (!empty($showabs) || !empty($showrel) || !empty($showgrade)) {
-                $row = array();
-                $row['checkmark'] = new html_table_cell('S '.$instance->name);
-                $row['checkmark']->header = true;
-                $row['checkmark']->colspan = 2;
-                $row['checkmark']->style = ' text-align: left; ';
-                $row['examples'] = null;
+
+            if (!empty($showabs) || !empty($showrel) || !empty($showgrade)
+                || (!empty($showattendances) && $this->attendancestracked())) {
+
                 if (!empty($showabs)) {
                     $checkedtext = $userdata->instancedata[$instance->id]->checked.'/'.
                                    $userdata->instancedata[$instance->id]->maxchecked;
@@ -237,13 +273,19 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         $checkedtext = $percentchecked.'%';
                     }
                 }
-                if (!empty($showrel) || !empty($showabs)) {
+                if (empty($showrel) && empty($showabs)) {
+                    $checkedtext = '';
+                }
+                if (!empty($showrel) || !empty($showabs)
+                        || (!empty($showexamples) && !(count($userdata->instancedata[$instance->id]->examples) == 0))) {
                     $row['checked'] = new html_table_cell($checkedtext);
-                    $row['checked']->header = true;
+                    if ($idx != 0) {
+                        $row['checked']->header = true;
+                    }
                     $row['checked']->style = ' text-align: right; ';
                 }
-                $grade = empty($userdata->instancedata[$instance->id]->grade) ?
-                         0 : $userdata->instancedata[$instance->id]->grade;
+
+                $grade = empty($userdata->instancedata[$instance->id]->grade) ? 0 : $userdata->instancedata[$instance->id]->grade;
                 $maxgrade = $userdata->instancedata[$instance->id]->maxgrade;
                 $data = array();
                 if (!empty($showgrade)) {
@@ -273,9 +315,12 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         $data['dategraded'] = userdate($dategraded);
                         $data['grader'] = $users[$usermodified];
                     } else {
-                        $gradetext = (empty($userdata->instancedata[$instance->id]->grade) ? 0 :
-                                     $userdata->instancedata[$instance->id]->grade).'/'.$maxgrade;
-                            $class = "";
+                        if (empty($userdata->instancedata[$instance->id]->grade)) {
+                            $gradetext = '0/'.$maxgrade;
+                        } else {
+                            $gradetext = $userdata->instancedata[$instance->id]->grade.'/'.$maxgrade;
+                        }
+                        $class = "";
                     }
                     if (!empty($showrel)) {
                         $finalgrade = $userdata->instancedata[$instance->id]->finalgrade->grade;
@@ -291,7 +336,9 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         $gradetext .= ' ('.$percentgrade.' %)';
                     }
                     $row['points'] = new html_table_cell($gradetext);
-                    $row['points']->header = true;
+                    if ($idx != 0) {
+                        $row['points']->header = true;
+                    }
                     $row['points']->attributes['class'] = $class;
                     $row['points']->id = "u".$userdata->id."i".$instance->id."_a";
                     $row['points']->style = ' text-align: right; ';
@@ -301,23 +348,60 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         }
                     }
                 }
+                if (!empty($showattendances)) {
+                    if (empty($showexamples) || (count($userdata->instancedata[$instance->id]->examples) == 0)) {
+                        if ($this->tracksattendance($instance->id)) {
+                            $attendance = $userdata->instancedata[$instance->id]->attendance;
+                            if ($attendance == 1) {
+                                $attendancestr = $attendantstr;
+                            } else if (($attendance == 0) && ($attendance != null)) {
+                                $attendancestr = $absentstr;
+                            } else {
+                                $attendancestr = $unknownstr;
+                            }
+                            $attendance = checkmark_get_attendance_symbol($userdata->instancedata[$instance->id]->attendance).
+                                          $attendancestr;
+                        } else {
+                            $attendance = '';
+                        }
+                        $row['attendance'] = new html_table_cell($attendance);
+                    } else {
+                        $row['attendance'] = null;
+                    }
+                }
                 $table->data[$i] = new html_table_row();
                 $table->data[$i]->cells = $row;
                 $i++;
                 $idx++;
+                if (!empty($showattendances) && !empty($showexamples)
+                        && !(count($userdata->instancedata[$instance->id]->examples) == 0)) {
+                    if (empty($showgrade) && empty($showrel) && empty($showabs)) {
+                        $table->data[$i - $idx]->cells['checkmark']->rowspan = $idx;
+                    }
+                    $table->data[$i - $idx]->cells['attendance']->rowspan = $idx;
+                }
+
             }
-            $table->data[$i] = new html_table_row(array(''));
-            $table->data[$i]->cells[0]->colspan = count($table->data[$i - 1]->cells);
-            $i++;
-            $idx++;
+
+            if (!empty($showexamples) && !(count($userdata->instancedata[$instance->id]->examples) == 0)) {
+                $table->data[$i] = new html_table_row(array(''));
+                $table->data[$i]->cells[0]->colspan = count($table->data[$i - $idx]->cells);
+                $i++;
+                $idx++;
+            }
         }
-        if (!empty($showabs) || !empty($showrel) || !empty($showgrade)) {
+        if (!empty($showabs) || !empty($showrel) || !empty($showgrade)
+            || (!empty($showattendances) && $this->attendancestracked())) {
             $row = array();
             $row['checkmark'] = new html_table_cell('S '.get_string('total'));
             $row['checkmark']->header = true;
-            $row['checkmark']->colspan = 2;
             $row['checkmark']->style = ' text-align: left; ';
-            $row['examples'] = null;
+            if (!empty($showexamples)) {
+                $row['checkmark']->colspan = 2;
+                $row['examples'] = null;
+            } else {
+                $row['checkmark']->colspan = 1;
+            }
             $checkgrade = empty($userdata->checkgrade) ? 0 : $userdata->checkgrade;
             if (!empty($showabs)) {
                 $checkedtext = $userdata->checks.'/'.$userdata->maxchecks;
@@ -333,17 +417,18 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $row['checked'] = new html_table_cell($checkedtext);
                 $row['checked']->header = true;
                 $row['checked']->style = ' text-align: right; ';
+            } else if (!empty($showexamples) && !(count($userdata->instancedata[$instance->id]->examples) == 0)) {
+                $row['checkmark']->colspan++;
+                $row['checked'] = null;
             }
             if (!empty($showgrade)) {
                 // Coursesum of course grade.
                 if (!empty($showgrade)) {
                     // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
                     if ($userdata->overridden) {
-                        $gradetext = (empty($userdata->coursesum) ? 0 :
-                                     round($userdata->coursesum, 2)).' / '.$userdata->maxgrade;
+                        $gradetext = (empty($userdata->coursesum) ? 0 : round($userdata->coursesum, 2)).' / '.$userdata->maxgrade;
                     } else {
-                        $gradetext = (empty($userdata->checkgrade) ? 0 :
-                                     $userdata->checkgrade).'/'.$userdata->maxgrade;
+                        $gradetext = (empty($userdata->checkgrade) ? 0 : $userdata->checkgrade).'/'.$userdata->maxgrade;
                     }
                 }
                 if (!empty($showrel)) {
@@ -359,7 +444,17 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $row['points']->attributes['class'] = !empty($userdata->overridden) ? 'current' : '';
                 $row['points']->id = "u".$userdata->id."i0_a";
                 $row['points']->style = ' text-align: right; ';
+            } else {
+                $row['points'] = null;
             }
+
+            if (!empty($showattendances) && $this->attendancestracked()) {
+                // Amount of attendances.
+                $row['attendance'] = new html_table_cell($userdata->attendances.'/'.$userdata->maxattendances);
+                $row['attendance']->header = true;
+                $row['attendance']->style = ' text-align: right; ';
+            }
+
             $table->data[$i] = new html_table_row();
             $table->data[$i]->cells = $row;
         }

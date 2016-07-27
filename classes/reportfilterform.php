@@ -161,9 +161,14 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         }
 
         $addcolumns = array();
+        $exampleshelp = new help_icon('showexamples', 'local_checkmarkreport');
         $gradehelp = new help_icon('grade', 'local_checkmarkreport');
         $sumabshelp = new help_icon('sumabs', 'local_checkmarkreport');
         $sumrelhelp = new help_icon('sumrel', 'local_checkmarkreport');
+
+        $addcolumns[] =& $mform->createElement('advcheckbox', 'showexamples', '',
+                                               get_string('showexamples', 'local_checkmarkreport').$OUTPUT->render($exampleshelp));
+        $mform->setDefault('showexamples', get_user_preferences('checkmarkreport_showexamples', 1));
 
         $addcolumns[] =& $mform->createElement('advcheckbox', 'grade', '',
                                                get_string('showgrade', 'local_checkmarkreport').$OUTPUT->render($gradehelp));
@@ -184,6 +189,19 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $pointshelp = new help_icon('showpoints', 'local_checkmarkreport');
         $addsettings[] =& $mform->createElement('advcheckbox', 'showpoints', '',
                                                 get_string('showpoints', 'local_checkmarkreport').$OUTPUT->render($pointshelp));
+
+        if (\local_checkmarkreport_base::attendancestrackedincourse($COURSE->id)) {
+            $attendanceshelp = new help_icon('showattendances', 'local_checkmarkreport');
+            $addsettings[] =& $mform->createElement('advcheckbox', 'showattendances', '',
+                                                    get_string('showattendances', 'local_checkmarkreport').
+                                                    $OUTPUT->render($attendanceshelp));
+            $mform->setDefault('showattendances', get_user_preferences('checkmarkreport_showattendances', 0));
+        } else {
+            $mform->addElement('hidden', 'showattendances');
+            $mform->setDefault('showattendances', get_user_preferences('checkmarkreport_showattendances', 0));
+        }
+        $mform->setType('showattendances', PARAM_BOOL);
+
         $sighelp = new help_icon('signature', 'local_checkmarkreport');
         $addsettings[] =& $mform->createElement('advcheckbox', 'signature', '',
                                                 get_string('showsignature', 'local_checkmarkreport').$OUTPUT->render($sighelp));

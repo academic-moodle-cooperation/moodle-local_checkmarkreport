@@ -88,10 +88,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $data = $this->get_coursedata();
         $performance->datafetched = microtime(true);
 
+        $showexamples = get_user_preferences('checkmarkreport_showexamples', 1);
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
+        $showattendances = get_user_preferences('checkmarkreport_showattendances');
         $signature = get_user_preferences('checkmarkreport_signature');
 
         $table = new html_table();
@@ -205,6 +207,20 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $table->colclasses['percentex'] = 'percentex';
         }
 
+        if (!empty($showattendances) && $this->attendancestracked()) {
+            // Amount of attendances.
+            $text = get_string('attendance', 'checkmark');
+            $sortable[] = 'attendances';
+            $tableheaders['attendances'] = new html_table_cell(get_string('attendances', 'local_checkmarkreport'));
+            $tableheaders['attendances']->header = true;
+            $tableheaders['attendances']->rowspan = 2;
+            $tableheaders2['attendances'] = null;
+            $tablecolumns[] = 'attendances';
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => 'attendances');
+            $table->colclasses['attendances'] = 'attendances';
+        }
+
         $instances = $this->get_courseinstances();
         foreach ($instances as $instance) {
             $span = 0;
@@ -241,31 +257,37 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             // Percent of course examples.
             if (!empty($showrel)) {
                 $span++;
-                $title = '% '.
-                         $this->get_sortlink('percentchecked'.$instance->id,
-                                             get_string('examples',
-                                                        'local_checkmarkreport'),
-                                             $PAGE->url).
-                         ' ('.
-                         $this->get_sortlink('percentgrade'.$instance->id,
-                                             get_string('grade'), $PAGE->url).')';
+                $title = '% '. $this->get_sortlink('percentchecked'.$instance->id, get_string('examples', 'local_checkmarkreport'),
+                                                   $PAGE->url).
+                         ' ('. $this->get_sortlink('percentgrade'.$instance->id, get_string('grade'), $PAGE->url).')';
                 $sortable[] = 'percentex'.$instance->id;
                 $tableheaders2['percentex'.$instance->id] = new html_table_cell($title);
                 $tableheaders2['percentex'.$instance->id]->header = true;
                 $tablecolumns[] = 'percentex'.$instance->id;
                 $table->colclasses['percentex'.$instance->id] = 'instance'.$instance->id.' percentex'.$instance->id;
             }
-            // Dynamically add examples!
-            // First get example data!
-            if (!isset($examplenames[$instance->id])) {
-                $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
-            }
-            foreach ($examplenames[$instance->id] as $key => $example) {
+            if (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id)) {
                 $span++;
-                $tableheaders2['example'.$key] = new html_table_cell($example->name." (".$example->grade.'P)');
-                $tableheaders2['example'.$key]->header = true;
-                $tablecolumns[] = 'example'.$key;
-                $table->colclasses['example'.$key] = 'instance'.$instance->id.' example'.$key;
+                $text = $this->get_sortlink('attendance'.$instance->id, get_string('attendance', 'checkmark'), $PAGE->url);
+                $sortable[] = 'attendance'.$instance->id;
+                $tableheaders2['attendance'.$instance->id] = new html_table_cell($text);
+                $tableheaders2['attendance'.$instance->id]->header = true;
+                $tablecolumns[] = 'attendance'.$instance->id;
+                $table->colclasses['attendance'.$instance->id] = 'instance'.$instance->id.' attendance'.$instance->id;
+            }
+            // Dynamically add examples!
+            if (!empty($showexamples)) {
+                // First get example data!
+                if (!isset($examplenames[$instance->id])) {
+                    $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
+                }
+                foreach ($examplenames[$instance->id] as $key => $example) {
+                    $span++;
+                    $tableheaders2['example'.$key] = new html_table_cell($example->name." (".$example->grade.'P)');
+                    $tableheaders2['example'.$key]->header = true;
+                    $tablecolumns[] = 'example'.$key;
+                    $table->colclasses['example'.$key] = 'instance'.$instance->id.' example'.$key;
+                }
             }
             for ($i = 1; $i < $span; $i++) {
                 // Insert empty cells for the colspan!
@@ -305,17 +327,17 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
             // Coursesum of course grade.
             if (!empty($showgrade)) {
-                $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ?
-                                                    0 : $curuser->checkgrade).' / '.$curuser->maxgrade);
+                $text = (empty($curuser->checkgrade) ? 0 : $curuser->checkgrade).' / '.$curuser->maxgrade;
+                $row['grade'] = new html_table_cell($text);
                 // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
                 if ($curuser->overridden) {
-                    $row['grade'] = new html_table_cell((empty($curuser->coursesum) ?
-                                                        0 : round($curuser->coursesum, 2)).' / '.$curuser->maxgrade);
+                    $text = (empty($curuser->coursesum) ? 0 : round($curuser->coursesum, 2)).' / '.$curuser->maxgrade;
+                    $row['grade'] = new html_table_cell($text);
                     $row['grade']->attributes['class'] = 'current';
                     $row['grade']->id = "u".$curuser->id."i0_a";
                 } else {
-                    $row['grade'] = new html_table_cell((empty($curuser->checkgrade) ?
-                                                        0 : $curuser->checkgrade).' / '.$curuser->maxgrade);
+                    $text = (empty($curuser->checkgrade) ? 0 : $curuser->checkgrade).' / '.$curuser->maxgrade;
+                    $row['grade'] = new html_table_cell($text);
                 }
                 $row['grade']->attributes['id'] = 'u'.$curuser->id.'i0';
             }
@@ -339,6 +361,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
             }
 
+            if (!empty($showattendances) && $this->attendancestracked()) {
+                // Amount of attendances.
+                $row['attendances'] = new html_table_cell($curuser->attendances.'/'.$curuser->maxattendances);
+            }
+
             $instances = $this->get_courseinstances();
             foreach ($instances as $instance) {
                 // Coursesum of course grade.
@@ -347,11 +374,14 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
                     $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
-                            || $locked || ($grade != $finalgrade))
-                        && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
-                        $grade = (empty($curuser->instancedata[$instance->id]->finalgrade->grade) ? 0 :
-                                  round($curuser->instancedata[$instance->id]->finalgrade->grade, 2)).' / '.
-                                  $curuser->instancedata[$instance->id]->maxgrade;
+                                || $locked || ($grade != $finalgrade))
+                            && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                        if (empty($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                            $grade = '0.00 / '.$curuser->instancedata[$instance->id]->maxgrade;
+                        } else {
+                            $grade = round($curuser->instancedata[$instance->id]->finalgrade->grade, 2).' / '.
+                                     $curuser->instancedata[$instance->id]->maxgrade;
+                        }
                         if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
                             $conditions = array('id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified);
                             $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
@@ -365,9 +395,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                             $users[$userid] = fullname($userobj);
                         }
                     } else {
-                        $grade = (empty($curuser->instancedata[$instance->id]->grade) ?
-                                  0 : $curuser->instancedata[$instance->id]->grade).
-                                 ' / '.$curuser->instancedata[$instance->id]->maxgrade;
+                        if (empty($curuser->instancedata[$instance->id]->grade)) {
+                            $grade = '0 / '.$curuser->instancedata[$instance->id]->maxgrade;
+                        } else {
+                            $grade = $curuser->instancedata[$instance->id]->grade.' / '.
+                                     $curuser->instancedata[$instance->id]->maxgrade;
+                        }
                     }
                     $row['grade'.$instance->id] = new html_table_cell($grade);
                     // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
@@ -400,8 +433,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $grade = $curuser->instancedata[$instance->id]->grade;
                     $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
                     $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
-                    $perccheck = empty($curuser->instancedata[$instance->id]->percentchecked) ?
-                                 0 : $curuser->instancedata[$instance->id]->percentchecked;
+                    if (empty($curuser->instancedata[$instance->id]->percentchecked)) {
+                        $perccheck = 0;
+                    } else {
+                        $perccheck = $curuser->instancedata[$instance->id]->percentchecked;
+                    }
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
                             || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
@@ -428,8 +464,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                             $users[$userid] = fullname($userobj);
                         }
                     } else {
-                        $percgrade = empty($curuser->instancedata[$instance->id]->percentgrade) ?
-                                     0 : $curuser->instancedata[$instance->id]->percentgrade;
+                        if (empty($curuser->instancedata[$instance->id]->percentgrade)) {
+                            $percgrade = 0;
+                        } else {
+                            $percgrade = $curuser->instancedata[$instance->id]->percentgrade;
+                        }
                     }
                     if (is_numeric($percgrade)) {
                         $percgrade = round($percgrade, 2).'%';
@@ -454,12 +493,20 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $row['percentex'.$instance->id]->attributes['data-grader'] = $users[$usermodified];
                     }
                 }
-                // Dynamically add examples!
-                foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
-                    if (empty($showpoints)) {
-                        $row['example'.$key] = new html_table_cell($example ? "☒" : "☐");
-                    } else {
-                        $row['example'.$key] = new html_table_cell($example ? $examplenames[$instance->id][$key]->grade : "0");
+
+                if (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id)) {
+                    $text = checkmark_get_attendance_symbol($curuser->instancedata[$instance->id]->attendance);
+                    $row['attendance'.$instance->id] = new html_table_cell($text);
+                }
+
+                if (!empty($showexamples)) {
+                    // Dynamically add examples!
+                    foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
+                        if (empty($showpoints)) {
+                            $row['example'.$key] = new html_table_cell($example ? "☒" : "☐");
+                        } else {
+                            $row['example'.$key] = new html_table_cell($example ? $examplenames[$instance->id][$key]->grade : "0");
+                        }
                     }
                 }
             }

@@ -118,10 +118,12 @@ switch($tab) {
         $mform = new local_checkmarkreport_reportfilterform($PAGE->url, array('courseid'   => $id,
                                                         'hideusers' => true), 'get');
         if ($data = $mform->get_data()) {
+            set_user_preference('checkmarkreport_showexamples', $data->showexamples);
             set_user_preference('checkmarkreport_showgrade', $data->grade);
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
             set_user_preference('checkmarkreport_sumrel', $data->sumrel);
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+            set_user_preference('checkmarkreport_showattendances', $data->showattendances);
             set_user_preference('checkmarkreport_signature', $data->signature);
             $groupings = empty($data->groupings) ? array(0) : $data->groupings;
             if (!is_array($groupings)) {
@@ -155,10 +157,12 @@ switch($tab) {
                                                           'local_checkmarkreport'));
         $mform = new local_checkmarkreport_reportfilterform($PAGE->url, $customdata, 'get');
         if ($data = $mform->get_data()) {
+            set_user_preference('checkmarkreport_showexamples', $data->showexamples);
             set_user_preference('checkmarkreport_showgrade', $data->grade);
             set_user_preference('checkmarkreport_sumabs', $data->sumabs);
             set_user_preference('checkmarkreport_sumrel', $data->sumrel);
             set_user_preference('checkmarkreport_showpoints', $data->showpoints);
+            set_user_preference('checkmarkreport_showattendances', $data->showattendances);
             set_user_preference('checkmarkreport_signature', $data->signature);
             $groupings = empty($data->groupings) ? array(0) : $data->groupings;
             if (!is_array($groupings)) {
