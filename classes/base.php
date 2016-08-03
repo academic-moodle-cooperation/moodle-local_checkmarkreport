@@ -757,13 +757,14 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
      * @param string $filename filename for download
      */
     public function output_xml_with_headers($xml, $filename) {
+        $str = $xml->saveXML();
         header("Content-type: application/xml; charset=utf-8");
-        header('Content-Length: ' . strlen($xml));
+        header('Content-Length: ' . strlen($str));
         header('Content-Disposition: attachment;filename="'.$filename.'.xml";'.
                                                'filename*="'.rawurlencode($filename).'.xml"');
         header('Content-Transfer-Encoding: binary');
         header('Content-Encoding: utf-8');
-        echo $xml;
+        echo $str;
     }
 
     /**
