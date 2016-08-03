@@ -28,26 +28,26 @@
 
 /** General Styles **/
 .path-local-checkmarkreport div.scrollforced {
-    width:100%;
     overflow-x:scroll;
+    width:100%;
 }
 
 .path-local-checkmarkreport span.downloadlink {
+    margin-bottom:2em;
     margin-left:1em;
     margin-right:1em;
-    margin-bottom:2em;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table .hiddencol .hidecol,
 .path-local-checkmarkreport #checkmarkreporttable table .showcol,
 .path-local-checkmarkreport #checkmarkreporttable table .hiddencol .content {
-    display:none !important; /* We have to overwrite clean-themes styles here to hide column*/
+    display:none;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table .hiddencol .showcol,
 .path-local-checkmarkreport #checkmarkreporttable table .hidecol,
 .path-local-checkmarkreport #checkmarkreporttable table .content {
-    display:inline !important;
+    display:inline;
     white-space:nowrap;
 }
 
@@ -98,8 +98,8 @@
 .path-local-checkmarkreport #checkmarkreporttable .useroverview .points,
 .path-local-checkmarkreport #checkmarkreporttable .useroverview .attendance {
     /* Minimum width for these cells */
-    width: 1%;
     white-space: nowrap;
+    width: 1%;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable .useroverview .attendance {
