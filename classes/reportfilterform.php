@@ -202,7 +202,7 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         }
         $mform->setType('showattendances', PARAM_BOOL);
 
-        $sighelp = new help_icon('signature', 'local_checkmarkreport');
+        $sighelp = new help_icon('showsignature', 'local_checkmarkreport');
         $addsettings[] =& $mform->createElement('advcheckbox', 'signature', '',
                                                 get_string('showsignature', 'local_checkmarkreport').$OUTPUT->render($sighelp));
         $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
