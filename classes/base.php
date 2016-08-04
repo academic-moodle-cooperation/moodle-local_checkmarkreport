@@ -775,11 +775,11 @@ ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
      */
     public function output_text_with_headers($text, $filename) {
         header("Content-type: text/txt; charset=utf-8");
-        header('Content-Length: ' . strlen($txt));
+        header('Content-Length: ' . strlen($text));
         header('Content-Disposition: attachment;filename="'.$filename.'.txt";'.
                                                'filename*="'.rawurlencode($filename).'.txt"');
         header('Content-Transfer-Encoding: binary');
         header('Content-Encoding: utf-8');
-        echo $txt;
+        echo $text;
     }
 }

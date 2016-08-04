@@ -743,7 +743,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             foreach ($row->userdata as $key => $cur) {
                 if (!$this->column_is_hidden($key)) {
-                    $txt .= "\t".html_writer::tag($key, $cur);
+                    $txt .= "\t".$cur;
                 }
             }
             if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
