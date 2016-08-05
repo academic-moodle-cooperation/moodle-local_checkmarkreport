@@ -211,7 +211,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             // Amount of attendances.
             $text = get_string('attendance', 'checkmark');
             $sortable[] = 'attendances';
-            $tableheaders['attendances'] = new html_table_cell(get_string('attendances', 'local_checkmarkreport'));
+            $text = $this->get_sortlink('attendances', 'S '.get_string('attendances', 'local_checkmarkreport'), $PAGE->url);
+            $tableheaders['attendances'] = new html_table_cell($text);
             $tableheaders['attendances']->header = true;
             $tableheaders['attendances']->rowspan = 2;
             $tableheaders2['attendances'] = null;

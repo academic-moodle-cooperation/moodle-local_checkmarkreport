@@ -374,6 +374,9 @@ class local_checkmarkreport_base {
                          LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ".$sqlcheckmarkids."
                              WHERE u.id ".$sqluserids."
                           GROUP BY u.id";
+            if (key_exists('attendances', $sortarr)) {
+                $attendances .= " ORDER BY attendances ".$sortarr['attendances'];
+            }
             $attendances = $DB->get_records_sql_menu($attendances, array_merge($checkmarkparams, $userparams));
 
             $data = $DB->get_records_sql($sql, $params);
@@ -409,6 +412,9 @@ class local_checkmarkreport_base {
             $reorder = false;
             reset($sortarr);
             $primesort = key($sortarr);
+            if ($primesort === "attendances") {
+                $reorder = "attendances";
+            }
             $gradinginfo = array();
             foreach ($checkmarkids as $chkmkid) {
                 // Get instance gradebook data!
@@ -457,7 +463,10 @@ class local_checkmarkreport_base {
             }
 
             if (!empty($data)) {
-                if ($reorder !== false) {
+                if ($reorder === "attendances") {
+                    $userids = array_keys($attendances);
+                    $returndata = array();
+                } else if ($reorder !== false) {
                     $userids = array_keys($instancedata[$reorder]);
                     $returndata = array();
                 } else {
@@ -465,14 +474,12 @@ class local_checkmarkreport_base {
                     $returndata = $data;
                 }
                 if (key_exists('checkmark', $sortarr)) {
-                    $params = array_merge(array('courseid' => $courseid),
-                                          $checkmarkparams);
-                    $checkmarkids = $DB->get_fieldset_sql('
-SELECT id
-  FROM {checkmark}
- WHERE {checkmark}.course = :courseid
-       AND {checkmark}.id '.$sqlcheckmarkids.'
-ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
+                    $params = array_merge(array('courseid' => $courseid), $checkmarkparams);
+                    $checkmarkids = $DB->get_fieldset_sql('SELECT id
+                                                             FROM {checkmark}
+                                                            WHERE {checkmark}.course = :courseid
+                                                                  AND {checkmark}.id '.$sqlcheckmarkids.'
+                                                         ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
                 }
                 foreach ($userids as $key) {
                     if ($reorder !== false) {
