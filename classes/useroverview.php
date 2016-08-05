@@ -221,17 +221,22 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                 $attendance = $userdata->instancedata[$instance->id]->attendance;
                                 if ($attendance == 1) {
                                     $attendancestr = $attendantstr;
+                                    $character = '✓';
                                 } else if (($attendance == 0) && ($attendance != null)) {
                                     $attendancestr = $absentstr;
+                                    $character = '✗';
                                 } else {
                                     $attendancestr = $unknownstr;
+                                    $character = '?';
                                 }
                                 $attendance = checkmark_get_attendance_symbol($userdata->instancedata[$instance->id]->attendance).
                                               $attendancestr;
                             } else {
                                 $attendance = '';
+                                $character = '';
                             }
                             $row['attendance'] = new html_table_cell($attendance);
+                            $row['attendance']->character = $character;
                         }
                     } else {
                         if (!empty($showattendances)) {
@@ -943,7 +948,11 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             $cell->colspan = 1;
                         }
 
-                        $worksheets[$userid]->write_string($y, $x, strip_tags($cell->text));
+                        if (!empty($cell->character)) {
+                            $worksheets[$userid]->write_string($y, $x, $cell->character);
+                        } else {
+                            $worksheets[$userid]->write_string($y, $x, strip_tags($cell->text));
+                        }
                         if (($cell->rowspan > 1) || ($cell->colspan > 1)) {
                             $worksheets[$userid]->merge_cells($y, $x, $y + $cell->rowspan - 1, $x + $cell->colspan - 1);
                         }

@@ -493,6 +493,15 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 if (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id)) {
                     $text = checkmark_get_attendance_symbol($curuser->instancedata[$instance->id]->attendance);
                     $row['attendance'.$instance->id] = new html_table_cell($text);
+                    // We have to get the raw value also out there, so we can display it in spreadsheets!
+                    $att = $curuser->instancedata[$instance->id]->attendance;
+                    $attendance = '?';
+                    if ($att == 1) {
+                        $attendance = '✓';
+                    } else if (($att == 0) && ($att !== null)) {
+                        $attendance = '✗';
+                    }
+                    $row['attendance'.$instance->id]->character = $attendance;
                 }
 
                 if (!empty($showexamples)) {
@@ -1037,7 +1046,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     if (!isset($cell->colspan)) {
                         $cell->colspan = 1;
                     }
-                    $worksheet->write_string($y, $x, strip_tags($cell->text));
+                    // We need this, to overwrite the images for attendance with simple characters!
+                    if (!empty($cell->character)) {
+                        $worksheet->write_string($y, $x, strip_tags($cell->character));
+                    } else {
+                        $worksheet->write_string($y, $x, strip_tags($cell->text));
+                    }
                     $worksheet->merge_cells($y, $x, $y + $cell->rowspan - 1, $x + $cell->colspan - 1);
                     $x++;
                 }
