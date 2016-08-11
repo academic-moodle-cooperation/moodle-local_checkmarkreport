@@ -137,10 +137,11 @@ class local_checkmarkreport_base {
         if ($this->attendancestracked === null) {
             if (!in_array(0, $this->instances)) {
                 list($select, $params) = $DB->get_in_or_equal($this->instances);
-                $select = "trackattendance = 1 AND id ".$select;
+                $params = array_merge(array($this->courseid), $params);
+                $select = "trackattendance = 1 AND course = ? AND id ".$select;
             } else {
-                $select = "trackattendance = 1";
-                $params = array();
+                $select = "trackattendance = 1 AND course = ? ";
+                $params = array($this->courseid);
             }
 
             $this->attendancestracked = $DB->record_exists_select("checkmark", $select, $params) ? true : false;

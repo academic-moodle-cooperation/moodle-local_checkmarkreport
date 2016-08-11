@@ -216,7 +216,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                                              $examplenames[$instance->id][$exid]->grade);
                     }
                     if ($idx == 0) {
-                        if (!empty($showattendances)) {
+                        if (!empty($showattendances) && $this->attendancestracked()) {
                             if ($this->tracksattendance($instance->id)) {
                                 $attendance = $userdata->instancedata[$instance->id]->attendance;
                                 if ($attendance == 1) {
@@ -239,7 +239,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             $row['attendance']->character = $character;
                         }
                     } else {
-                        if (!empty($showattendances)) {
+                        if (!empty($showattendances) && $this->attendancestracked()) {
                             $row['attendance'] = null;
                         }
                     }
@@ -249,7 +249,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     $idx++;
                 }
                 $table->data[$i - $idx]->cells['checkmark']->rowspan = $idx;
-                if (!empty($showattendances)) {
+                if (!empty($showattendances) && $this->attendancestracked()) {
                     $table->data[$i - $idx]->cells['attendance']->rowspan = $idx;
                 }
                 // If the examples are shown and the examplecount is gt 0 we start a new line for sums!
@@ -353,7 +353,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         }
                     }
                 }
-                if (!empty($showattendances)) {
+                if (!empty($showattendances) && $this->attendancestracked()) {
                     if (empty($showexamples) || (count($userdata->instancedata[$instance->id]->examples) == 0)) {
                         if ($this->tracksattendance($instance->id)) {
                             $attendance = $userdata->instancedata[$instance->id]->attendance;
@@ -378,7 +378,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $table->data[$i]->cells = $row;
                 $i++;
                 $idx++;
-                if (!empty($showattendances) && !empty($showexamples)
+                if (!empty($showattendances) && $this->attendancestracked() && !empty($showexamples)
                         && !(count($userdata->instancedata[$instance->id]->examples) == 0)) {
                     if (empty($showgrade) && empty($showrel) && empty($showabs)) {
                         $table->data[$i - $idx]->cells['checkmark']->rowspan = $idx;
