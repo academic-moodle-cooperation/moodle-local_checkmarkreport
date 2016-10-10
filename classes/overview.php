@@ -489,7 +489,6 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
                             || $locked || ($grade != $finalgrade))
                         && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
-                        // TODO add data to jsarguments!
                         $grade = $curuser->instancedata[$instance->id]->finalgrade->grade;
                         $maxgrade = $curuser->instancedata[$instance->id]->maxgrade;
                         if ($maxgrade > 0) {
