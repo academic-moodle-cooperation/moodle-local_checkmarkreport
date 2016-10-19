@@ -57,6 +57,13 @@ INSTALLATION
 
 CHANGELOG
 ================================================================================
+v 2016071201
+-------------------------
+*) Add support for mod_checkmark's presentation grades
+*) Handle grade outputs with standardized grade-output method
+*) Show only feedback given by teachers, not predicted feedback based on checks
+*) Improvements in coding style and organisation, also removed some unused code
+
 v 2016071200
 -------------------------
 *) Add support for mod_checkmark's attendance tracking
