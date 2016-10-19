@@ -1018,6 +1018,172 @@ class local_checkmarkreport_base {
     }
 
     /**
+     * get report as open document file (sends to browser, forces download)
+     *
+     * @return void
+     */
+    public function get_ods() {
+        global $CFG, $DB;
+
+        require_once($CFG->libdir . "/odslib.class.php");
+
+        $workbook = new MoodleODSWorkbook("-");
+
+        $this->fill_workbook($workbook);
+
+        $course = $DB->get_record('course', array('id' => $this->courseid));
+
+        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
+        $workbook->send($filename.'.ods');
+        $workbook->close();
+    }
+
+    /**
+     * get report as xml based excel file (sends to browser, forces download)
+     *
+     * @return void
+     */
+    public function get_xlsx() {
+        global $CFG, $DB;
+
+        require_once($CFG->libdir . "/excellib.class.php");
+
+        $workbook = new MoodleExcelWorkbook("-", 'Excel2007');
+
+        $this->fill_workbook($workbook);
+
+        $course = $DB->get_record('course', array('id' => $this->courseid));
+
+        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
+        $workbook->send($filename);
+        $workbook->close();
+    }
+
+    public function prepare_worksheet(&$table, &$worksheet, &$x, &$y) {
+        // Prepare table data and populate missing properties with reasonable defaults!
+        if (!empty($table->align)) {
+            foreach ($table->align as $key => $aa) {
+                if ($aa) {
+                    $table->align[$key] = fix_align_rtl($aa);  // Fix for RTL languages!
+                } else {
+                    $table->align[$key] = null;
+                }
+            }
+        }
+        if (!empty($table->size)) {
+            foreach ($table->size as $key => $ss) {
+                if ($ss) {
+                    $table->size[$key] = $ss;
+                } else {
+                    $table->size[$key] = null;
+                }
+            }
+        }
+
+        if (!empty($table->head)) {
+            foreach ($table->head as $key => $val) {
+                if (!isset($table->align[$key])) {
+                    $table->align[$key] = null;
+                }
+                if (!isset($table->size[$key])) {
+                    $table->size[$key] = null;
+                }
+            }
+        }
+
+        if (!empty($table->head)) {
+            foreach ($table->head as $row => $headrow) {
+                $x = 0;
+                $keys = array_keys($headrow->cells);
+                $lastkey = end($keys);
+
+                foreach ($headrow->cells as $key => $heading) {
+                    // Convert plain string headings into html_table_cell objects!
+                    if (!($heading instanceof html_table_cell)) {
+                        $headingtext = $heading;
+                        $heading = new html_table_cell();
+                        $heading->text = $headingtext;
+                        $heading->header = true;
+                    }
+
+                    if ($heading->text == null) {
+                        $x++;
+                        $table->head[$row]->cells[$key] = $heading;
+                        continue;
+                    }
+
+                    if ($heading->header !== false) {
+                        $heading->header = true;
+                    }
+
+                    if (!isset($heading->colspan)) {
+                        $heading->colspan = 1;
+                    }
+                    if (!isset($heading->rowspan)) {
+                        $heading->rowspan = 1;
+                    }
+                    $table->head[$row]->cells[$key] = $heading;
+
+                    $worksheet->write_string($y, $x, strip_tags($heading->text));
+                    $worksheet->merge_cells($y, $x, $y + $heading->rowspan - 1, $x + $heading->colspan - 1);
+
+                    $x++;
+                }
+                $y++;
+            }
+        }
+    }
+
+    public function add_xml_attendance_data(&$instnode, $instancedata, $instanceid) {
+        if ($this->attendancestracked() && $this->tracksattendance($instanceid)) {
+            $instnode->setAttribute('attendant', $instancedata->attendance);
+        }
+    }
+
+    public function add_xml_presentation_data(&$instnode, $instancedata, $instanceid, $gradepresentation) {
+        if (!$this->column_is_hidden('presentationgrade'.$instanceid) && $this->presentationsgraded() && $gradepresentation) {
+            $presnode = $instnode->appendChild(new DOMElement('presentation'));
+            // TODO replace empty node with node with text-comment for presentation in future version!
+            if ($gradepresentation->presentationgradebook) {
+                $presentationgrade = $instancedata->formattedpresgrade;
+                $finalgrade = $instancedata->finalpresgrade;
+                $overridden = $instancedata->finalpresgrade->overridden;
+                $locked = $instancedata->finalpresgrade->locked;
+                $presnode->setAttribute('grade', $presentationgrade);
+                if ($gradepresentation->presentationgrade > 0) {
+                    $presnode->setAttribute('maxgrade', $instancedata->maxpresentation);
+                }
+                if ($overridden) {
+                    $presnode->setAttribute('overridden', true);
+                }
+                if ($locked) {
+                    $presnode->setAttribute('locked', true);
+                }
+            } else if ($gradepresentation->presentationgrade > 0) {
+                if (empty($instancedata->presentationgrade)) {
+                    $presentationgrade = 0;
+                } else {
+                    $presentationgrade = $instancedata->presentationgrade;
+                }
+                $presentationgrademax = $instancedata->maxpresentation;
+                $presnode->setAttribute('grade', $presentationgrade);
+                $presnode->setAttribute('maxgrade', $presentationgrademax);
+            } else if ($gradepresentation->presentationgrade < 0) {
+                if ($scale = $DB->get_record('scale', array('id' => -$gradepresentation->presentationgrade))) {
+                    if (isset($scale[(int)$instancedata->presentationgrade])) {
+                        $presentationgrade = $scale[(int)$instancedata->presentationgrade];
+                    } else {
+                        $presentationgrade = '-';
+                    }
+                } else {
+                    $presentationgrade = '-';
+                }
+                $presnode->setAttribute('grade', $presentationgrade);
+            }
+        }
+    }
+
+    /**
      * Outputs XML for download with filename as specified!
      *
      * @param string $xml XML string

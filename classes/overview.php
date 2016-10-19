@@ -745,50 +745,15 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $instnode->setAttribute('percentgrade', $percgrade.'%');
                     }
                 }
-                if (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id)) {
-                    $instnode->setAttribute('attendant', $instancedata->attendance);
+
+                if (!empty($showattendances)) {
+                    $this->add_xml_attendance_data($instnode, $instancedata, $instance->id);
                 }
-                if (!$this->column_is_hidden('presentationgrade'.$instance->id) && !empty($showpresentationgrades)
-                        && $this->presentationsgraded() && $gradepresentation) {
-                    $presnode = $instnode->appendChild(new DOMElement('presentation'));
-                    // TODO replace empty node with node with text-comment for presentation in future version!
-                    if ($gradepresentation->presentationgradebook) {
-                        $presentationgrade = $instancedata->formattedpresgrade;
-                        $finalgrade = $instancedata->finalpresgrade;
-                        $overridden = $instancedata->finalpresgrade->overridden;
-                        $locked = $instancedata->finalpresgrade->locked;
-                        $presnode->setAttribute('grade', $presentationgrade);
-                        if ($gradepresentation->presentationgrade > 0) {
-                            $presnode->setAttribute('maxgrade', $instancedata->maxpresentation);
-                        }
-                        if ($overridden) {
-                            $presnode->setAttribute('overridden', true);
-                        }
-                        if ($locked) {
-                            $presnode->setAttribute('locked', true);
-                        }
-                    } else if ($gradepresentation->presentationgrade > 0) {
-                        if (empty($instancedata->presentationgrade)) {
-                            $presentationgrade = 0;
-                        } else {
-                            $presentationgrade = $instancedata->presentationgrade;
-                        }
-                        $presentationgrademax = $instancedata->maxpresentation;
-                        $presnode->setAttribute('grade', $presentationgrade);
-                        $presnode->setAttribute('maxgrade', $presentationgrademax);
-                    } else if ($gradepresentation->presentationgrade < 0) {
-                        if ($scale = $DB->get_record('scale', array('id' => -$gradepresentation->presentationgrade))) {
-                            if (isset($scale[(int)$instancedata->presentationgrade])) {
-                                $presentationgrade = $scale[(int)$instancedata->presentationgrade];
-                            } else {
-                                $presentationgrade = '-';
-                            }
-                        } else {
-                            $presentationgrade = '-';
-                        }
-                        $presnode->setAttribute('grade', $presentationgrade);
-                    }
+
+                if (!empty($showpresentationgrades)) {
+                    $this->add_xml_presentation_data($instnode, $instancedata, $instance->id, $gradepresentation);
                 }
+
                 if (!empty($showexamples)) {
                     $exsnode = $instnode->appendChild(new DOMElement('examples'));
                     foreach ($instancedata->examples as $key => $example) {
@@ -1035,48 +1000,6 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     }
 
     /**
-     * get report as open document file (sends to browser, forces download)
-     *
-     * @return void
-     */
-    public function get_ods() {
-        global $CFG, $DB;
-
-        require_once($CFG->libdir . "/odslib.class.php");
-
-        $workbook = new MoodleODSWorkbook("-");
-
-        $this->fill_workbook($workbook);
-
-        $course = $DB->get_record('course', array('id' => $this->courseid));
-
-        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
-        $workbook->send($filename.'.ods');
-        $workbook->close();
-    }
-
-    /**
-     * get report as xml based excel file (sends to browser, forces download)
-     *
-     * @return void
-     */
-    public function get_xlsx() {
-        global $CFG, $DB;
-
-        require_once($CFG->libdir . "/excellib.class.php");
-
-        $workbook = new MoodleExcelWorkbook("-", 'Excel2007');
-
-        $this->fill_workbook($workbook);
-
-        $course = $DB->get_record('course', array('id' => $this->courseid));
-
-        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
-        $workbook->send($filename);
-        $workbook->close();
-    }
-
-    /**
      * Write report data to workbook
      *
      * @param MoodleExcelWorkbook|MoodleODSWorkbook $workbook object to write data into
@@ -1090,88 +1013,17 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         $worksheet = $workbook->add_worksheet(time());
 
-        // Prepare table data and populate missing properties with reasonable defaults!
-        if (!empty($table->align)) {
-            foreach ($table->align as $key => $aa) {
-                if ($aa) {
-                    $table->align[$key] = fix_align_rtl($aa);  // Fix for RTL languages!
-                } else {
-                    $table->align[$key] = null;
+        // We may use additional table data to format sheets!
+        $this->prepare_worksheet($table, $worksheet, $x, $y);
+
+        foreach ($table->head as $headrow) {
+            $x = 0;
+            foreach ($headrow->cells as $key => $heading) {
+                if (!empty($heading) && $this->column_is_hidden($key)) {
+                    // Hide column in worksheet!
+                    $worksheet->set_column($x, $x + $heading->colspan - 1, 0, null, true);
                 }
-            }
-        }
-        if (!empty($table->size)) {
-            foreach ($table->size as $key => $ss) {
-                if ($ss) {
-                    $table->size[$key] = $ss;
-                } else {
-                    $table->size[$key] = null;
-                }
-            }
-        }
-
-        if (!empty($table->head)) {
-            foreach ($table->head as $key => $val) {
-                if (!isset($table->align[$key])) {
-                    $table->align[$key] = null;
-                }
-                if (!isset($table->size[$key])) {
-                    $table->size[$key] = null;
-                }
-            }
-        }
-
-        $countcols = 0;
-
-        if (!empty($table->head)) {
-            $countrows = count($table->head);
-            foreach ($table->head as $headrow) {
-                $x = 0;
-                $keys = array_keys($headrow->cells);
-                $lastkey = end($keys);
-                $countcols = count($headrow->cells);
-
-                foreach ($headrow->cells as $key => $heading) {
-                    // Convert plain string headings into html_table_cell objects!
-                    if (!($heading instanceof html_table_cell)) {
-                        $headingtext = $heading;
-                        $heading = new html_table_cell();
-                        $heading->text = $headingtext;
-                        $heading->header = true;
-                    }
-
-                    if ($heading->text == null) {
-                        $x++;
-                        continue;
-                    }
-
-                    if ($heading->header !== false) {
-                        $heading->header = true;
-                    }
-
-                    $heading->attributes['class'] = trim($heading->attributes['class']);
-                    $attributes = array_merge($heading->attributes, array(
-                            'style'     => $heading->style,
-                            'scope'     => $heading->scope,
-                            'colspan'   => $heading->colspan,
-                            'rowspan'   => $heading->rowspan
-                        ));
-                    if (!isset($heading->colspan)) {
-                        $heading->colspan = 1;
-                    }
-                    if (!isset($heading->rowspan)) {
-                        $heading->rowspan = 1;
-                    }
-                    $worksheet->merge_cells($y, $x, $y + $heading->rowspan - 1, $x + $heading->colspan - 1);
-                    $worksheet->write_string($y, $x, strip_tags($heading->text));
-                    if ($this->column_is_hidden($key)) {
-                        // Hide column in worksheet!
-                        $worksheet->set_column($x, $x + $heading->colspan - 1, 0, null, true);
-                    }
-
-                    $x++;
-                }
-                $y++;
+                $x++;
             }
         }
 
