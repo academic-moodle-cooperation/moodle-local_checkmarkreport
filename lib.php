@@ -35,12 +35,8 @@ defined('MOODLE_INTERNAL') || die();
 /** CHECKMARKREPORT_GODMODE is used to determine whether admins should have all capabilities by default **/
 define('CHECKMARKREPORT_GODMODE', true);
 
-/**
- * Inject new menu element in course administration linking to checkmark report!
- *
- * @param settings_navigation $setnav settins navigation object
- */
-function local_checkmarkreport_extend_settings_navigation(settings_navigation $setnav) {
+
+function local_checkmarkreport_extend_navigation(global_navigation $nav) {
     global $PAGE, $USER;
 
     // Only add this settings item on non-site course pages.
@@ -53,40 +49,45 @@ function local_checkmarkreport_extend_settings_navigation(settings_navigation $s
                         $USER->id, CHECKMARKREPORT_GODMODE)) {
         return;
     }
-    $checkmarks = get_all_instances_in_course('checkmark', $PAGE->course);
-    // Add link only if checkmarks are available in course!
-    if (empty($checkmarks)) {
+
+    // This is super fast!
+    $modinfo = get_fast_modinfo($PAGE->course, -1);
+    if (empty($modinfo->instances['checkmark'])) {
         return;
     }
+
+    if ($nav->find('checkmarkreport'.$PAGE->course->id, navigation_node::TYPE_CUSTOM)) {
+        // Already added!
+        return;
+    }
+
     // Prepare our node!
     $url = new moodle_url('/local/checkmarkreport/index.php', array('id' => $PAGE->course->id));
     $icon = new pix_icon('i/report', get_string('pluginname', 'local_checkmarkreport'));
-    $node = $setnav->create(get_string('pluginname', 'local_checkmarkreport'),
-                                       $url,
-                                       navigation_node::TYPE_CUSTOM,
-                                       get_string('pluginname', 'local_checkmarkreport'),
-                                       'checkmarkreport',
-                                       $icon);
-    // Find courseadmin!
-    if ($courseadmin = $setnav->get('courseadmin')) {
+    $node = navigation_node::create(get_string('pluginname', 'local_checkmarkreport'),
+                                    $url,
+                                    navigation_node::TYPE_CUSTOM,
+                                    get_string('pluginname', 'local_checkmarkreport'),
+                                    'checkmarkreport'.$PAGE->course->id,
+                                    $icon);
 
-        $iterator = $courseadmin->children->getIterator();
-
-        // Find child grades!
-        while ($iterator->valid() && ($iterator->current()->key != 'grades')) {
-            $iterator->next();
+    $coursenode = $nav->find($PAGE->course->id, global_navigation::TYPE_UNKNOWN);
+    if ($grade = $coursenode->find('grades', navigation_node::TYPE_UNKNOWN)) {
+        $keys = $grade->parent->get_children_key_list();
+        foreach ($keys as $i => $key) {
+            if ($key == 'grades') {
+                $i++;
+                break;
+            }
         }
-        $key = $iterator->current()->key;
-        $iterator->next();
-        if ($iterator->current() != null) {
-            $key = $iterator->current()->key;
-            // Add before!
-            $courseadmin->children->add($node, $key);
+        if (key_exists($i, $keys)) {
+            $grade->parent->add_node($node, $keys[$i]);
         } else {
-            // Add as last if there's no node after Grades!
-            $courseadmin->children->add($node);
+            $grade->parent->add_node($node);
         }
-    } // Otherwise there's no courseadmin menu here!
+    } else {
+        $coursenode->add_node($node);
+    }
 
     return;
 }
