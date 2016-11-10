@@ -476,17 +476,16 @@ class local_checkmarkreport_base {
             $userids = get_enrolled_users($context, '', 0, 'u.*', 'lastname ASC');
         }
 
-        $checkmarks = get_all_instances_in_course('checkmark', $course);
+        $tmp = get_all_instances_in_course('checkmark', $course);
+        $checkmarks = array();
         $checkmarkids = array();
         $cmids = array();
         $noinstancefilter = in_array(0, $instances);
-        foreach ($checkmarks as $checkmark) {
+        foreach ($tmp as $checkmark) {
             if ($noinstancefilter || in_array($checkmark->id, $instances)) {
                 $checkmarkids[] = $checkmark->id;
                 $cmids[$checkmark->id] = $checkmark->coursemodule;
-
-                // Fetch and cache scales!
-
+                $checkmarks[$checkmark->id] = $checkmark;
             }
         }
 
@@ -506,20 +505,22 @@ class local_checkmarkreport_base {
             $useridentityfields = get_extra_user_fields_sql($context, 'u');
             // TODO: this can be done in a single SQL query!
             $grades = $DB->get_records_sql_menu('
-                            SELECT 0 id, SUM(gex.grade) grade
+                            SELECT 0 id, SUM(gex.grade) AS grade
                               FROM {checkmark_examples} gex
+                              JOIN {checkmark} c ON gex.checkmarkid = c.id AND c.grade > 0
                              WHERE gex.checkmarkid '.$sqlcheckmarkbids.'
                              UNION
-                            SELECT gex.checkmarkid id, SUM(gex.grade) grade
+                            SELECT gex.checkmarkid id, SUM(gex.grade) AS grade
                               FROM {checkmark_examples} gex
+                              JOIN {checkmark} c ON gex.checkmarkid = c.id AND c.grade > 0
                              WHERE gex.checkmarkid '.$sqlcheckmarkids.'
                           GROUP BY gex.checkmarkid', $params);
             $examples = $DB->get_records_sql_menu('
-                            SELECT 0 id, COUNT(DISTINCT gex.id) examples
+                            SELECT 0 id, COUNT(DISTINCT gex.id) AS examples
                               FROM {checkmark_examples} gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkbids.'
                              UNION
-                            SELECT gex.checkmarkid id, COUNT(DISTINCT gex.id) examples
+                            SELECT gex.checkmarkid id, COUNT(DISTINCT gex.id) AS examples
                               FROM {checkmark_examples} gex
                              WHERE gex.checkmarkid '.$sqlcheckmarkids.'
                           GROUP BY gex.checkmarkid', $params);
@@ -673,7 +674,7 @@ class local_checkmarkreport_base {
                 // Get instance gradebook data!
                 $gradinginfo[$chkmkid] = grade_get_grades($courseid, 'mod', 'checkmark',
                                                           $chkmkid, $userids);
-                $grademax[$chkmkid] = $gradinginfo[$chkmkid]->items[0]->grademax;
+                $grademax[$chkmkid] = $gradinginfo[$chkmkid]->items[CHECKMARK_GRADE_ITEM]->grademax;
 
                 $params['chkmkid'] = $chkmkid;
                 $params['chkmkidb'] = $chkmkid;
@@ -716,7 +717,7 @@ class local_checkmarkreport_base {
 
                 foreach ($instancedata[$chkmkid] as $key => $cur) {
                     $instancedata[$chkmkid][$key]->maxchecks = $examples[$chkmkid];
-                    $instancedata[$chkmkid][$key]->maxgrade = $grades[$chkmkid];
+                    $instancedata[$chkmkid][$key]->maxgrade = $checkmarks[$chkmkid]->grade;
                     if (key_exists($chkmkid, $presentationpoints)) {
                         $maxpres = $presentationpoints[$chkmkid];
                         $presperc = 100 * $cur->presentationgrade / $presentationpoints[$chkmkid];
@@ -800,14 +801,16 @@ class local_checkmarkreport_base {
                         // Add gradebook data!
                         $finalgrade = $gradinginfo[$chkmkid]->items[CHECKMARK_GRADE_ITEM]->grades[$key];
                         $returndata[$key]->instancedata[$chkmkid]->finalgrade = $finalgrade;
+
                         $returndata[$key]->instancedata[$chkmkid]->formatted_grade = $this->display_grade($finalgrade->grade,
                                                                                                           $grademax[$chkmkid]);
 
-                        if (($finalgrade->locked || $finalgrade->overridden || ($finalgrade->grade != $grade))
-                             && !is_null($finalgrade->grade)) {
+                        if (($checkmarks[$chkmkid]->grade > 0)
+                                && ($finalgrade->locked || $finalgrade->overridden || ($finalgrade->grade != $grade))
+                                && !is_null($finalgrade->grade)) {
                             $returndata[$key]->coursesum += $finalgrade->grade;
                             $returndata[$key]->overridden = true;
-                        } else if (($grade > 0) && ($instancedata[$chkmkid][$key]->maxgrade > 0)) {
+                        } else if (($grade > 0) && ($checkmarks[$chkmkid]->grade > 0)) {
                             $returndata[$key]->coursesum += $grade;
                         }
 
