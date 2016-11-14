@@ -806,7 +806,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 if (!empty($showexamples) && (!$this->column_is_hidden('examples')
                     || !$this->column_is_hidden('checked')
                     || (!$this->column_is_hidden('points') && $showgrade))) {
-                    foreach ($examplenames[$instance->id] as $key => $example) {
+                    foreach (array_keys($examplenames[$instance->id]) as $key) {
                         if (!$this->column_is_hidden('examples')) {
                             $txt .= "\t".$examplename->name.
                                     " (".$examplename->grade.'P)';
@@ -962,7 +962,6 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             }
 
             if (!empty($table->data)) {
-                $keys       = array_keys($table->data);
                 foreach ($table->data as $row) {
                     $x = 0;
                     // Convert array rows to html_table_rows and cell strings to html_table_cell objects!
