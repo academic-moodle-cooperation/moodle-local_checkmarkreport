@@ -1,0 +1,76 @@
+CHANGELOG
+=========
+
+3.2.0 (201?-??-??)
+------------------
+
+* Moodle 3.2 compatible version
+* [CHANGED] #3813 move navigation node up to grades (away from course-settings tree)
+* [CHANGED] #3461 change CSS so theme bost wont insert left borders in midst of table with cells with class "current"
+
+3.1.1 (2016-07-12)
+------------------
+
+* [FEATURE] #3275 Add support for mod_checkmark's presentation grades
+* [CHANGED] #3330 Show only grades given by teachers instead of sums of checked points
+* [CHANGED] #3823 replace every grade output with a method handling grades and scales in a standardized way
+* various small improvements in coding style and code organisation
+
+
+3.1.0 (2016-07-12)
+------------------
+
+* Moodle 3.1 compatible version
+* [FEATURE] #3245 Add support for mod_checkmark's attendance tracking
+* [FEATURE] Make examples columns optional (will be displayed by default)
+
+
+3.0.0 (2016-03-14)
+------------------
+
+* Moodle 3.0 compatible version
+* [FIXED] Another Bug in calculation of gradesums
+* Codechecker cleanup
+
+
+2.9.0 (2016-01-20)
+------------------
+
+* Moodle 2.9 compatible version
+* [CHANGED] #2475 Replace local_checkmarkreport_extends_settings_navigation with unified API
+* [CHANGED] #2475 Rewrite JS as AMD modules and use AMD-Modules/JQuery when possible
+* [CHANGED] #2475 Add a bunch of PHPDoc comments and improve code quality (codechecker)
+* [FIXED] #2864 Prevent overview without selected instances
+* [FIXED] #2879 Bug in calculation of gradesums in useroverview
+* [FIXED] #2865 Remove auto-submit from filterform
+* [FIXED] #2888 Changes due to split submissions and feedbacks tables in checkmark
+* [FIXED] Divided by 0 warning for instances with empty grades
+* [FIXED] #2759 Prevent collapsed columns from being exported (just hidden in ODS and XLSX
+* [FIXED] #2570 Multiple users with the same name corrupting ODS files
+* [FIXED] #2670 Hard coded site ID 1 with constant SITEID
+
+
+2.8.0 (2015-07-15)
+------------------
+
+* Moodle 2.8 compatible version
+* [CHANGED] Make use of automatic class loading - therefore refactoring some classes
+* [CHANGED] Improve coding style (codechecker)
+* [FIXED] Ensure css selectors are scoped to only affect checkmarkreport
+* [FIXED] Typo in CSS destroying themes
+* [REMOVED] XLS support and deprecate some strings
+* [REMOVED] Empty and unused files
+
+
+2.7.0 (2015-01-14)
+------------------
+
+* First release for Moodle 2.7
+* [FEATURE] #2120 Add support for PostgreSQL-DBs
+* [FEATURE] #2064 Gradebook support and show locked/overwritten grades
+* [CHANGED] #1966 Replace add_to_log with triggered events
+* [FIXED] #2065 Hidden columns not restoreable
+* [FIXED] #2121 Strip HTML-tags from link titles in table
+* [FIXED] #2173 Improve layout for small browser windows
+* [FIXED] Some minor bugs
+* Improved logging
