@@ -15,24 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version of checkmarkreport
+ * Version information
  *
- * This code fragment is called by moodle_needs_upgrading() and
- * /admin/index.php
- *
- * @package       local_checkmarkreport
- * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
- * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
- * @author        Philipp Hager
- * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
- * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   local_checkmarkreport
+ * @author    Philipp Hager
+ * @copyright 2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version      = 2016071201;                             // The current module version (Date: YYYYMMDDXX).
-$plugin->release      = 'v3.2.0-dev';                               // User-friendly version number.
-$plugin->maturity     = MATURITY_ALPHA;
-$plugin->requires     = 2016112900;                             // Requires this Moodle version!
-$plugin->component    = 'local_checkmarkreport';                // To check on upgrade, that module sits in correct place.
-$plugin->dependencies = array('mod_checkmark' => 2016071203);   // FRANKENSTYLE + version number or ANY_VERSION.
+$plugin->version      = 2016120500;
+$plugin->requires     = 2016120500;
+$plugin->component    = 'local_checkmarkreport';
+$plugin->maturity     = MATURITY_STABLE;
+$plugin->release      = 'v3.2.0';
+$plugin->dependencies = array('mod_checkmark' => 2016120500);

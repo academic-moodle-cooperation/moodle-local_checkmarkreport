@@ -15,14 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The variable name for the capability definitions array is $capabilities
+ * Contains checkmarkreport's filter from class
  *
- * @package       local_checkmarkreport
- * @author        Andreas Hruska (andreas.hruska@tuwien.ac.at)
- * @author        Katarzyna Potocka (katarzyna.potocka@tuwien.ac.at)
- * @author        Philipp Hager
- * @copyright     2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
- * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   local_checkmarkreport
+ * @author    Philipp Hager
+ * @copyright 2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -32,11 +30,10 @@ require_once($CFG->libdir .'/formslib.php');
 /**
  * Filter form
  *
- * @package       local_checkmarkreport
- * @author        Philipp Hager (e0803285@gmail.com)
- * @copyright     2013 onwards TSC TU Vienna
- * @since         Moodle 2.5.3
- * @license       http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   local_checkmarkreport
+ * @author    Philipp Hager
+ * @copyright 2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_checkmarkreport_reportfilterform extends moodleform {
     /**
