@@ -94,6 +94,12 @@
     background: #f3e4c0;
 }
 
+.path-local-checkmarkreport #checkmarkreporttable .overview .current::before,
+.path-local-checkmarkreport #checkmarkreporttable .useroverview .current::before {
+    /* Prevents theme_boost course content css injecting left-border before cells! */
+    content: none;
+}
+
 .path-local-checkmarkreport #checkmarkreporttable .useroverview .checked,
 .path-local-checkmarkreport #checkmarkreporttable .useroverview .points,
 .path-local-checkmarkreport #checkmarkreporttable .useroverview .attendance {
