@@ -36,7 +36,7 @@ require_course_login($course);
 
 $coursecontext = context_course::instance($course->id);
 
-require_capability('local/checkmarkreport:view', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE);
+require_capability('local/checkmarkreport:view', $coursecontext, $USER->id);
 
 $PAGE->set_pagelayout('incourse');
 $PAGE->set_url('/local/checkmarkreport/index.php', array('id' => $id));

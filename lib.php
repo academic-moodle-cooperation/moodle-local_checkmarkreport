@@ -32,10 +32,12 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-/** CHECKMARKREPORT_GODMODE is used to determine whether admins should have all capabilities by default **/
-define('CHECKMARKREPORT_GODMODE', true);
-
-
+/**
+ * Function injects navigation node linking to current courses checkmarkreport in navigation tree near grades node!
+ *
+ * @param global_navigation $nav Global navigation object
+ * @return void
+ */
 function local_checkmarkreport_extend_navigation(global_navigation $nav) {
     global $PAGE, $USER;
 
@@ -45,8 +47,7 @@ function local_checkmarkreport_extend_navigation(global_navigation $nav) {
     }
 
     // Only let users with the appropriate capability see this settings item.
-    if (!has_capability('local/checkmarkreport:view', context_course::instance($PAGE->course->id),
-                        $USER->id, CHECKMARKREPORT_GODMODE)) {
+    if (!has_capability('local/checkmarkreport:view', context_course::instance($PAGE->course->id), $USER->id)) {
         return;
     }
 
@@ -102,7 +103,7 @@ function local_checkmarkreport_get_tabs($coursecontext, $id) {
 
     $tabs = array();
     $availabletabs = array();
-    if (has_capability('local/checkmarkreport:view_courseoverview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
+    if (has_capability('local/checkmarkreport:view_courseoverview', $coursecontext, $USER->id)) {
         $tabs[] = new tabobject('overview',
                                $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
                                '&amp;tab=overview',
@@ -112,7 +113,7 @@ function local_checkmarkreport_get_tabs($coursecontext, $id) {
         $availabletabs[] = 'overview';
     }
 
-    if (has_capability('local/checkmarkreport:view_students_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
+    if (has_capability('local/checkmarkreport:view_students_overview', $coursecontext, $USER->id)) {
         $tabs[] = new tabobject('useroverview',
                                $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
                                '&amp;tab=useroverview',
@@ -122,7 +123,7 @@ function local_checkmarkreport_get_tabs($coursecontext, $id) {
         $availabletabs[] = 'useroverview';
     }
 
-    if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id, CHECKMARKREPORT_GODMODE)) {
+    if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id)) {
         $tabs[] = new tabobject('userview',
                                $CFG->wwwroot.'/local/checkmarkreport/index.php?id='.$id.
                                '&amp;tab=userview',
