@@ -900,12 +900,16 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 if (!$this->column_is_hidden('percentex'.$instance->id) && !empty($showrel)) {
                     if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
                         $grade = (empty($instancedata->finalgrade->grade) ? 0 : $instancedata->finalgrade->grade);
-                        $percgrade = round(100 * $grade / $instancedata->maxgrade, 2);
+                        if ($instancedata->maxgrade > 0) {
+                            $percgrade = round(100 * $grade / $instancedata->maxgrade, 2).' %';
+                        } else {
+                            $percgrade = '-';
+                        }
                     } else {
-                        $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
+                        $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2).' %';
                     }
                     $txt .= "\t";
-                    $txt .= $instancedata->percentchecked.'% ('.$percgrade.'%)';
+                    $txt .= $instancedata->percentchecked.'% ('.$percgrade.')';
                 }
                 if (!$this->column_is_hidden('attendance'.$instance->id) && !empty($showattendances) && $this->attendancestracked()
                         && $this->tracksattendance($instance->id)) {
