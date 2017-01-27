@@ -1236,15 +1236,7 @@ class local_checkmarkreport_base {
                 $presnode->setAttribute('grade', $presentationgrade);
                 $presnode->setAttribute('maxgrade', $presentationgrademax);
             } else if ($gradepresentation->presentationgrade < 0) {
-                if ($scale = $DB->get_record('scale', array('id' => -$gradepresentation->presentationgrade))) {
-                    if (isset($scale[(int)$instancedata->presentationgrade])) {
-                        $presentationgrade = $scale[(int)$instancedata->presentationgrade];
-                    } else {
-                        $presentationgrade = '-';
-                    }
-                } else {
-                    $presentationgrade = '-';
-                }
+                $presentationgrade = $this->display_grade($instancedata->presentationgrade, $gradepresentation->presentationgrade);
                 $presnode->setAttribute('grade', $presentationgrade);
             }
         }
