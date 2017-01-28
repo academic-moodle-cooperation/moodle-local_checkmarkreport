@@ -519,7 +519,8 @@ class local_checkmarkreport_base {
             $attendances = "SELECT u.id, SUM( f.attendance ) AS attendances
                               FROM {user} u
                          LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ".$sqlcheckmarkids."
-                             WHERE u.id ".$sqluserids."
+                              JOIN {checkmark} c ON c.id = f.checkmarkid AND c.trackattendance = 1
+                             WHERE u.id ".$sqluserids." AND f.attendance = 1
                           GROUP BY u.id";
             if (key_exists('attendances', $sortarr)) {
                 $attendances .= " ORDER BY attendances ".$sortarr['attendances'];
@@ -569,6 +570,7 @@ class local_checkmarkreport_base {
                 $data[$key]->maxchecks = $examples[0];
                 $data[$key]->coursegrade = $gbgrades->grades[$key];
                 $data[$key]->coursesum = 0; // Sum it up during per-instance-data!
+                $data[$key]->coursesumgraded = 0;
                 $data[$key]->maxattendances = $this->trackingattendances();
                 $data[$key]->attendances = $attendances[$key];
                 if ($data[$key]->attendances == null) {
@@ -595,6 +597,8 @@ class local_checkmarkreport_base {
                            COUNT( DISTINCT cchks.id ) AS checks,
                            100 * SUM( cex.grade ) / :maxgrade AS percentgrade,
                            SUM( cex.grade ) AS grade,
+                           f.grade AS gradedgrade,
+                           100 * f.grade / :maxgradeb AS percentgradedgrade,
                            f.attendance AS attendance,
                            f.presentationgrade AS presentationgrade
                       FROM {user} u
@@ -632,6 +636,7 @@ class local_checkmarkreport_base {
                 }
                 $params['maxchecks'] = $examples[$chkmkid];
                 $params['maxgrade'] = $grades[$chkmkid];
+                $params['maxgradeb'] = $grades[$chkmkid];
                 $sort = '';
                 if ($primesort == 'checks'.$chkmkid) {
                     $sort = ' ORDER BY checks '.current($sortarr);
@@ -642,11 +647,11 @@ class local_checkmarkreport_base {
                     $reorder = $chkmkid;
                 }
                 if ($primesort == 'grade'.$chkmkid) {
-                    $sort = ' ORDER BY grade '.current($sortarr);
+                    $sort = ' ORDER BY gradedgrade '.current($sortarr);
                     $reorder = $chkmkid;
                 }
                 if ($primesort == 'percentgrade'.$chkmkid) {
-                    $sort = ' ORDER BY percentgrade '.current($sortarr);
+                    $sort = ' ORDER BY percentgradedgrade '.current($sortarr);
                     $reorder = $chkmkid;
                 }
                 if ($primesort == 'attendance'.$chkmkid) {
@@ -711,8 +716,17 @@ class local_checkmarkreport_base {
                     $data[$key]->instancedata = array();
                     foreach ($checkmarkids as $chkmkid) {
                         $returndata[$key]->instancedata[$chkmkid] = new stdClass();
-                        $grade = empty($instancedata[$chkmkid][$key]->grade) ? 0 : $instancedata[$chkmkid][$key]->grade;
+                        if ($instancedata[$chkmkid][$key]->gradedgrade === null) {
+                            $grade = -1;
+                        } else if (empty($instancedata[$chkmkid][$key]->gradedgrade)) {
+                            $grade = 0;
+                        } else {
+                            $grade = $instancedata[$chkmkid][$key]->gradedgrade;
+                        }
                         $returndata[$key]->instancedata[$chkmkid]->grade = $grade;
+                        if (($grade > 0) && ($instancedata[$chkmkid][$key]->maxgrade > 0)) {
+                            $returndata[$key]->coursesumgraded += $grade;
+                        }
                         $returndata[$key]->instancedata[$chkmkid]->maxgrade = $instancedata[$chkmkid][$key]->maxgrade;
                         $checks = empty($instancedata[$chkmkid][$key]->checks) ? 0 : $instancedata[$chkmkid][$key]->checks;
                         $returndata[$key]->instancedata[$chkmkid]->checked = $checks;
@@ -723,10 +737,11 @@ class local_checkmarkreport_base {
                             $percentchecked = $instancedata[$chkmkid][$key]->percentchecked;
                         }
                         $returndata[$key]->instancedata[$chkmkid]->percentchecked = $percentchecked;
-                        if (empty($instancedata[$chkmkid][$key]->percentgrade)) {
+                        if (empty($instancedata[$chkmkid][$key]->percentgradedgrade)
+                                || ($instancedata[$chkmkid][$key]->percentgradedgrade < 0)) {
                             $percentgrade = 0;
                         } else {
-                            $percentgrade = $instancedata[$chkmkid][$key]->percentgrade;
+                            $percentgrade = $instancedata[$chkmkid][$key]->percentgradedgrade;
                         }
                         $returndata[$key]->instancedata[$chkmkid]->percentgrade = $percentgrade;
                         $returndata[$key]->instancedata[$chkmkid]->cmid = $cmids[$chkmkid];
@@ -743,7 +758,7 @@ class local_checkmarkreport_base {
                              && !is_null($finalgrade->grade)) {
                             $returndata[$key]->coursesum += $finalgrade->grade;
                             $returndata[$key]->overridden = true;
-                        } else {
+                        } else if (($grade > 0) && ($instancedata[$chkmkid][$key]->maxgrade > 0)) {
                             $returndata[$key]->coursesum += $grade;
                         }
 

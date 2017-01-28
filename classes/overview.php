@@ -356,19 +356,18 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
             // Coursesum of course grade.
             if (!empty($showgrade)) {
-                $text = (empty($curuser->checkgrade) ? 0 : $curuser->checkgrade).' / '.$curuser->maxgrade;
-                $row['grade'] = new html_table_cell($text);
-                // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
-                if ($curuser->overridden) {
+                if ($curuser->coursesum == -1) {
+                    $text = '-';
+                } else {
                     $text = (empty($curuser->coursesum) ? 0 : round($curuser->coursesum, 2)).' / '.$curuser->maxgrade;
-                    $row['grade'] = new html_table_cell($text);
+                }
+                $row['grade'] = new html_table_cell($text);
+                $row['grade']->attributes['id'] = 'u'.$curuser->id.'i0';
+                if ($curuser->overridden) {
+                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
                     $row['grade']->attributes['class'] = 'current';
                     $row['grade']->id = "u".$curuser->id."i0_a";
-                } else {
-                    $text = (empty($curuser->checkgrade) ? 0 : $curuser->checkgrade).' / '.$curuser->maxgrade;
-                    $row['grade'] = new html_table_cell($text);
                 }
-                $row['grade']->attributes['id'] = 'u'.$curuser->id.'i0';
             }
             // Coursesum of course examples.
             if (!empty($showabs)) {
@@ -377,16 +376,17 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             // Percent of course examples.
             if (!empty($showrel)) {
                 // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
+                if ($curuser->coursesum >= 0) {
+                    $percgrade = round(empty($curuser->coursesum) ? 0 : 100 * $curuser->coursesum / $curuser->maxgrade, 2);
+                } else {
+                    $percgrade = '-';
+                }
                 if ($curuser->overridden) {
-                    $percgrade = empty($curuser->coursesum) ? 0 : 100 * $curuser->coursesum / $curuser->maxgrade;
-                    $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.
-                                                            round($percgrade, 2).' %)');
+                    $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.$percgrade.' %)');
                     $row['percentex']->attributes['class'] = 'current';
                     $row['percentex']->id = "u".$curuser->id."i0_r";
                 } else {
-                    $percgrade = empty($curuser->percentgrade) ? 0 : $curuser->percentgrade;
-                    $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.
-                                                            round($percgrade, 2).' %)');
+                    $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2).'% ('.$percgrade.' %)');
                 }
             }
 
@@ -430,10 +430,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         }
                     } else {
                         if (empty($curuser->instancedata[$instance->id]->grade)) {
-                            $grade = '0 / '.$curuser->instancedata[$instance->id]->maxgrade;
-                        } else {
-                            $grade = $curuser->instancedata[$instance->id]->grade.' / '.
+                            $grade = round(0, 2).' / '.$curuser->instancedata[$instance->id]->maxgrade;
+                        } else if ($curuser->instancedata[$instance->id]->grade > 0) {
+                            $grade = round($curuser->instancedata[$instance->id]->grade, 2).' / '.
                                      $curuser->instancedata[$instance->id]->maxgrade;
+                        } else {
+                            $grade = '-';
                         }
                     }
                     $row['grade'.$instance->id] = new html_table_cell($grade);
@@ -485,10 +487,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                             $rel = '-';
                         }
                     } else {
-                        if (empty($curuser->instancedata[$instance->id]->percentgrade)) {
-                            $percgrade = 0;
+                        if (empty($curuser->instancedata[$instance->id]->grade)) {
+                            $percgrade = round(0, 2);
+                        } else if ($curuser->instancedata[$instance->id]->grade > 0) {
+                            $percgrade = round($curuser->instancedata[$instance->id]->percentgrade, 2);
                         } else {
-                            $percgrade = $curuser->instancedata[$instance->id]->percentgrade;
+                            $percgrade = '-';
                         }
                     }
                     if (is_numeric($percgrade)) {

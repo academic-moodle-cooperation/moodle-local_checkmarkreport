@@ -83,7 +83,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
      * @return html_table report part for this user as html_table object
      */
     public function get_table($userdata) {
-        global $DB, $PAGE;
+        global $DB, $PAGE, $OUTPUT;
 
         $showexamples = get_user_preferences('checkmarkreport_showexamples', 1);
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
@@ -148,7 +148,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         }
 
         if (!empty($showgrade)) {
-            $tableheaders['points'] = new html_table_cell(get_string('grade', 'local_checkmarkreport'));
+            $tableheaders['points'] = new html_table_cell(get_string('grade', 'local_checkmarkreport').
+                                                          $OUTPUT->help_icon('grade_useroverview', 'local_checkmarkreport'));
             $tableheaders['points']->header = true;
             $table->align['points'] = 'center';
             $tablecolumns[] = 'points';
@@ -392,7 +393,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     if (($userdata->instancedata[$instance->id]->finalgrade->overridden
                             || $locked || ($grade != $finalgrade))
                         && !is_null($finalgrade)) {
-                        $gradetext = (empty($finalgrade) ? 0 : round($finalgrade, 2)).' / '.$maxgrade;
+                        $gradetext = (empty($finalgrade) ? 0 : round($finalgrade, 2)).'/'.$maxgrade;
                         $class = "current";
                         $userid = $userdata->id;
                         if (empty($users[$userid])) {
@@ -414,9 +415,11 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         $data['grader'] = $users[$usermodified];
                     } else {
                         if (empty($userdata->instancedata[$instance->id]->grade)) {
-                            $gradetext = '0/'.$maxgrade;
+                            $gradetext = round(0, 2).'/'.$maxgrade;
+                        } else if ($userdata->instancedata[$instance->id]->grade > 0) {
+                            $gradetext = round($userdata->instancedata[$instance->id]->grade, 2).'/'.$maxgrade;
                         } else {
-                            $gradetext = $userdata->instancedata[$instance->id]->grade.'/'.$maxgrade;
+                            $gradetext = '-';
                         }
                         $class = "";
                     }
@@ -427,14 +430,17 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         if (($userdata->instancedata[$instance->id]->finalgrade->overridden || $locked || ($grade != $finalgrade))
                                 && !is_null($userdata->instancedata[$instance->id]->finalgrade->grade)) {
                             if (empty($maxgrade)) {
-                                $percentgrade = round(0, 2);
+                                $gradetext .= ' ('.round(0, 2).' %)';
                             } else {
-                                $percentgrade = round(100 * $finalgrade / $maxgrade, 2);
+                                $gradetext .= ' ('.round(100 * $finalgrade / $maxgrade, 2).' %)';
                             }
                         } else {
-                            $percentgrade = round($userdata->instancedata[$instance->id]->percentgrade, 2);
+                            if (empty($userdata->instancedata[$instance->id]->grade)) {
+                                $gradetext .= ' ('.round(0, 2).' %)';
+                            } else if ($userdata->instancedata[$instance->id]->grade > 0) {
+                                $gradetext .= ' ('.round($userdata->instancedata[$instance->id]->percentgrade, 2).' %)';
+                            }
                         }
-                        $gradetext .= ' ('.$percentgrade.' %)';
                     }
                     $row['points'] = new html_table_cell($gradetext);
                     if ($idx != 0) {
@@ -572,20 +578,19 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             if (!empty($showgrade)) {
                 // Coursesum of course grade.
                 if (!empty($showabs)) {
-                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
-                    if ($userdata->overridden) {
-                        $gradetext = (empty($userdata->coursesum) ? 0 : round($userdata->coursesum, 2)).' / '.$userdata->maxgrade;
+                    if ($userdata->coursesum == -1) {
+                        $gradetext = '-';
                     } else {
-                        $gradetext = (empty($userdata->checkgrade) ? 0 : $userdata->checkgrade).'/'.$userdata->maxgrade;
+                        $gradetext = (empty($userdata->coursesum) ? 0 : round($userdata->coursesum, 2)).'/'.$userdata->maxgrade;
                     }
                 }
                 if (!empty($showrel)) {
-                    if ($userdata->overridden) {
-                        $percgrade = empty($userdata->coursesum) ? 0 : 100 * $userdata->coursesum / $userdata->maxgrade;
-                        $gradetext .= ' ('.round($percgrade, 2).'%)';
+                    if ($userdata->coursesum == -1) {
+                        $percgrade = '-';
                     } else {
-                        $gradetext .= ' ('.round($userdata->percentgrade, 2).'%)';
+                        $percgrade = round(empty($userdata->coursesum) ? 0 : 100 * $userdata->coursesum / $userdata->maxgrade, 2);
                     }
+                    $gradetext .= ' ('.$percgrade.'%)';
                 }
                 $row['points'] = new html_table_cell($gradetext);
                 $row['points']->header = true;
