@@ -80,6 +80,9 @@ class local_checkmarkreport_base {
     /** @var int[] presentationpoints array with maximum points for presentation grade */
     protected $presentationpoints = null;
 
+    /** @var array[] scaleitems of scales used in the grade items in checkmark instances */
+    protected $scaleitems = array();
+
     /**
      * Base constructor
      *
@@ -347,6 +350,45 @@ class local_checkmarkreport_base {
     }
 
     /**
+     * Displays grades ($maxgrade > 0) or scale-items ($maxgrade < 0 == scale-id)
+     *
+     * @param int $gradeoritem numeric grade if maxgradeorscale > 0 or scale item if maxgradeorscale < 0
+     * @param int $maxgradeorscale > 0 if numeric grade is used or negative scale ID if scale is used!
+     * @return string text snippet with formatted grade ('-' if not graded and grade/maxgrade or scale item otherwise)
+     */
+    public function display_grade($gradeoritem, $maxgradeorscale) {
+        if (($gradeoritem === null) || ($gradeoritem == -1)) {
+            return '-';
+        }
+
+        if ($maxgradeorscale < 0) {
+            if (!key_exists(-$maxgradeorscale, $this->scaleitems)) {
+                if (!$scale = grade_scale::fetch(array('id' => -$maxgradeorscale))) {
+                    throw new coding_exception('Scale not found!');
+                }
+                $scale->load_items();
+                // This is to ensure compatibility with make_grades_menu(), because every scale is used as 1-indexed-array!
+                $this->scaleitems[-$maxgradeorscale] = array();
+                foreach ($scale->scale_items as $key => $item) {
+                    $this->scaleitems[-$maxgradeorscale][$key + 1] = $item;
+                }
+            }
+            if (!key_exists((int)$gradeoritem, $this->scaleitems[-$maxgradeorscale])) {
+                throw new coding_exception('Scale item '.(int)$gradeoritem.' not found for scale '.(-$maxgradeorscale).'!');
+            }
+            return $this->scaleitems[-$maxgradeorscale][(int)$gradeoritem];
+        } else if ($maxgradeorscale > 0) {
+            if (empty($gradeoritem)) {
+                return round(0, 2).'/'.$maxgradeorscale;
+            } else {
+                return round($gradeoritem, 2).'/'.$maxgradeorscale;
+            }
+        }
+
+        return '-';
+    }
+
+    /**
      * Get's the course data from the DB, saves it and returns it
      *
      * @return object[]
@@ -442,6 +484,9 @@ class local_checkmarkreport_base {
             if ($noinstancefilter || in_array($checkmark->id, $instances)) {
                 $checkmarkids[] = $checkmark->id;
                 $cmids[$checkmark->id] = $checkmark->coursemodule;
+
+                // Fetch and cache scales!
+
             }
         }
 
@@ -572,7 +617,11 @@ class local_checkmarkreport_base {
                 $data[$key]->coursesum = 0; // Sum it up during per-instance-data!
                 $data[$key]->coursesumgraded = 0;
                 $data[$key]->maxattendances = $this->trackingattendances();
-                $data[$key]->attendances = $attendances[$key];
+                if (key_exists($key, $attendances)) {
+                    $data[$key]->attendances = $attendances[$key];
+                } else {
+                    $data[$key]->attendances = 0;
+                }
                 if ($data[$key]->attendances == null) {
                     $data[$key]->attendances = 0;
                 }
@@ -751,8 +800,8 @@ class local_checkmarkreport_base {
                         // Add gradebook data!
                         $finalgrade = $gradinginfo[$chkmkid]->items[CHECKMARK_GRADE_ITEM]->grades[$key];
                         $returndata[$key]->instancedata[$chkmkid]->finalgrade = $finalgrade;
-                        $returndata[$key]->instancedata[$chkmkid]->formatted_grade = round($finalgrade->grade, 2).
-                                                                                     ' / '.round($grademax, 2);
+                        $returndata[$key]->instancedata[$chkmkid]->formatted_grade = $this->display_grade($finalgrade->grade,
+                                                                                                          $grademax[$chkmkid]);
 
                         if (($finalgrade->locked || $finalgrade->overridden || ($finalgrade->grade != $grade))
                              && !is_null($finalgrade->grade)) {
@@ -765,7 +814,9 @@ class local_checkmarkreport_base {
                         // Add presentation data!
                         $gradepresentation = $this->gradepresentations($chkmkid);
                         if ($gradepresentation) {
-                            if (empty($instancedata[$chkmkid][$key]->presentationgrade)) {
+                            if ($instancedata[$chkmkid][$key]->presentationgrade === null) {
+                                $presgrade = -1;
+                            } else if (empty($instancedata[$chkmkid][$key]->presentationgrade)) {
                                 $presgrade = 0;
                             } else {
                                 $presgrade = $instancedata[$chkmkid][$key]->presentationgrade;

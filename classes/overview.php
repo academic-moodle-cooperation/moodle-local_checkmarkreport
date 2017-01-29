@@ -356,11 +356,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
             // Coursesum of course grade.
             if (!empty($showgrade)) {
-                if ($curuser->coursesum == -1) {
-                    $text = '-';
-                } else {
-                    $text = (empty($curuser->coursesum) ? 0 : round($curuser->coursesum, 2)).' / '.$curuser->maxgrade;
-                }
+                $text = $this->display_grade($curuser->coursesum, $curuser->maxgrade);
                 $row['grade'] = new html_table_cell($text);
                 $row['grade']->attributes['id'] = 'u'.$curuser->id.'i0';
                 if ($curuser->overridden) {
@@ -396,8 +392,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
 
             if (!empty($showpresgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
-                $row['presentationgrade'] = new html_table_cell(round($curuser->coursepressum, 2).'/'.
-                                                                $curuser->presentationgrademax);
+                $row['presentationgrade'] = new html_table_cell($this->display_grade($curuser->coursepressum,
+                                                                                     $curuser->presentationgrademax));
             }
 
             $instances = $this->get_courseinstances();
@@ -422,21 +418,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     if (($curuser->instancedata[$instance->id]->finalgrade->overridden
                                 || $locked || ($grade != $finalgrade))
                             && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
-                        if (empty($curuser->instancedata[$instance->id]->finalgrade->grade)) {
-                            $grade = '0.00 / '.$curuser->instancedata[$instance->id]->maxgrade;
-                        } else {
-                            $grade = round($curuser->instancedata[$instance->id]->finalgrade->grade, 2).' / '.
-                                     $curuser->instancedata[$instance->id]->maxgrade;
-                        }
+                        $grade = $this->display_grade($curuser->instancedata[$instance->id]->finalgrade->grade,
+                                                      $curuser->instancedata[$instance->id]->maxgrade);
                     } else {
-                        if (empty($curuser->instancedata[$instance->id]->grade)) {
-                            $grade = round(0, 2).' / '.$curuser->instancedata[$instance->id]->maxgrade;
-                        } else if ($curuser->instancedata[$instance->id]->grade > 0) {
-                            $grade = round($curuser->instancedata[$instance->id]->grade, 2).' / '.
-                                     $curuser->instancedata[$instance->id]->maxgrade;
-                        } else {
-                            $grade = '-';
-                        }
+                        $grade = $this->display_grade($curuser->instancedata[$instance->id]->grade,
+                                                      $curuser->instancedata[$instance->id]->maxgrade);
                     }
                     $row['grade'.$instance->id] = new html_table_cell($grade);
                     // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
@@ -552,23 +538,10 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $finalgrade = $curuser->instancedata[$instance->id]->finalpresgrade;
                         $overridden = $curuser->instancedata[$instance->id]->finalpresgrade->overridden;
                         $locked = $curuser->instancedata[$instance->id]->finalpresgrade->locked;
-                    } else if ($gradepresentation->presentationgrade > 0) {
-                        if (empty($curuser->instancedata[$instance->id]->presentationgrade)) {
-                            $presentationgrade = round(0, 2).'/'.$curuser->instancedata[$instance->id]->maxpresentation;
-                        } else {
-                            $presentationgrade = round($curuser->instancedata[$instance->id]->presentationgrade, 2).'/'.
-                                                 $curuser->instancedata[$instance->id]->maxpresentation;
-                        }
-                    } else if ($gradepresentation->presentationgrade < 0) {
-                        if ($scale = $DB->get_record('scale', array('id' => -$gradepresentation->presentationgrade))) {
-                            if (isset($scale[(int)$curuser->instancedata[$instance->id]->presentationgrade])) {
-                                $presentationgrade = $scale[(int)$curuser->instancedata[$instance->id]->presentationgrade];
-                            } else {
-                                $presentationgrade = '-';
-                            }
-                        } else {
-                            $presentationgrade = '-';
-                        }
+                    } else {
+                        // Returns '-' or presentationgrade/maxpresentationgrade or scale item!
+                        $presentationgrade = $this->display_grade($curuser->instancedata[$instance->id]->presentationgrade,
+                                                                  $gradepresentation->presentationgrade);
                     }
 
                     $row['presentationgrade'.$instance->id] = new html_table_cell($presentationgrade);
@@ -901,7 +874,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded()) {
                 $txt .= "\t";
-                $txt .= round($row->presentationgrade, 2).'/'.$row->presentationgrademax;
+                $txt .= $this->display_grade($row->presentationgrade, $row->presentationgrademax);
             }
             $examplecount = 1;
             foreach ($instances as $instance) {
@@ -916,11 +889,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
                 if (!$this->column_is_hidden('grade'.$instance->id) && !empty($showgrade)) {
                     if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
-                        $txt .= "\t".(empty($instancedata->finalgrade->grade) ? 0 : $instancedata->finalgrade->grade)."/".
-                                (empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
+                        $txt .= "\t".$this->display_grade($instancedata->finalgrade->grade, $instancedata->maxgrade);
                     } else {
-                        $txt .= "\t".(empty($instancedata->grade) ? 0 : $instancedata->grade)."/".
-                                (empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
+                        $txt .= "\t".$this->display_grade($instancedata->grade, $instancedata->maxgrade);
                     }
                 }
                 if (!$this->column_is_hidden('examples'.$instance->id) && !empty($showabs)) {
@@ -951,23 +922,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         && $this->presentationsgraded() && $gradepresentation) {
                     if ($gradepresentation->presentationgradebook) {
                         $presentationgrade = $instancedata->formattedpresgrade;
-                    } else if ($gradepresentation->presentationgrade > 0) {
-                        if (empty($instancedata->presentationgrade)) {
-                            $presentationgrade = round(0, 2);
-                        } else {
-                            $presentationgrade = round($instancedata->presentationgrade, 2);
-                        }
-                        $presentationgrade .= '/'.$instancedata->maxpresentation;
-                    } else if ($gradepresentation->presentationgrade < 0) {
-                        if ($scale = $DB->get_record('scale', array('id' => -$gradepresentation->presentationgrade))) {
-                            if (isset($scale[(int)$instancedata->presentationgrade])) {
-                                $presentationgrade = $scale[(int)$instancedata->presentationgrade];
-                            } else {
-                                $presentationgrade = '-';
-                            }
-                        } else {
-                            $presentationgrade = '-';
-                        }
+                    } else {
+                        $presentationgrade = $this->display_grade($instancedata->presentationgrade,
+                                                                  $gradepresentation->presentationgrade);
                     }
                     $txt .= "\t".$presentationgrade;
                 }
