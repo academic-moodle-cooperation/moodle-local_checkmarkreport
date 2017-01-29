@@ -86,6 +86,7 @@ if ($tab == 'overview' || $tab == 'useroverview') {
         set_user_preference('checkmarkreport_sumrel', $data->sumrel);
         set_user_preference('checkmarkreport_showpoints', $data->showpoints);
         set_user_preference('checkmarkreport_showattendances', $data->showattendances);
+        set_user_preference('checkmarkreport_showpresentationgrades', $data->showpresentationgrades);
         set_user_preference('checkmarkreport_signature', $data->signature);
         $groupings = empty($data->groupings) ? array(0) : $data->groupings;
         if (!is_array($groupings)) {

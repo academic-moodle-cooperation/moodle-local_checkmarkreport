@@ -202,6 +202,18 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         }
         $mform->setType('showattendances', PARAM_BOOL);
 
+        if (\local_checkmarkreport_base::presentationsgradedincourse($COURSE->id)) {
+            $presentationgradehelp = new help_icon('showpresentationgrades', 'local_checkmarkreport');
+            $addsettings[] =& $mform->createElement('advcheckbox', 'showpresentationgrades', '',
+                                                    get_string('showpresentationgrades', 'local_checkmarkreport').
+                                                    $OUTPUT->render($presentationgradehelp));
+            $mform->setDefault('showpresentationgrades', get_user_preferences('checkmarkreport_showpresentationgrades', 0));
+        } else {
+            $mform->addElement('hidden', 'showpresentationgrades');
+            $mform->setDefault('showpresentationgrades', get_user_preferences('checkmarkreport_showpresentationgrades', 0));
+        }
+        $mform->setType('showpresentationgrades', PARAM_BOOL);
+
         $sighelp = new help_icon('showsignature', 'local_checkmarkreport');
         $addsettings[] =& $mform->createElement('advcheckbox', 'signature', '',
                                                 get_string('showsignature', 'local_checkmarkreport').$OUTPUT->render($sighelp));

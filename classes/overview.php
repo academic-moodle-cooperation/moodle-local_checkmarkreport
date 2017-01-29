@@ -94,6 +94,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
+        $showpresentationgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
         $signature = get_user_preferences('checkmarkreport_signature');
 
         $table = new html_table();
@@ -222,11 +223,30 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $table->colclasses['attendances'] = 'attendances';
         }
 
+        if (!empty($showpresentationgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
+            $sortlink = $this->get_sortlink('presentationgrade', 'S '.get_string('presentationgrade', 'checkmark'), $PAGE->url);
+            $sortable[] = 'presentationgrade';
+            $tableheaders['presentationgrade'] = new html_table_cell($sortlink);
+            $tableheaders['presentationgrade']->header = true;
+            $tableheaders['presentationgrade']->rowspan = 2;
+            $tableheaders2['presentationgrade'] = null;
+            $tablecolumns[] = 'presentationgrade';
+            $table->colgroups[] = array('span' => '1',
+                                        'class' => 'presentationgrade');
+            $table->colclasses['presentationgrade'] = 'presentationgrade';
+        }
+
         $instances = $this->get_courseinstances();
         foreach ($instances as $instance) {
             $span = 0;
+            $gradepresentation = $this->gradepresentations($instance->id);
+            if ($gradepresentation && !$gradepresentation->presentationgrade) {
+                // Prevent comment only presentationgrades to mess with table!
+                $gradepresentation = false;
+            }
             if (!empty($showgrade) || !empty($showabs) || !empty($showrel)
                 || (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id))
+                || (!empty($showpresentationgrades) && $this->presentationsgraded() && $gradepresentation)
                 || !empty($showexamples)) {
                 $instanceurl = new moodle_url('/mod/checkmark/view.php', array('id' => $instance->coursemodule));
                 $instancelink = html_writer::link($instanceurl, $instance->name);
@@ -280,6 +300,19 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $tablecolumns[] = 'attendance'.$instance->id;
                 $table->colclasses['attendance'.$instance->id] = 'instance'.$instance->id.' attendance'.$instance->id;
             }
+            if (!empty($showpresentationgrades) && $this->presentationsgraded() && $gradepresentation) {
+                $span++;
+                $sortlink = $this->get_sortlink('presentationgrade'.$instance->id, get_string('presentationgrade', 'checkmark'),
+                                                $PAGE->url);
+                $sortable[] = 'presentationgrade'.$instance->id;
+                $tableheaders2['presentationgrade'.$instance->id] = new html_table_cell($sortlink);
+                $tableheaders2['presentationgrade'.$instance->id]->header = true;
+                $tablecolumns[] = 'presentationgrade'.$instance->id;
+                $table->colgroups[] = array('span' => '1',
+                                            'class' => 'presentationgrade'.$instance->id);
+                $table->colclasses['presentationgrade'.$instance->id] = 'instance'.$instance->id.' presentationgrade'.
+                                                                        $instance->id;
+            }
             // Dynamically add examples!
             if (!empty($showexamples)) {
                 // First get example data!
@@ -296,6 +329,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             if (!empty($showgrade) || !empty($showabs) || !empty($showrel)
                 || (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id))
+                || (!empty($showpresentationgrades) && $this->presentationsgraded() && $gradepresentation)
                 || !empty($showexamples)) {
                 for ($i = 1; $i < $span; $i++) {
                     // Insert empty cells for the colspan!
@@ -373,6 +407,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!empty($showattendances) && $this->attendancestracked()) {
                 // Amount of attendances.
                 $row['attendances'] = new html_table_cell($curuser->attendances.'/'.$curuser->maxattendances);
+            }
+
+            if (!empty($showpresentationgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
+                $row['presentationgrade'] = new html_table_cell(round($curuser->coursepressum, 2).'/'.
+                                                                $curuser->presentationgrademax);
             }
 
             $instances = $this->get_courseinstances();
@@ -505,6 +544,63 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $row['attendance'.$instance->id]->character = $attendance;
                 }
 
+                $gradepresentation = $this->gradepresentations($instance->id);
+                if ($gradepresentation && !$gradepresentation->presentationgrade) {
+                    // Prevent comment only presentationgrades to mess with table!
+                    $gradepresentation = false;
+                } else if ($gradepresentation && $gradepresentation->presentationgradebook) {
+                    if (empty($users[$curuser->instancedata[$instance->id]->finalpresgrade->usermodified])) {
+                        $conditions = array('id' => $curuser->instancedata[$instance->id]->finalpresgrade->usermodified);
+                        $userobj = $DB->get_record('user', $conditions, 'id, '.implode(', ', get_all_user_name_fields()));
+                        $usermodified = $curuser->instancedata[$instance->id]->finalpresgrade->usermodified;
+                        $users[$usermodified] = fullname($userobj);
+                    }
+                }
+                if (!empty($showpresentationgrades) && $this->presentationsgraded() && $gradepresentation
+                        && $gradepresentation->presentationgrade) {
+                    if ($gradepresentation->presentationgradebook) {
+                        $presentationgrade = $curuser->instancedata[$instance->id]->formattedpresgrade;
+                        $finalgrade = $curuser->instancedata[$instance->id]->finalpresgrade;
+                        $overridden = $curuser->instancedata[$instance->id]->finalpresgrade->overridden;
+                        $locked = $curuser->instancedata[$instance->id]->finalpresgrade->locked;
+                    } else if ($gradepresentation->presentationgrade > 0) {
+                        if (empty($curuser->instancedata[$instance->id]->presentationgrade)) {
+                            $presentationgrade = round(0, 2).'/'.$curuser->instancedata[$instance->id]->maxpresentation;
+                        } else {
+                            $presentationgrade = round($curuser->instancedata[$instance->id]->presentationgrade, 2).'/'.
+                                                 $curuser->instancedata[$instance->id]->maxpresentation;
+                        }
+                    } else if ($gradepresentation->presentationgrade < 0) {
+                        if ($scale = $DB->get_record('scale', array('id' => -$gradepresentation->presentationgrade))) {
+                            if (isset($scale[(int)$curuser->instancedata[$instance->id]->presentationgrade])) {
+                                $presentationgrade = $scale[(int)$curuser->instancedata[$instance->id]->presentationgrade];
+                            } else {
+                                $presentationgrade = '-';
+                            }
+                        } else {
+                            $presentationgrade = '-';
+                        }
+                    }
+
+                    $row['presentationgrade'.$instance->id] = new html_table_cell($presentationgrade);
+
+                    // Highlight if overwritten or locked!
+                    if ($gradepresentation->presentationgradebook) {
+                       if ($overridden || $locked) {
+                            $row['presentationgrade'.$instance->id]->attributes['class'] = 'current';
+
+                            $dategraded = $finalgrade->dategraded;
+                            $usermodified = $finalgrade->usermodified;
+                            $row['presentationgrade'.$instance->id]->id = "u".$curuser->id."i".$instance->id."_a";
+                            $row['presentationgrade'.$instance->id]->attributes['data-user'] = $curuser->id;
+                            $row['presentationgrade'.$instance->id]->attributes['data-username'] = fullname($users[$curuser->id]);
+                            $row['presentationgrade'.$instance->id]->attributes['data-item'] = $instance->id;
+                            $row['presentationgrade'.$instance->id]->attributes['data-dategraded'] = userdate($dategraded);
+                            $row['presentationgrade'.$instance->id]->attributes['data-grader'] = $users[$usermodified];
+                        }
+                    }
+                }
+
                 if (!empty($showexamples)) {
                     // Dynamically add examples!
                     foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
@@ -552,6 +648,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showexamples = get_user_preferences('checkmarkreport_showexamples');
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
+        $showpresentationgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
 
         $xml = new DOMDocument(1.0, 'UTF-8');
         $xml->formatOutput = true;
@@ -592,9 +689,17 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $user->setAttribute('percentgrade', $percgrade.'%');
             }
             $instancesnode = $user->appendChild(new DOMElement('instances'));
-            if (!empty($showattendances) && $this->attendancestracked()) {
+            if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
                 $instancesnode->setAttribute('attendant', $row->attendances);
                 $instancesnode->setAttribute('attendance_max', $row->maxattendances);
+            }
+            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresentationgrades) && $this->presentationsgraded()) {
+                $instancesnode->setAttribute('presentationgrade', empty($row->presentationgrade) ? 0 : $row->presentationgrade);
+                if (!empty($row->presentationgrademax)) {
+                    $instancesnode->setAttribute('presentationgrademax', $row->presentationgrademax);
+                } else {
+                    $instancesnode->setAttribute('presentationgrademax', 0);
+                }
             }
             $examplecounter = 1;
             foreach ($instances as $instance) {
@@ -606,6 +711,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $examplecounter++;
                     }
                     continue;
+                }
+                $gradepresentation = $this->gradepresentations($instance->id);
+                if ($gradepresentation && !$gradepresentation->presentationgrade) {
+                    // Prevent comment only presentationgrades from showing up here!
+                    $gradepresentation = false;
                 }
                 $instancedata = $row->instancedata[$instance->id];
                 $instnode = $instancesnode->appendChild(new DOMElement('instance'));
@@ -638,6 +748,47 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
                 if (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id)) {
                     $instnode->setAttribute('attendant', $instancedata->attendance);
+                }
+                if (!$this->column_is_hidden('presentationgrade'.$instance->id) && !empty($showpresentationgrades)
+                        && $this->presentationsgraded() && $gradepresentation) {
+                    $presnode = $instnode->appendChild(new DOMElement('presentation'));
+                    // TODO replace empty node with node with text-comment for presentation in future version!
+                    if ($gradepresentation->presentationgradebook) {
+                        $presentationgrade = $instancedata->formattedpresgrade;
+                        $finalgrade = $instancedata->finalpresgrade;
+                        $overridden = $instancedata->finalpresgrade->overridden;
+                        $locked = $instancedata->finalpresgrade->locked;
+                        $presnode->setAttribute('grade', $presentationgrade);
+                        if ($gradepresentation->presentationgrade > 0) {
+                            $presnode->setAttribute('maxgrade', $instancedata->maxpresentation);
+                        }
+                        if ($overridden) {
+                            $presnode->setAttribute('overridden', true);
+                        }
+                        if ($locked) {
+                            $presnode->setAttribute('locked', true);
+                        }
+                    } else if ($gradepresentation->presentationgrade > 0) {
+                        if (empty($instancedata->presentationgrade)) {
+                            $presentationgrade = 0;
+                        } else {
+                            $presentationgrade = $instancedata->presentationgrade;
+                        }
+                        $presentationgrademax = $instancedata->maxpresentation;
+                        $presnode->setAttribute('grade', $presentationgrade);
+                        $presnode->setAttribute('maxgrade', $presentationgrademax);
+                    } else if ($gradepresentation->presentationgrade < 0) {
+                        if ($scale = $DB->get_record('scale', array('id' => -$gradepresentation->presentationgrade))) {
+                            if (isset($scale[(int)$instancedata->presentationgrade])) {
+                                $presentationgrade = $scale[(int)$instancedata->presentationgrade];
+                            } else {
+                                $presentationgrade = '-';
+                            }
+                        } else {
+                            $presentationgrade = '-';
+                        }
+                        $presnode->setAttribute('grade', $presentationgrade);
+                    }
                 }
                 if (!empty($showexamples)) {
                     $exsnode = $instnode->appendChild(new DOMElement('examples'));
@@ -676,6 +827,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
         $showexamples = get_user_preferences('checkmarkreport_showexamples');
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
+        $showpresentationgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
 
         $txt = '';
         $examplenames = array();
@@ -706,6 +858,10 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         if (!empty($showattendances) && $this->attendancestracked()) {
             $txt .= "\tS ".get_string('attendance', 'checkmark');
         }
+        if (!$this->column_is_hidden('presentationgrade', 'checkmark') && !empty($showpresentationgrades)
+                && $this->presentationsgraded()) {
+            $txt .= "\tS ".get_string('presentationgrade', 'checkmark');
+        }
 
         $instances = $this->get_courseinstances();
         $examplecounter = 1;
@@ -720,6 +876,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
                 continue;
             }
+            $gradepresentation = $this->gradepresentations($instance->id);
+            if ($gradepresentation && !$gradepresentation->presentationgrade) {
+                // Prevent comment only presentationgrades to mess with table!
+                $gradepresentation = false;
+            }
             if (!$this->column_is_hidden('grade'.$instance->id) && !empty($showgrade)) {
                 $txt .= "\t".$instance->name.' '.get_string('grade');
             }
@@ -730,9 +891,15 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $txt .= "\t";
                 $txt .= $instance->name.' S % '.get_string('examples', 'local_checkmarkreport').' (S % '.get_string('grade').')';
             }
-            if (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id)) {
+            if (!$this->column_is_hidden('attendance'.$instance->id) && !empty($showattendances) && $this->attendancestracked()
+                    && $this->tracksattendance($instance->id)) {
                 $txt .= "\t";
                 $txt .= $instance->name.' '.get_string('attendance', 'checkmark');
+            }
+            if (!$this->column_is_hidden('presentationgrade'.$instance->id) && !empty($showpresentationgrades)
+                    && $this->presentationsgraded() && $gradepresentation) {
+                $txt .= "\t";
+                $txt .= $instance->name.' '.get_string('presentationgrade', 'checkmark');
             }
             if (!empty($showexamples)) {
                 // Dynamically add examples!
@@ -775,17 +942,25 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $txt .= "\t";
                 $txt .= $row->percentchecked.'% ('.$percgrade.'%)';
             }
-            if (!empty($showattendances) && $this->attendancestracked()) {
+            if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
                 $txt .= "\t";
                 $txt .= $row->attendances.'/'.$row->maxattendances;
             }
-
+            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresentationgrades) && $this->presentationsgraded()) {
+                $txt .= "\t";
+                $txt .= round($row->presentationgrade, 2).'/'.$row->presentationgrademax;
+            }
             $examplecount = 1;
             foreach ($instances as $instance) {
                 if (!isset($examplenames[$instance->id])) {
                     $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
                 }
                 $instancedata = $row->instancedata[$instance->id];
+                $gradepresentation = $this->gradepresentations($instance->id);
+                if ($gradepresentation && !$gradepresentation->presentationgrade) {
+                    // Prevent comment only presentationgrades to mess with table!
+                    $gradepresentation = false;
+                }
                 if (!$this->column_is_hidden('grade'.$instance->id) && !empty($showgrade)) {
                     if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
                         $txt .= "\t".(empty($instancedata->finalgrade->grade) ? 0 : $instancedata->finalgrade->grade)."/".
@@ -808,7 +983,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $txt .= "\t";
                     $txt .= $instancedata->percentchecked.'% ('.$percgrade.'%)';
                 }
-                if (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id)) {
+                if (!$this->column_is_hidden('attendance'.$instance->id) && !empty($showattendances) && $this->attendancestracked()
+                        && $this->tracksattendance($instance->id)) {
                     $attendance = '?';
                     if ($instancedata->attendance == 1) {
                         $attendance = '✓';
@@ -816,6 +992,31 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $attendance = '✗';
                     }
                     $txt .= "\t".$attendance;
+                }
+
+                if (!$this->column_is_hidden('presentationgrade'.$instance->id) && !empty($showpresentationgrades)
+                        && $this->presentationsgraded() && $gradepresentation) {
+                    if ($gradepresentation->presentationgradebook) {
+                        $presentationgrade = $instancedata->formattedpresgrade;
+                    } else if ($gradepresentation->presentationgrade > 0) {
+                        if (empty($instancedata->presentationgrade)) {
+                            $presentationgrade = round(0, 2);
+                        } else {
+                            $presentationgrade = round($instancedata->presentationgrade, 2);
+                        }
+                        $presentationgrade .= '/'.$instancedata->maxpresentation;
+                    } else if ($gradepresentation->presentationgrade < 0) {
+                        if ($scale = $DB->get_record('scale', array('id' => -$gradepresentation->presentationgrade))) {
+                            if (isset($scale[(int)$instancedata->presentationgrade])) {
+                                $presentationgrade = $scale[(int)$instancedata->presentationgrade];
+                            } else {
+                                $presentationgrade = '-';
+                            }
+                        } else {
+                            $presentationgrade = '-';
+                        }
+                    }
+                    $txt .= "\t".$presentationgrade;
                 }
 
                 if (!empty($showexamples)) {

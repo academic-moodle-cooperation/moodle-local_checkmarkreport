@@ -71,6 +71,15 @@ class local_checkmarkreport_base {
     /** @var bool[] tracksattendance boolean array stating which instances track attendance */
     protected $tracksattendance = null;
 
+    /** @var bool presentationsgraded tells if at least 1 instance grades presentations */
+    protected $presentationsgraded = null;
+    /** @var bool presentationscommented tells if at least 1 instance comments presentations */
+    protected $presentationscommented = null;
+    /** @var object[] gradingpresentations array stating which instances grade presentation */
+    protected $gradespresentations = null;
+    /** @var int[] presentationpoints array with maximum points for presentation grade */
+    protected $presentationpoints = null;
+
     /**
      * Base constructor
      *
@@ -202,6 +211,142 @@ class local_checkmarkreport_base {
     }
 
     /**
+     * returns if at least 1 instance in course grades presentations
+     *
+     * @return bool True if at least 1 instance in course grades presentations
+     */
+    public static function presentationsgradedincourse($courseid) {
+        global $DB;
+
+        $select = "presentationgrading = 1 AND presentationgrade <> 0 AND course = ?";
+        return $DB->record_exists_select("checkmark", $select, array($courseid)) ? true : false;
+    }
+
+    /**
+     * returns if at least 1 instance in course comments presentations
+     *
+     * @return bool True if at least 1 instance in course comments presentations
+     */
+    public static function presentationscommentedincourse($courseid) {
+        global $DB;
+
+        return $DB->record_exists("checkmark", array('presentationgrading' => 1, 'course' => $courseid)) ? true : false;
+    }
+
+    /**
+     * returns if at least 1 instance grades presentations
+     *
+     * @return bool True if at least 1 instance in course/from selected instances grades presentations
+     */
+    public function presentationsgraded() {
+        global $DB;
+
+        if ($this->presentationscommented === false) {
+            // Shortcut: to have presentations graded, also presentation commenting must be possible!
+            $this->presentationsgraded = false;
+        }
+
+        if ($this->presentationsgraded === null) {
+            if (!in_array(0, $this->instances)) {
+                list($select, $params) = $DB->get_in_or_equal($this->instances);
+                $params = array_merge(array($this->courseid), $params);
+                $select = "presentationgrading = 1 AND presentationgrade <> 0 AND course = ? AND id ".$select;
+            } else {
+                $select = "presentationgrading = 1 AND presentationgrade <> 0 AND course = ? ";
+                $params = array($this->courseid);
+            }
+
+            $this->presentationsgraded = $DB->record_exists_select("checkmark", $select, $params) ? true : false;
+        }
+
+        return $this->presentationsgraded;
+    }
+
+    /**
+     * returns if at least 1 instance comments presentations
+     *
+     * @return bool True if at least 1 instance in course/from selected instances comments presentations
+     */
+    public function presentationscommented() {
+        global $DB;
+
+        if ($this->presentationscommented === null) {
+            if (!in_array(0, $this->instances)) {
+                list($select, $params) = $DB->get_in_or_equal($this->instances);
+                $params = array_merge(array($this->courseid), $params);
+                $select = "presentationgrading = 1 AND course = ? AND id ".$select;
+            } else {
+                $select = "presentationgrading = 1 AND course = ? ";
+                $params = array($this->courseid);
+            }
+
+            $this->presentationscommented = $DB->record_exists_select("checkmark", $select, $params) ? true : false;
+        }
+
+        return $this->presentationscommented;
+    }
+
+    /**
+     * returns which instances use presentationgrading
+     *
+     * @param int $chkmkid (optional) return data only for 1 checkmark instance (or all in course if omitted)
+     * @return object[]|object|bool (array of) object(s) with information about presentationgrading in instances
+     *                                  or false if selected instance won't
+     */
+    public function gradepresentations($chkmkid = 0) {
+        global $DB, $COURSE;
+
+        if ($this->gradespresentations === null) {
+            $select = "course = ?";
+            $params = array($COURSE->id);
+            $fields = "id, presentationgrading, presentationgrade, presentationgradebook";
+            $this->gradespresentations = $DB->get_records_select("checkmark", $select, $params, '', $fields);
+            foreach ($this->gradespresentations as $id => $cur) {
+                if ($cur->presentationgrading == 0) {
+                    $this->gradespresentations[$id] = false;
+                }
+            }
+        }
+
+        if (!empty($chkmkid) && !array_key_exists($chkmkid, $this->gradespresentations)) {
+            return false;
+        }
+
+        if (empty($chkmkid)) {
+            return $this->gradespresentations;
+        } else {
+            return $this->gradespresentations[$chkmkid];
+        }
+    }
+
+    /**
+     * returns which instances use points as grade for presentations
+     *
+     * @param int $chkmkid (optional) return data only for 1 checkmark instance (or all in course if omitted)
+     * @return int[]|int (array of) integer(s) with maximum grade for presentation (in instances)
+     */
+    public function pointsforpresentations($chkmkid = 0) {
+        global $DB, $COURSE;
+
+        if ($this->presentationpoints === null) {
+            $select = "presentationgrading = 1 AND presentationgrade > 0 AND course = ?";
+            $params = array($COURSE->id);
+            $fields = "id, presentationgrade";
+            $this->presentationpoints = $DB->get_records_select_menu("checkmark", $select, $params, '', $fields);
+        }
+
+        if (!empty($chkmkid) && !array_key_exists($chkmkid, $this->presentationpoints)) {
+            return 0;
+        }
+
+        if (empty($chkmkid)) {
+            return $this->presentationpoints;
+        } else {
+            return $this->presentationpoints[$chkmkid];
+        }
+    }
+
+    /**
      * Get's the course data from the DB, saves it and returns it
      *
      * @return object[]
@@ -314,6 +459,7 @@ class local_checkmarkreport_base {
             $params = array_merge_recursive($params, $checkmarkbparams);
 
             $useridentityfields = get_extra_user_fields_sql($context, 'u');
+            // TODO: this can be done in a single SQL query!
             $grades = $DB->get_records_sql_menu('
                             SELECT 0 id, SUM(gex.grade) grade
                               FROM {checkmark_examples} gex
@@ -380,6 +526,43 @@ class local_checkmarkreport_base {
             }
             $attendances = $DB->get_records_sql_menu($attendances, array_merge($checkmarkparams, $userparams));
 
+            $presentationpoints = $this->pointsforpresentations();
+            if (!empty($presentationpoints)) {
+                list($prespointssql, $prespointsparams) = $DB->get_in_or_equal(array_keys($presentationpoints), SQL_PARAMS_NAMED,
+                                                                               'presids');
+                if (in_array(0, $this->instances)) {
+                    $presentationgrademax = array_sum($presentationpoints);
+                } else {
+                    $presentationgrademax = 0;
+                    $tmp = array_intersect($this->instances, array_keys($presentationpoints));
+                    foreach ($tmp as $chkmkid) {
+                        $presentationgrademax += $presentationpoints[$chkmkid];
+                    }
+                }
+                $prespercsql = "100 * SUM( f.presentationgrade ) / :presentationgrademax";
+            } else {
+                $prespointssql = ' = :presids';
+                $prespointsparams = array('presids' => -1);
+                $presentationgrademax = 0;
+                $prespercsql = "0";
+            }
+
+            $presentationgrades = "SELECT u.id, SUM( f.presentationgrade ) AS presentationgrade,
+                                          ".$prespercsql." AS presentationpercent
+                                     FROM {user} u
+                                LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ".$sqlcheckmarkids."
+                                    WHERE u.id ".$sqluserids." AND f.checkmarkid ".$prespointssql."
+                                 GROUP BY u.id";
+            if (key_exists('presentationgrade', $sortarr)) {
+                $presentationgrades .= " ORDER BY presentationgrade ".$sortarr['presentationgrade'];
+            }
+
+            $presentationgrades = $DB->get_records_sql($presentationgrades,
+                                                       array_merge(array('presentationgrademax' => $presentationgrademax),
+                                                                   $checkmarkparams,
+                                                                   $userparams,
+                                                                   $prespointsparams));
+
             $data = $DB->get_records_sql($sql, $params);
             foreach ($data as $key => $cur) {
                 $data[$key]->maxgrade = $grades[0];
@@ -392,6 +575,18 @@ class local_checkmarkreport_base {
                     $data[$key]->attendances = 0;
                 }
                 $data[$key]->overridden = false;
+                if (!empty($presentationpoints)) {
+                    $data[$key]->presentationgrademax = $presentationgrademax;
+                    if (!key_exists($key, $presentationgrades)) {
+                        $data[$key]->presentationgrade = null;
+                        $data[$key]->presentationpercent = 0;
+                    } else {
+                        $data[$key]->presentationgrade = $presentationgrades[$key]->presentationgrade;
+                        $data[$key]->presentationpercent = $presentationgrades[$key]->presentationpercent;
+                    }
+                }
+                $data[$key]->coursepressum = 0; // Sum it up during per-instance-data!
+                $data[$key]->presoverridden = false;
             }
 
             // Add per instance data!
@@ -400,7 +595,8 @@ class local_checkmarkreport_base {
                            COUNT( DISTINCT cchks.id ) AS checks,
                            100 * SUM( cex.grade ) / :maxgrade AS percentgrade,
                            SUM( cex.grade ) AS grade,
-                           f.attendance AS attendance
+                           f.attendance AS attendance,
+                           f.presentationgrade AS presentationgrade
                       FROM {user} u
                  LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid = :chkmkid
                  LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid = :chkmkidb
@@ -415,7 +611,10 @@ class local_checkmarkreport_base {
             $primesort = key($sortarr);
             if ($primesort === "attendances") {
                 $reorder = "attendances";
+            } else if ($primesort === "presentationgrade") {
+                $reorder = "presentationgrade";
             }
+
             $gradinginfo = array();
             foreach ($checkmarkids as $chkmkid) {
                 // Get instance gradebook data!
@@ -454,18 +653,34 @@ class local_checkmarkreport_base {
                     $sort = ' ORDER BY attendance '.current($sortarr);
                     $reorder = $chkmkid;
                 }
+                if ($this->gradepresentations($chkmkid) && ($primesort == 'presentationgrade'.$chkmkid)) {
+                    $sort = ' ORDER BY presentationgrade '.current($sortarr);
+                    $reorder = $chkmkid;
+                }
                 $sql .= $sort;
                 $instancedata[$chkmkid] = $DB->get_records_sql($sql, $params);
 
                 foreach ($instancedata[$chkmkid] as $key => $cur) {
                     $instancedata[$chkmkid][$key]->maxchecks = $examples[$chkmkid];
                     $instancedata[$chkmkid][$key]->maxgrade = $grades[$chkmkid];
+                    if (key_exists($chkmkid, $presentationpoints)) {
+                        $maxpres = $presentationpoints[$chkmkid];
+                        $presperc = 100 * $cur->presentationgrade / $presentationpoints[$chkmkid];
+                    } else {
+                        $maxpres = 0;
+                        $presperc = 0;
+                    }
+                    $instancedata[$chkmkid][$key]->maxpresentation = $maxpres;
+                    $instancedata[$chkmkid][$key]->presentationpercent = $presperc;
                 }
             }
 
             if (!empty($data)) {
                 if ($reorder === "attendances") {
                     $userids = array_keys($attendances);
+                    $returndata = array();
+                } else if ($reorder === "presentationgrade") {
+                    $userids = array_keys($presentationgrades);
                     $returndata = array();
                 } else if ($reorder !== false) {
                     $userids = array_keys($instancedata[$reorder]);
@@ -484,6 +699,8 @@ class local_checkmarkreport_base {
                 }
                 foreach ($userids as $key) {
                     if ($reorder !== false) {
+                        /* If we have to sort again, there's no data in $returndata by now!
+                           If we don't sort again, $returndata has been filled with $data already! */
                         $returndata[$key] = $data[$key];
                     }
                     $returndata[$key]->userdata = array();
@@ -517,8 +734,8 @@ class local_checkmarkreport_base {
                         $returndata[$key]->instancedata[$chkmkid]->attendance = $instancedata[$chkmkid][$key]->attendance;
 
                         // Add gradebook data!
-                        $finalgrade = $gradinginfo[$chkmkid]->items[0]->grades[$key];
-                        $returndata[$key]->instancedata[$chkmkid]->finalgrade = $gradinginfo[$chkmkid]->items[0]->grades[$key];
+                        $finalgrade = $gradinginfo[$chkmkid]->items[CHECKMARK_GRADE_ITEM]->grades[$key];
+                        $returndata[$key]->instancedata[$chkmkid]->finalgrade = $finalgrade;
                         $returndata[$key]->instancedata[$chkmkid]->formatted_grade = round($finalgrade->grade, 2).
                                                                                      ' / '.round($grademax, 2);
 
@@ -528,6 +745,48 @@ class local_checkmarkreport_base {
                             $returndata[$key]->overridden = true;
                         } else {
                             $returndata[$key]->coursesum += $grade;
+                        }
+
+                        // Add presentation data!
+                        $gradepresentation = $this->gradepresentations($chkmkid);
+                        if ($gradepresentation) {
+                            if (empty($instancedata[$chkmkid][$key]->presentationgrade)) {
+                                $presgrade = 0;
+                            } else {
+                                $presgrade = $instancedata[$chkmkid][$key]->presentationgrade;
+                            }
+                            $returndata[$key]->instancedata[$chkmkid]->presentationgrade = $presgrade;
+                            if (empty($instancedata[$chkmkid][$key]->maxpresentation)) {
+                                $maxpresentation = 0;
+                            } else {
+                                $maxpresentation = $instancedata[$chkmkid][$key]->maxpresentation;
+                            }
+                            $returndata[$key]->instancedata[$chkmkid]->maxpresentation = $maxpresentation;
+                            if (empty($instancedata[$chkmkid][$key]->presentationpercent)) {
+                                $presentationpercent = 0;
+                            } else {
+                                $presentationpercent = $instancedata[$chkmkid][$key]->presentationpercent;
+                            }
+                            $returndata[$key]->instancedata[$chkmkid]->presentationpercent = $presentationpercent;
+                            if ($gradepresentation->presentationgradebook) {
+                                $finalgrade = $gradinginfo[$chkmkid]->items[CHECKMARK_PRESENTATION_ITEM]->grades[$key];
+                                $returndata[$key]->instancedata[$chkmkid]->finalpresgrade = $finalgrade;
+                                $returndata[$key]->instancedata[$chkmkid]->formattedpresgrade = $finalgrade->str_grade;
+                                $returndata[$key]->instancedata[$chkmkid]->formattedlongpresgrade = $finalgrade->str_long_grade;
+
+                                if (empty($gradinginfo[$chkmkid]->items[CHECKMARK_PRESENTATION_ITEM]->scaleid)
+                                        && !empty($gradinginfo[$chkmkid]->items[CHECKMARK_PRESENTATION_ITEM]->grademax)
+                                        && $this->pointsforpresentations($chkmkid) && ($finalgrade->grade > 0)) {
+                                    // We use gradebook grades whereever it's possible!
+                                    $returndata[$key]->coursepressum += $finalgrade->grade;
+                                    if ($finalgrade->overridden || $finalgrade->locked) {
+                                        // Overridden scales don't count for course sum, so we mark it only here!
+                                        $returndata[$key]->presoverridden = true;
+                                    }
+                                } // Should we check, if the grade item was changed in gradebook only? (For the course sum's calc?)
+                            } else if ($this->pointsforpresentations($chkmkid) && ($presgrade > 0)) {
+                                $returndata[$key]->coursepressum += $presgrade;
+                            }
                         }
                     }
                 }

@@ -107,6 +107,11 @@
     vertical-align: middle;
 }
 
+.path-local-checkmarkreport #checkmarkreporttable .useroverview .presentationgrade {
+    text-align: right;
+    vertical-align: middle;
+}
+
 .path-local-checkmarkreport .ui-tooltip {
     background-color: #ffee69;
     border-color: #d4c237 #a6982b #a6982b;
