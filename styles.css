@@ -28,65 +28,65 @@
 
 /** General Styles **/
 .path-local-checkmarkreport div.scrollforced {
-    overflow-x:scroll;
-    width:100%;
+    overflow-x: scroll;
+    width: 100%;
 }
 
 .path-local-checkmarkreport span.downloadlink {
-    margin-bottom:2em;
-    margin-left:1em;
-    margin-right:1em;
+    margin-bottom: 2em;
+    margin-left: 1em;
+    margin-right: 1em;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table .hiddencol .hidecol,
 .path-local-checkmarkreport #checkmarkreporttable table .showcol,
 .path-local-checkmarkreport #checkmarkreporttable table .hiddencol .content {
-    display:none;
+    display: none;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table .hiddencol .showcol,
 .path-local-checkmarkreport #checkmarkreporttable table .hidecol,
 .path-local-checkmarkreport #checkmarkreporttable table .content {
-    display:inline;
-    white-space:nowrap;
+    display: inline;
+    white-space: nowrap;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table .hiddencol {
-    margin:0;
-    padding:0;
+    margin: 0;
+    padding: 0;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table .hidecol {
-    margin-left:3px;
+    margin-left: 3px;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table.userview th.cell {
-    text-align:center;
+    text-align: center;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table,
 .path-local-checkmarkreport #checkmarkreporttable table th,
 .path-local-checkmarkreport #checkmarkreporttable table td {
-    border: 1px solid #BBB;
+    border: 1px solid #bbb;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table .r0 {
     background-color: #f0f0f0;
-    white-space:nowrap
+    white-space: nowrap;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table .r1 {
     background-color: #fafafa;
-    white-space:nowrap
+    white-space: nowrap;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table td {
-    text-align:center;
+    text-align: center;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable table td.fullnameuser,
 .path-local-checkmarkreport #checkmarkreporttable table td.email {
-    text-align:left;
+    text-align: left;
 }
 
 .path-local-checkmarkreport #checkmarkreporttable .overview .current,
@@ -123,5 +123,5 @@
 }
 
 .path-local-checkmarkreport .ui-tooltip {
-    display:inline-block;
+    display: inline-block;
 }

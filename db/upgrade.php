@@ -42,10 +42,6 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool
  */
 function xmldb_local_checkmarkreport_upgrade($oldversion) {
-    global $DB;
-
-    $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
-
     /*
      * And upgrade begins here. For each one, you'll need one
      * block of code similar to the next one. Please, delete

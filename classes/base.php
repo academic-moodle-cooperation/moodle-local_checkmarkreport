@@ -73,8 +73,8 @@ class local_checkmarkreport_base {
 
     /** @var bool presentationsgraded tells if at least 1 instance grades presentations */
     protected $presentationsgraded = null;
-    /** @var bool presentationscommented tells if at least 1 instance comments presentations */
-    protected $presentationscommented = null;
+    /** @var bool prescommented tells if at least 1 instance comments presentations */
+    protected $prescommented = null;
     /** @var object[] gradingpresentations array stating which instances grade presentation */
     protected $gradespresentations = null;
     /** @var int[] presentationpoints array with maximum points for presentation grade */
@@ -241,7 +241,7 @@ class local_checkmarkreport_base {
     public function presentationsgraded() {
         global $DB;
 
-        if ($this->presentationscommented === false) {
+        if ($this->prescommented === false) {
             // Shortcut: to have presentations graded, also presentation commenting must be possible!
             $this->presentationsgraded = false;
         }
@@ -270,7 +270,7 @@ class local_checkmarkreport_base {
     public function presentationscommented() {
         global $DB;
 
-        if ($this->presentationscommented === null) {
+        if ($this->prescommented === null) {
             if (!in_array(0, $this->instances)) {
                 list($select, $params) = $DB->get_in_or_equal($this->instances);
                 $params = array_merge(array($this->courseid), $params);
@@ -280,10 +280,10 @@ class local_checkmarkreport_base {
                 $params = array($this->courseid);
             }
 
-            $this->presentationscommented = $DB->record_exists_select("checkmark", $select, $params) ? true : false;
+            $this->prescommented = $DB->record_exists_select("checkmark", $select, $params) ? true : false;
         }
 
-        return $this->presentationscommented;
+        return $this->prescommented;
     }
 
     /**
@@ -352,7 +352,7 @@ class local_checkmarkreport_base {
      * @return object[]
      */
     public function get_coursedata() {
-        global $PAGE, $DB;
+        global $DB;
 
         $course = $DB->get_record('course', array('id' => $this->courseid), '*', MUST_EXIST);
 
@@ -391,7 +391,8 @@ class local_checkmarkreport_base {
         if (!empty($data)) {
             // Get examples states for user and instance!
             foreach ($checkmarks as $checkmark) {
-                foreach ($data as $userid => $user) {
+                $userkeys = array_keys($data);
+                foreach ($userkeys as $userid) {
                     $data[$userid]->instancedata[$checkmark->id]->examples = $this->get_examples_data($checkmark->id, $userid);
                 }
             }
@@ -411,10 +412,9 @@ class local_checkmarkreport_base {
      * @return object[]|null
      */
     public function get_general_data($course = null, $userids=0, $instances = array(0)) {
-        global $DB, $COURSE, $CFG, $SESSION;
+        global $DB, $COURSE, $SESSION;
 
         // Construct the SQL!
-        $conditions = array();
         $params = array();
 
         $sort = '';
@@ -1081,7 +1081,8 @@ class local_checkmarkreport_base {
         }
 
         if (!empty($table->head)) {
-            foreach ($table->head as $key => $val) {
+            $keys = array_keys($table->head);
+            foreach ($keys as $key) {
                 if (!isset($table->align[$key])) {
                     $table->align[$key] = null;
                 }
@@ -1095,7 +1096,6 @@ class local_checkmarkreport_base {
             foreach ($table->head as $row => $headrow) {
                 $x = 0;
                 $keys = array_keys($headrow->cells);
-                $lastkey = end($keys);
 
                 foreach ($headrow->cells as $key => $heading) {
                     // Convert plain string headings into html_table_cell objects!
@@ -1141,12 +1141,13 @@ class local_checkmarkreport_base {
     }
 
     public function add_xml_presentation_data(&$instnode, $instancedata, $instanceid, $gradepresentation) {
+        global $DB;
+
         if (!$this->column_is_hidden('presentationgrade'.$instanceid) && $this->presentationsgraded() && $gradepresentation) {
             $presnode = $instnode->appendChild(new DOMElement('presentation'));
             // TODO replace empty node with node with text-comment for presentation in future version!
             if ($gradepresentation->presentationgradebook) {
                 $presentationgrade = $instancedata->formattedpresgrade;
-                $finalgrade = $instancedata->finalpresgrade;
                 $overridden = $instancedata->finalpresgrade->overridden;
                 $locked = $instancedata->finalpresgrade->locked;
                 $presnode->setAttribute('grade', $presentationgrade);

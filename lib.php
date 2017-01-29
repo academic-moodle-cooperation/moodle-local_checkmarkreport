@@ -39,10 +39,9 @@ define('CHECKMARKREPORT_GODMODE', true);
  * Inject new menu element in course administration linking to checkmark report!
  *
  * @param settings_navigation $setnav settins navigation object
- * @param object $context current page context, not used here, we operate on course level all the time!
  */
-function local_checkmarkreport_extend_settings_navigation(settings_navigation $setnav, $context) {
-    global $CFG, $PAGE, $USER;
+function local_checkmarkreport_extend_settings_navigation(settings_navigation $setnav) {
+    global $PAGE, $USER;
 
     // Only add this settings item on non-site course pages.
     if (!$PAGE->course or $PAGE->course->id == SITEID) {

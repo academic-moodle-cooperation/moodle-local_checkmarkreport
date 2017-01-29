@@ -44,10 +44,6 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      * @return string HTML snippet
      */
     protected function render_local_checkmarkreport_overview(local_checkmarkreport_overview $report) {
-        global $CFG, $DB;
-
-        $context = context_course::instance($report->get_courseid());
-
         // Render download links!
         $data = array('id'         => $report->get_courseid(),
                       'tab'        => optional_param('tab', null, PARAM_ALPHANUM),
@@ -79,21 +75,11 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      * @return string HTML snippet
      */
     protected function render_local_checkmarkreport_useroverview(local_checkmarkreport_useroverview $report, $hidefilter = false) {
-        global $CFG, $DB, $PAGE, $COURSE;
-
         $out = '';
-        $grade      = get_user_preferences('checkmarkreport_showgrade');
-        $sumabs     = get_user_preferences('checkmarkreport_sumabs');
-        $sumrel     = get_user_preferences('checkmarkreport_sumrel');
-        $showpoints = get_user_preferences('checkmarkreport_showpoints');
 
         // Render download links!
         $data = array('id'         => $report->get_courseid(),
                       'tab'        => optional_param('tab', null, PARAM_ALPHANUM),
-                      'showgrade'  => false,
-                      'showabs'    => false,
-                      'showrel'    => false,
-                      'showpoints' => false,
                       'sesskey'    => sesskey(),
                       'format'     => local_checkmarkreport_base::FORMAT_XLSX);
         $groups = $report->get_groups();
@@ -220,7 +206,8 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
             }
         }
         if (!empty($table->head)) {
-            foreach ($table->head as $key => $val) {
+            $keys = array_keys($table->head);
+            foreach ($keys as $key) {
                 if (!isset($table->align[$key])) {
                     $table->align[$key] = null;
                 }
@@ -259,7 +246,6 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         }
 
         if (!empty($table->head)) {
-            $countrows = count($table->head);
 
             $output .= html_writer::start_tag('thead', array()) . "\n";
 
@@ -433,7 +419,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                         if (isset($table->colclasses[$key])) {
                             $classes = explode(' ', $table->colclasses[$key]);
                         } else {
-                            $clases = '';
+                            $classes = '';
                         }
                         if (!$nohide && ($report->column_is_hidden($key) || $report->column_is_hidden($classes))) {
                             $tdattributes['class'] .= ' hiddencol';

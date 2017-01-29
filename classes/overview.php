@@ -77,11 +77,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
      * @return html_table report as html_table object
      */
     public function get_table() {
-        global $CFG, $DB, $SESSION, $PAGE;
+        global $DB, $PAGE;
 
         $context = context_course::instance($this->courseid);
-
-        $sortarray = &$SESSION->checkmarkreport->{$this->courseid}->sort;
 
         $performance = new stdClass();
         $performance->start = microtime(true);
@@ -94,19 +92,10 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
-        $showpresentationgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
+        $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
         $signature = get_user_preferences('checkmarkreport_signature');
 
         $table = new html_table();
-
-        $jsarguments = array(
-            'id'        => '#user-grades',
-            'cfg'       => array('ajaxenabled' => false),
-            'items'     => array(),
-            'users'     => array(),
-            'grade'  => array()
-        );
-        $jsscales = array();
 
         $table->id = 'user-grades'; // Was former "attempts"! Changed due to style of overridden grades!
         if (!isset($table->attributes)) {
@@ -119,11 +108,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         $table->tablealign = 'center';
 
-        $tabledata = array();
         $row = array();
 
-        $cellwidth = array();
-        $columnformat = array();
         $tableheaders = array();
         $tablecolumns = array();
         $table->colgroups = array();
@@ -223,7 +209,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $table->colclasses['attendances'] = 'attendances';
         }
 
-        if (!empty($showpresentationgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
+        if (!empty($showpresgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
             $sortlink = $this->get_sortlink('presentationgrade', 'S '.get_string('presentationgrade', 'checkmark'), $PAGE->url);
             $sortable[] = 'presentationgrade';
             $tableheaders['presentationgrade'] = new html_table_cell($sortlink);
@@ -246,7 +232,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             if (!empty($showgrade) || !empty($showabs) || !empty($showrel)
                 || (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id))
-                || (!empty($showpresentationgrades) && $this->presentationsgraded() && $gradepresentation)
+                || (!empty($showpresgrades) && $this->presentationsgraded() && $gradepresentation)
                 || !empty($showexamples)) {
                 $instanceurl = new moodle_url('/mod/checkmark/view.php', array('id' => $instance->coursemodule));
                 $instancelink = html_writer::link($instanceurl, $instance->name);
@@ -300,7 +286,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $tablecolumns[] = 'attendance'.$instance->id;
                 $table->colclasses['attendance'.$instance->id] = 'instance'.$instance->id.' attendance'.$instance->id;
             }
-            if (!empty($showpresentationgrades) && $this->presentationsgraded() && $gradepresentation) {
+            if (!empty($showpresgrades) && $this->presentationsgraded() && $gradepresentation) {
                 $span++;
                 $sortlink = $this->get_sortlink('presentationgrade'.$instance->id, get_string('presentationgrade', 'checkmark'),
                                                 $PAGE->url);
@@ -329,7 +315,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             if (!empty($showgrade) || !empty($showabs) || !empty($showrel)
                 || (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id))
-                || (!empty($showpresentationgrades) && $this->presentationsgraded() && $gradepresentation)
+                || (!empty($showpresgrades) && $this->presentationsgraded() && $gradepresentation)
                 || !empty($showexamples)) {
                 for ($i = 1; $i < $span; $i++) {
                     // Insert empty cells for the colspan!
@@ -409,7 +395,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $row['attendances'] = new html_table_cell($curuser->attendances.'/'.$curuser->maxattendances);
             }
 
-            if (!empty($showpresentationgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
+            if (!empty($showpresgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
                 $row['presentationgrade'] = new html_table_cell(round($curuser->coursepressum, 2).'/'.
                                                                 $curuser->presentationgrademax);
             }
@@ -555,7 +541,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $users[$usermodified] = fullname($userobj);
                     }
                 }
-                if (!empty($showpresentationgrades) && $this->presentationsgraded() && $gradepresentation
+                if (!empty($showpresgrades) && $this->presentationsgraded() && $gradepresentation
                         && $gradepresentation->presentationgrade) {
                     if ($gradepresentation->presentationgradebook) {
                         $presentationgrade = $curuser->instancedata[$instance->id]->formattedpresgrade;
@@ -585,7 +571,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
                     // Highlight if overwritten or locked!
                     if ($gradepresentation->presentationgradebook) {
-                       if ($overridden || $locked) {
+                        if ($overridden || $locked) {
                             $row['presentationgrade'.$instance->id]->attributes['class'] = 'current';
 
                             $dategraded = $finalgrade->dategraded;
@@ -635,7 +621,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
      * @return void
      */
     public function get_xml() {
-        global $CFG, $DB;
+        global $DB;
         $data = $this->get_coursedata();
         $course = $DB->get_record('course', array('id' => $this->courseid));
         $xml = '';
@@ -647,7 +633,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showexamples = get_user_preferences('checkmarkreport_showexamples');
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
-        $showpresentationgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
+        $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
 
         $xml = new DOMDocument(1.0, 'UTF-8');
         $xml->formatOutput = true;
@@ -681,7 +667,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
                 $user->setAttribute('percentchecked', round($row->percentchecked, 2).'%');
                 if ($row->overridden) {
-                    $percgrade = round(empty($row->coursesum) ? 0 : 100*$row->coursesum/$row->maxgrade, 2);
+                    $percgrade = round(empty($row->coursesum) ? 0 : 100 * $row->coursesum / $row->maxgrade, 2);
                 } else {
                     $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
                 }
@@ -692,7 +678,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $instancesnode->setAttribute('attendant', $row->attendances);
                 $instancesnode->setAttribute('attendance_max', $row->maxattendances);
             }
-            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresentationgrades) && $this->presentationsgraded()) {
+            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded()) {
                 $instancesnode->setAttribute('presentationgrade', empty($row->presentationgrade) ? 0 : $row->presentationgrade);
                 if (!empty($row->presentationgrademax)) {
                     $instancesnode->setAttribute('presentationgrademax', $row->presentationgrademax);
@@ -750,7 +736,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $this->add_xml_attendance_data($instnode, $instancedata, $instance->id);
                 }
 
-                if (!empty($showpresentationgrades)) {
+                if (!empty($showpresgrades)) {
                     $this->add_xml_presentation_data($instnode, $instancedata, $instance->id, $gradepresentation);
                 }
 
@@ -780,7 +766,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
      * @return void
      */
     public function get_txt() {
-        global $CFG, $DB;
+        global $DB;
         $data = $this->get_coursedata();
         $course = $DB->get_record('course', array('id' => $this->courseid));
         $context = context_course::instance($this->courseid);
@@ -788,10 +774,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
         $showrel = get_user_preferences('checkmarkreport_sumrel');
-        $showpoints = get_user_preferences('checkmarkreport_showpoints');
         $showexamples = get_user_preferences('checkmarkreport_showexamples');
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
-        $showpresentationgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
+        $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
 
         $txt = '';
         $examplenames = array();
@@ -822,7 +807,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         if (!empty($showattendances) && $this->attendancestracked()) {
             $txt .= "\tS ".get_string('attendance', 'checkmark');
         }
-        if (!$this->column_is_hidden('presentationgrade', 'checkmark') && !empty($showpresentationgrades)
+        if (!$this->column_is_hidden('presentationgrade', 'checkmark') && !empty($showpresgrades)
                 && $this->presentationsgraded()) {
             $txt .= "\tS ".get_string('presentationgrade', 'checkmark');
         }
@@ -860,7 +845,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $txt .= "\t";
                 $txt .= $instance->name.' '.get_string('attendance', 'checkmark');
             }
-            if (!$this->column_is_hidden('presentationgrade'.$instance->id) && !empty($showpresentationgrades)
+            if (!$this->column_is_hidden('presentationgrade'.$instance->id) && !empty($showpresgrades)
                     && $this->presentationsgraded() && $gradepresentation) {
                 $txt .= "\t";
                 $txt .= $instance->name.' '.get_string('presentationgrade', 'checkmark');
@@ -878,7 +863,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $txt .= "\n";
 
         // Data.
-        foreach ($data as $userid => $row) {
+        foreach ($data as $row) {
             if (!$this->column_is_hidden('fullnameuser')) {
                 $txt .= fullname($row);
             }
@@ -910,7 +895,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $txt .= "\t";
                 $txt .= $row->attendances.'/'.$row->maxattendances;
             }
-            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresentationgrades) && $this->presentationsgraded()) {
+            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded()) {
                 $txt .= "\t";
                 $txt .= round($row->presentationgrade, 2).'/'.$row->presentationgrademax;
             }
@@ -958,7 +943,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $txt .= "\t".$attendance;
                 }
 
-                if (!$this->column_is_hidden('presentationgrade'.$instance->id) && !empty($showpresentationgrades)
+                if (!$this->column_is_hidden('presentationgrade'.$instance->id) && !empty($showpresgrades)
                         && $this->presentationsgraded() && $gradepresentation) {
                     if ($gradepresentation->presentationgradebook) {
                         $presentationgrade = $instancedata->formattedpresgrade;
@@ -1031,7 +1016,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (empty($table->head)) {
                 // Head was empty, we have to check this here!
                 $x = 0;
-                foreach (current($table->data) as $key => $cur) {
+                $cur = current($table->data);
+                $keys = array_keys($cur);
+                foreach ($keys as $key) {
                     if ($this->column_is_hidden($key)) {
                         // Hide column in worksheet!
                         $worksheet->set_column($x, $x, 0, null, true);

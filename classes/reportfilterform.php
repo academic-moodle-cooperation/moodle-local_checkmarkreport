@@ -43,7 +43,7 @@ class local_checkmarkreport_reportfilterform extends moodleform {
      * Definition of filter form
      */
     protected function definition() {
-        global $CFG, $COURSE, $DB, $PAGE, $USER, $OUTPUT;
+        global $COURSE, $DB, $USER, $OUTPUT;
         $mform = $this->_form;
 
         $mform->addElement('header', 'checkmarkreport', get_string('pluginname', 'local_checkmarkreport'));
@@ -203,10 +203,10 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $mform->setType('showattendances', PARAM_BOOL);
 
         if (\local_checkmarkreport_base::presentationsgradedincourse($COURSE->id)) {
-            $presentationgradehelp = new help_icon('showpresentationgrades', 'local_checkmarkreport');
+            $presgradehelp = new help_icon('showpresentationgrades', 'local_checkmarkreport');
             $addsettings[] =& $mform->createElement('advcheckbox', 'showpresentationgrades', '',
                                                     get_string('showpresentationgrades', 'local_checkmarkreport').
-                                                    $OUTPUT->render($presentationgradehelp));
+                                                    $OUTPUT->render($presgradehelp));
             $mform->setDefault('showpresentationgrades', get_user_preferences('checkmarkreport_showpresentationgrades', 0));
         } else {
             $mform->addElement('hidden', 'showpresentationgrades');
