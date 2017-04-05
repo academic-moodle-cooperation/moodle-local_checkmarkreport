@@ -126,6 +126,7 @@ class local_checkmarkreport_base {
     /**
      * returns if at least 1 instance in course uses attendance tracking
      *
+     * @param int $courseid
      * @return bool True if at least 1 instance in course uses attendance tracking
      */
     public static function attendancestrackedincourse($courseid) {
@@ -187,6 +188,7 @@ class local_checkmarkreport_base {
     /**
      * returns which instances track attendance
      *
+     * @param int $chkmkid (optional) Instance-ID to filter for or all instances if 0 or omitted
      * @return bool[]|bool array of bool values for each instance or bool value if filtered for 1 instance
      */
     public function tracksattendance($chkmkid = 0) {
@@ -212,6 +214,7 @@ class local_checkmarkreport_base {
     /**
      * returns if at least 1 instance in course grades presentations
      *
+     * @param int $courseid
      * @return bool True if at least 1 instance in course grades presentations
      */
     public static function presentationsgradedincourse($courseid) {
@@ -224,6 +227,7 @@ class local_checkmarkreport_base {
     /**
      * returns if at least 1 instance in course comments presentations
      *
+     * @param int $courseid
      * @return bool True if at least 1 instance in course comments presentations
      */
     public static function presentationscommentedincourse($courseid) {
@@ -1124,6 +1128,14 @@ class local_checkmarkreport_base {
         $workbook->close();
     }
 
+    /**
+     * Prepare a worksheet for writing the table data
+     *
+     * @param stdClass $table data for writing into the worksheet
+     * @param stdClass $worksheet worksheet to prepare
+     * @param int $x current column
+     * @param int $y current line
+     */
     public function prepare_worksheet(&$table, &$worksheet, &$x, &$y) {
         // Prepare table data and populate missing properties with reasonable defaults!
         if (!empty($table->align)) {
@@ -1199,12 +1211,27 @@ class local_checkmarkreport_base {
         }
     }
 
+    /**
+     * Adds XML attendance-data to the given node!
+     *
+     * @param stdClass $instnode XML node to add data to
+     * @param stdClass $instancedata the instance-data to add
+     * @param int $instanceid ID of currently processed instance
+     */
     public function add_xml_attendance_data(&$instnode, $instancedata, $instanceid) {
         if ($this->attendancestracked() && $this->tracksattendance($instanceid)) {
             $instnode->setAttribute('attendant', $instancedata->attendance);
         }
     }
 
+    /**
+     * Adds XML presentation-data to the given node!
+     *
+     * @param stdClass $instnode XML node to add data to
+     * @param stdClass $instancedata the instance-data to add
+     * @param int $instanceid ID of currently processed instance
+     * @param bool $gradepresentation if the presentation get graded in this instance (or just given feedback)
+     */
     public function add_xml_presentation_data(&$instnode, $instancedata, $instanceid, $gradepresentation) {
         global $DB;
 

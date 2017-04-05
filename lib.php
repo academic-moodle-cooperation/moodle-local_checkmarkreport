@@ -94,6 +94,8 @@ function local_checkmarkreport_extend_navigation(global_navigation $nav) {
 /**
  * Return the tab data for the checkmarkreport
  *
+ * @param context_course $coursecontext
+ * @param int $id course ID
  * @return mixed[] array with all the tab data
  */
 function local_checkmarkreport_get_tabs($coursecontext, $id) {
