@@ -691,16 +691,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $instnode->setAttribute('maxchecks', $instancedata->maxchecked);
                 }
                 if (!$this->column_is_hidden('percentex'.$instance->id) && !empty($showrel)) {
-                    if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
-                        $grade = (empty($instancedata->finalgrade->grade) ? 0 : $instancedata->finalgrade->grade);
-                        if ($instancedata->maxgrade > 0) {
-                            $percgrade = round(100 * $grade / $instancedata->maxgrade, 2).' %';
-                        } else {
-                            $percgrade = '-';
-                        }
-                    } else {
-                        $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2).' %';
-                    }
+                    $percgrade = $this->get_instance_percgrade($instancedata);
                     if ($showabs) {
                         $instnode->setAttribute('percentchecked', $instancedata->percentchecked.'%');
                     }
@@ -898,16 +889,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $txt .= "\t".$instancedata->checked."/".$instancedata->maxchecked;
                 }
                 if (!$this->column_is_hidden('percentex'.$instance->id) && !empty($showrel)) {
-                    if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
-                        $grade = (empty($instancedata->finalgrade->grade) ? 0 : $instancedata->finalgrade->grade);
-                        if ($instancedata->maxgrade > 0) {
-                            $percgrade = round(100 * $grade / $instancedata->maxgrade, 2).' %';
-                        } else {
-                            $percgrade = '-';
-                        }
-                    } else {
-                        $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2).' %';
-                    }
+                    $percgrade = $this->get_instance_percgrade($instancedata);
                     $txt .= "\t";
                     $txt .= $instancedata->percentchecked.'% ('.$percgrade.')';
                 }
@@ -947,6 +929,27 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $filename = get_string('pluginname', 'local_checkmarkreport').'_'.
                     $course->shortname.'_'.userdate(time());
         $this->output_text_with_headers($txt, $filename);
+    }
+
+    /**
+     * Returns the grade percentage (if applicable) or '-' for the instance!
+     *
+     * @param stdClass Instancedata to process
+     * @return string grade percentage (human readable)
+     */
+    protected function get_instance_percgrade($instancedata) {
+        if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
+            $grade = (empty($instancedata->finalgrade->grade) ? 0 : $instancedata->finalgrade->grade);
+            if ($instancedata->maxgrade > 0) {
+                $percgrade = round(100 * $grade / $instancedata->maxgrade, 2).' %';
+            } else {
+                $percgrade = '-';
+            }
+        } else {
+            $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2).' %';
+        }
+
+        return $percgrade;
     }
 
     /**

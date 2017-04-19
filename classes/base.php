@@ -1233,8 +1233,6 @@ class local_checkmarkreport_base {
      * @param bool $gradepresentation if the presentation get graded in this instance (or just given feedback)
      */
     public function add_xml_presentation_data(&$instnode, $instancedata, $instanceid, $gradepresentation) {
-        global $DB;
-
         if (!$this->column_is_hidden('presentationgrade'.$instanceid) && $this->presentationsgraded() && $gradepresentation) {
             $presnode = $instnode->appendChild(new DOMElement('presentation'));
             // TODO replace empty node with node with text-comment for presentation in future version!
