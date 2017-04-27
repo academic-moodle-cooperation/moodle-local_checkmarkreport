@@ -444,15 +444,13 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      * @return string HTML snippet
      */
     protected function get_toggle_links($column = '', $columnstring = '', local_checkmarkreport_base $report = null) {
-        global $PAGE;
+        global $PAGE, $OUTPUT;
         $html = '';
         if (empty($report)) {
             return '';
         }
-        $showicon = html_writer::empty_tag('img', array('src' => $this->output->pix_url('t/switch_plus'),
-                                                        'alt' => get_string('show')));
-        $hideicon = html_writer::empty_tag('img', array('src' => $this->output->pix_url('t/switch_minus'),
-                                                        'alt' => get_string('hide')));
+        $showicon = $OUTPUT->pix_icon('t/switch_plus', get_string('show'));
+        $hideicon = $OUTPUT->pix_icon('t/switch_minus', get_string('hide'));
         if ($report->column_is_hidden($column)) {
             // Show link!
             $html = html_writer::link(new moodle_url($PAGE->url, array('tshow' => $column)),

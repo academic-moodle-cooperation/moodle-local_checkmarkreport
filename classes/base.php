@@ -1036,15 +1036,12 @@ class local_checkmarkreport_base {
             // We show only the first sortby column and checkmark!
             switch ($sortarr[$column]) {
                 case 'ASC':
-                    $picattr = array('src' => $OUTPUT->pix_url('t/up'),
-                                     'alt' => get_string('desc'));
+                    $text .= $OUTPUT->pix_icon('t/up', get_string('desc'));
                     break;
                 case 'DESC':
-                    $picattr = array('src' => $OUTPUT->pix_url('t/down'),
-                                     'alt' => get_string('asc'));
+                    $text .= $OUTPUT->pix_icon('t/down', get_string('asc'));
                     break;
             }
-            $text .= html_writer::empty_tag('img', $picattr);
         }
         $sorturl = new moodle_url($url, array('tsort' => $column));
         $sortlink = html_writer::link($sorturl, $text);
