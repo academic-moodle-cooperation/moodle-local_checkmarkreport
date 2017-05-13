@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
 class local_checkmarkreport_overview extends local_checkmarkreport_base implements renderable {
 
     /** @var string classes to assign to the reporttable */
-    protected $tableclass = 'table table-condensed table-hover table-striped overview';
+    protected $tableclass = 'table table-condensed table-hover overview';
 
     /**
      * Constructor
@@ -94,17 +94,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $table = new html_table();
 
         $table->id = 'user-grades'; // Was former "attempts"! Changed due to style of overridden grades!
-        if (!isset($table->attributes)) {
-            $table->attributes = array('class' => 'coloredrows overview');
-        } else if (!isset($table->attributes['class'])) {
-            $table->attributes['class'] = 'coloredrows overview';
-        } else {
-            $table->attributes['class'] .= ' coloredrows overview';
-        }
-
-        $table->tablealign = 'center';
-
-        $row = array();
+        $table->attributes['class'] = $this->tableclass;
 
         $tableheaders = array();
         $tablecolumns = array();

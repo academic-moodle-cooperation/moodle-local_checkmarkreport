@@ -62,19 +62,7 @@
     text-align: center;
 }
 
-.path-local-checkmarkreport #checkmarkreporttable table,
-.path-local-checkmarkreport #checkmarkreporttable table th,
-.path-local-checkmarkreport #checkmarkreporttable table td {
-    border: 1px solid #bbb;
-}
-
-.path-local-checkmarkreport #checkmarkreporttable table .r0 {
-    background-color: #f0f0f0;
-    white-space: nowrap;
-}
-
-.path-local-checkmarkreport #checkmarkreporttable table .r1 {
-    background-color: #fafafa;
+.path-local-checkmarkreport #checkmarkreporttable table tr {
     white-space: nowrap;
 }
 

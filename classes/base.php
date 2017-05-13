@@ -79,6 +79,7 @@ class local_checkmarkreport_base {
     /** @var array[] scaleitems of scales used in the grade items in checkmark instances */
     protected $scaleitems = array();
 
+
     /**
      * Base constructor
      *

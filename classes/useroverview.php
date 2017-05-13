@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
 class local_checkmarkreport_useroverview extends local_checkmarkreport_base implements renderable {
 
     /** @var string classes to assign to the reporttables */
-    protected $tableclass = 'table table-condensed table-hover table-striped useroverview';
+    protected $tableclass = 'table table-condensed table-bordered useroverview';
 
     /**
      * Constructor
@@ -95,17 +95,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $users = array();
 
         $table->id = "attempts-$userdata->id";
-        if (!isset($table->attributes)) {
-            $table->attributes = array('class' => $this->tableclass);
-        } else if (!isset($table->attributes['class'])) {
-            $table->attributes['class'] = $this->tableclass;
-        } else {
-            $table->attributes['class'] .= $this->tableclass;
-        }
-
-        $table->tablealign = 'center';
-
-        $row = array();
+        $table->attributes['class'] = $this->tableclass;
 
         $tableheaders = array();
         $tablecolumns = array();
