@@ -618,7 +618,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
         $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
 
-        $xml = new DOMDocument(1.0, 'UTF-8');
+        $xml = new DOMDocument('1.0', 'UTF-8');
         $xml->formatOutput = true;
         $report = $xml->appendChild(new DOMElement('report'));
 
