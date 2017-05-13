@@ -91,7 +91,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
         $signature = get_user_preferences('checkmarkreport_signature');
 
-        $table = new html_table();
+        $table = new \local_checkmarkreport\html_table_colgroups();
 
         $table->id = 'user-grades'; // Was former "attempts"! Changed due to style of overridden grades!
         $table->attributes['class'] = $this->tableclass;

@@ -90,7 +90,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
         $signature = get_user_preferences('checkmarkreport_signature');
 
-        $table = new html_table();
+        $table = new \local_checkmarkreport\html_table_colgroups();
 
         $users = array();
 
