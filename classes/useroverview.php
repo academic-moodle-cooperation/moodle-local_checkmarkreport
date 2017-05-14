@@ -426,8 +426,28 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 // Write attendance and/or grade in line with checkmark name if no examples are shown!
                 if ($idx == 0 && (empty($showexamples) || (count($userdata->instancedata[$instance->id]->examples) == 0))) {
                     if (!empty($showattendances) && $this->attendancestracked()) {
-                        if ($this->tracksattendance($instance->id)) {
-                            $attendance = $userdata->instancedata[$instance->id]->attendance;
+                        if ($tracksattendance = $this->tracksattendance($instance->id)) {
+                            if ($tracksattendance->attendancegradebook) {
+                                // We can't use already formatted grade here, because we have to parse the float value!
+                                $attendance = $userdata->instancedata[$instance->id]->finalatgrade->grade;
+                                $finalgrade = $userdata->instancedata[$instance->id]->finalatgrade;
+                                $overridden = $userdata->instancedata[$instance->id]->finalatgrade->overridden;
+                                $locked = $userdata->instancedata[$instance->id]->finalatgrade->locked;
+                                $userid = $userdata->id;
+                                if (empty($users[$userid])) {
+                                    $userobj = $DB->get_record('user', array('id' => $userid),
+                                        'id, '.implode(', ', get_all_user_name_fields()));
+                                    $users[$userid] = fullname($userobj);
+                                }
+                                $usermodified = $userdata->instancedata[$instance->id]->finalatgrade->usermodified;
+                                if (empty($users[$usermodified])) {
+                                    $userobj = $DB->get_record('user', array('id' => $usermodified),
+                                        'id, '.implode(', ', get_all_user_name_fields()));
+                                    $users[$usermodified] = fullname($userobj);
+                                }
+                            } else {
+                                $attendance = $userdata->instancedata[$instance->id]->attendance;
+                            }
                             if ($attendance == 1) {
                                 $attendancestr = $attendantstr;
                             } else if (($attendance == 0) && ($attendance != null)) {
@@ -435,21 +455,40 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             } else {
                                 $attendancestr = $unknownstr;
                             }
-                            $attendance = checkmark_get_attendance_symbol($userdata->instancedata[$instance->id]->attendance).
-                                          $attendancestr;
+                            $attendance = checkmark_get_attendance_symbol($attendance).$attendancestr;
                         } else {
                             $attendance = '';
                         }
                         $row['attendance'] = new html_table_cell($attendance);
+                        if ($tracksattendance && $tracksattendance->attendancegradebook && ($overridden || $locked)) {
+                            $row['attendance']->attributes['class'] = 'current';
+                            $dategraded = $userdata->instancedata[$instance->id]->finalatgrade->dategraded;
+                            $row['attendance']->attributes['data-user'] = $userdata->id;
+                            $row['attendance']->attributes['data-username'] = $users[$userdata->id];
+                            $row['attendance']->attributes['data-item'] = $instance->id;
+                            $row['attendance']->attributes['data-dategraded'] = userdate($dategraded);
+                            $row['attendance']->attributes['data-grader'] = $users[$usermodified];
+                        }
                     }
                     if (!empty($showpresgrades) && $this->presentationsgraded()) {
                         if ($gradepresentation) {
-                            $presentationgrade = '';
                             if ($gradepresentation->presentationgradebook) {
                                 $presentationgrade = $userdata->instancedata[$instance->id]->formattedpresgrade;
                                 $finalgrade = $userdata->instancedata[$instance->id]->finalpresgrade;
                                 $overridden = $userdata->instancedata[$instance->id]->finalpresgrade->overridden;
                                 $locked = $userdata->instancedata[$instance->id]->finalpresgrade->locked;
+                                $userid = $userdata->id;
+                                if (empty($users[$userid])) {
+                                    $userobj = $DB->get_record('user', array('id' => $userid),
+                                        'id, '.implode(', ', get_all_user_name_fields()));
+                                    $users[$userid] = fullname($userobj);
+                                }
+                                $usermodified = $userdata->instancedata[$instance->id]->finalpresgrade->usermodified;
+                                if (empty($users[$usermodified])) {
+                                    $userobj = $DB->get_record('user', array('id' => $usermodified),
+                                        'id, '.implode(', ', get_all_user_name_fields()));
+                                    $users[$usermodified] = fullname($userobj);
+                                }
                             } else {
                                 $presentationgrade = $this->display_grade($userdata->instancedata[$instance->id]->presentationgrade,
                                                                           $gradepresentation->presentationgrade);
@@ -458,6 +497,15 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             $presentationgrade = '';
                         }
                         $row['presentationgrade'] = new html_table_cell($presentationgrade);
+                        if ($gradepresentation && $gradepresentation->presentationgradebook && ($locked || $overridden)) {
+                            $row['presentationgrade']->attributes['class'] = 'current';
+                            $dategraded = $userdata->instancedata[$instance->id]->finalpresgrade->dategraded;
+                            $row['presentationgrade']->attributes['data-user'] = $userdata->id;
+                            $row['presentationgrade']->attributes['data-username'] = $users[$userdata->id];
+                            $row['presentationgrade']->attributes['data-item'] = $instance->id;
+                            $row['presentationgrade']->attributes['data-dategraded'] = userdate($dategraded);
+                            $row['presentationgrade']->attributes['data-grader'] = $users[$usermodified];
+                        }
                     }
                 } else {
                     if (!empty($showattendances) && $this->attendancestracked()) {
@@ -550,9 +598,18 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
 
             if (!empty($showattendances) && $this->attendancestracked()) {
                 // Amount of attendances.
-                $row['attendance'] = new html_table_cell($userdata->attendances.'/'.$userdata->maxattendances);
+                if ($userdata->atoverridden) {
+                    $attendances = $userdata->courseatsum;
+                } else {
+                    $attendances = $userdata->attendances;
+                }
+                $row['attendance'] = new html_table_cell($attendances.'/'.$userdata->maxattendances);
                 $row['attendance']->header = true;
                 $row['attendance']->style = ' text-align: right; ';
+
+                if ($userdata->atoverridden) {
+                    $row['attendance']->attributes['class'] = 'current';
+                }
             }
 
             if (!empty($showpresgrades) && $this->presentationsgraded()) {
@@ -560,6 +617,9 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $row['presentationgrade'] = new html_table_cell($this->display_grade($userdata->coursepressum,
                                                                                      $userdata->presentationgrademax));
                 $row['presentationgrade']->header = true;
+                if ($userdata->presoverridden) {
+                    $row['presentationgrade']->attributes['class'] = 'current';
+                }
             }
 
             $table->data[$i] = new html_table_row();

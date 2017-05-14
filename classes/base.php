@@ -190,18 +190,20 @@ class local_checkmarkreport_base {
      * returns which instances track attendance
      *
      * @param int $chkmkid (optional) Instance-ID to filter for or all instances if 0 or omitted
-     * @return bool[]|bool array of bool values for each instance or bool value if filtered for 1 instance
+     * @return array|object|false mixed array of objects or false for each instance or object|false if filtered for 1 instance
      */
     public function tracksattendance($chkmkid = 0) {
         global $DB, $COURSE;
 
         if ($this->tracksattendance === null) {
+            $fields = "id, trackattendance, attendancegradebook";
             $select = "course = ?";
             $params = array($COURSE->id);
-            $this->tracksattendance = $DB->get_records_select_menu("checkmark", $select, $params, '', "id, trackattendance");
+            $this->tracksattendance = $DB->get_records_select("checkmark", $select, $params, '', $fields);
         }
 
-        if (!empty($chkmkid) && !array_key_exists($chkmkid, $this->tracksattendance)) {
+        if (!empty($chkmkid) && (!array_key_exists($chkmkid, $this->tracksattendance) ||
+                !$this->tracksattendance[$chkmkid]->trackattendance)) {
             return false;
         }
 
@@ -618,6 +620,7 @@ class local_checkmarkreport_base {
                 $data[$key]->coursegrade = $gbgrades->grades[$key];
                 $data[$key]->coursesum = 0; // Sum it up during per-instance-data!
                 $data[$key]->coursesumgraded = 0;
+                $data[$key]->overridden = false;
                 $data[$key]->maxattendances = $this->trackingattendances();
                 if (key_exists($key, $attendances)) {
                     $data[$key]->attendances = $attendances[$key];
@@ -627,7 +630,8 @@ class local_checkmarkreport_base {
                 if ($data[$key]->attendances == null) {
                     $data[$key]->attendances = 0;
                 }
-                $data[$key]->overridden = false;
+                $data[$key]->courseatsum = 0; // Sum it up during per-instance-data!
+                $data[$key]->atoverridden = false;
                 if (!empty($presentationpoints)) {
                     $data[$key]->presentationgrademax = $presentationgrademax;
                     if (!key_exists($key, $presentationgrades)) {
@@ -856,6 +860,24 @@ class local_checkmarkreport_base {
                                 } // Should we check, if the grade item was changed in gradebook only? (For the course sum's calc?)
                             } else if ($this->pointsforpresentations($chkmkid) && ($presgrade > 0)) {
                                 $returndata[$key]->coursepressum += $presgrade;
+                            }
+                        }
+
+                        $tracksattendance = $this->tracksattendance($chkmkid);
+                        if ($tracksattendance) {
+                            if ($tracksattendance->attendancegradebook) {
+                                $finalgrade = $gradinginfo[$chkmkid]->items[CHECKMARK_ATTENDANCE_ITEM]->grades[$key];
+                                $returndata[$key]->instancedata[$chkmkid]->finalatgrade = $finalgrade;
+                                $returndata[$key]->instancedata[$chkmkid]->formattedatgrade = $finalgrade->str_grade;
+                                $returndata[$key]->instancedata[$chkmkid]->formattedlongatgrade = $finalgrade->str_long_grade;
+                                if ($finalgrade->grade == 1.0) {
+                                    $returndata[$key]->courseatsum++;
+                                }
+                                if ($finalgrade->overridden ||$finalgrade->locked) {
+                                    $returndata[$key]->atoverridden = true;
+                                }
+                            } else if ($instancedata[$chkmkid][$key]->attendance) {
+                                $returndata[$key]->courseatsum++;
                             }
                         }
                     }

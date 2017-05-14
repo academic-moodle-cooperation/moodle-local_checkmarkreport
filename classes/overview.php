@@ -374,12 +374,23 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
             if (!empty($showattendances) && $this->attendancestracked()) {
                 // Amount of attendances.
-                $row['attendances'] = new html_table_cell($curuser->attendances.'/'.$curuser->maxattendances);
+                if ($curuser->atoverridden) {
+                    $attendances = $curuser->courseatsum;
+                } else {
+                    $attendances = $curuser->attendances;
+                }
+                $row['attendances'] = new html_table_cell($attendances.'/'.$curuser->maxattendances);
+                if ($curuser->atoverridden) {
+                    $row['attendances']->attributes['class'] = 'current';
+                }
             }
 
             if (!empty($showpresgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
                 $row['presentationgrade'] = new html_table_cell($this->display_grade($curuser->coursepressum,
                                                                                      $curuser->presentationgrademax));
+                if ($curuser->presoverridden) {
+                    $row['presentationgrade']->attributes['class'] = 'current';
+                }
             }
 
             $instances = $this->get_courseinstances();
@@ -491,11 +502,42 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     }
                 }
 
-                if (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id)) {
-                    $text = checkmark_get_attendance_symbol($curuser->instancedata[$instance->id]->attendance);
+                if (!empty($showattendances) && $this->attendancestracked()
+                    && $tracksattendance = $this->tracksattendance($instance->id)) {
+                    if ($tracksattendance->attendancegradebook) {
+                        // We can't use already formatted grade here, because we have to parse the float value!
+                        $attendance = $curuser->instancedata[$instance->id]->finalatgrade->grade;
+                        $finalgrade = $curuser->instancedata[$instance->id]->finalatgrade;
+                        $overridden = $curuser->instancedata[$instance->id]->finalatgrade->overridden;
+                        $locked = $curuser->instancedata[$instance->id]->finalatgrade->locked;
+                        $userid = $curuser->id;
+                        if (empty($users[$userid])) {
+                            $userobj = $DB->get_record('user', array('id' => $userid),
+                                'id, '.implode(', ', get_all_user_name_fields()));
+                            $users[$userid] = fullname($userobj);
+                        }
+                        $usermodified = $curuser->instancedata[$instance->id]->finalatgrade->usermodified;
+                        if (empty($users[$usermodified])) {
+                            $userobj = $DB->get_record('user', array('id' => $usermodified),
+                                'id, '.implode(', ', get_all_user_name_fields()));
+                            $users[$usermodified] = fullname($userobj);
+                        }
+                    } else {
+                        $attendance = $curuser->instancedata[$instance->id]->attendance;
+                    }
+                    $text = checkmark_get_attendance_symbol($attendance);
                     $row['attendance'.$instance->id] = new html_table_cell($text);
+                    if ($tracksattendance->attendancegradebook && ($overridden || $locked)) {
+                        $row['attendance'.$instance->id]->attributes['class'] = 'current';
+                        $dategraded = $curuser->instancedata[$instance->id]->finalatgrade->dategraded;
+                        $row['attendance'.$instance->id]->attributes['data-user'] = $curuser->id;
+                        $row['attendance'.$instance->id]->attributes['data-username'] = $users[$curuser->id];
+                        $row['attendance'.$instance->id]->attributes['data-item'] = $instance->id;
+                        $row['attendance'.$instance->id]->attributes['data-dategraded'] = userdate($dategraded);
+                        $row['attendance'.$instance->id]->attributes['data-grader'] = $users[$usermodified];
+                    }
                     // We have to get the raw value also out there, so we can display it in spreadsheets!
-                    $att = $curuser->instancedata[$instance->id]->attendance;
+                    $att = $attendance;
                     $attendance = '?';
                     if ($att == 1) {
                         $attendance = '✓';
