@@ -672,6 +672,8 @@ class local_checkmarkreport_base {
                 $reorder = "attendances";
             } else if ($primesort === "presentationgrade") {
                 $reorder = "presentationgrade";
+            } else if ($primesort === "gradedgrade") {
+                $reorder = "gradedgrade";
             }
 
             $gradinginfo = array();
@@ -736,12 +738,20 @@ class local_checkmarkreport_base {
             }
 
             if (!empty($data)) {
+                $sortafterdata = false;
                 if ($reorder === "attendances") {
                     $userids = array_keys($attendances);
                     $returndata = array();
+                    $sortafterdata = 'courseatsum';
                 } else if ($reorder === "presentationgrade") {
                     $userids = array_keys($presentationgrades);
                     $returndata = array();
+                    $sortafterdata = 'coursepressum';
+                } else if ($reorder === "gradedgrade") {
+                    // This is more complicated, we have to extract and sort by hand after data has been accumulated!
+                    $userids = array_keys($data);
+                    $returndata = $data;
+                    $sortafterdata = 'coursesum';
                 } else if ($reorder !== false) {
                     $userids = array_keys($instancedata[$reorder]);
                     $returndata = array();
@@ -880,6 +890,35 @@ class local_checkmarkreport_base {
                                 $returndata[$key]->courseatsum++;
                             }
                         }
+                    }
+                }
+                // TODO rework the whole sorting thing, it's no good that we sort in approximately a million places!
+                if ($sortafterdata) {
+                    $userids = array();
+                    foreach ($returndata as $userid => $tmp) {
+                        switch ($sortafterdata) {
+                            case 'courseatsum':
+                                $userids[$userid] = $tmp->courseatsum;
+                                break;
+                            case 'coursepressum':
+                                $userids[$userid] = $tmp->coursepressum;
+                                break;
+                            case 'coursesum':
+                                $userids[$userid] = $tmp->coursesum;
+                                break;
+                        }
+                    }
+
+                    asort($userids);
+                    // And now extract the userids and rebuild the data array!
+                    $userids = array_keys($userids);
+                    if (reset($sortarr) == 'DESC') {
+                        $userids = array_reverse($userids);
+                    }
+                    $tmparray = $returndata;
+                    $returndata = array();
+                    foreach ($userids as $cur) {
+                        $returndata[$cur] = $tmparray[$cur];
                     }
                 }
             }

@@ -132,7 +132,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         // Coursesum of course grade.
         if (!empty($showgrade)) {
-            $sortlink = $this->get_sortlink('checkgrade', 'S '.get_string('grade'), $PAGE->url);
+            $sortlink = $this->get_sortlink('gradedgrade', 'S '.get_string('grade'), $PAGE->url);
             $sortable[] = 'grade';
             $tableheaders['grade'] = new html_table_cell($sortlink);
             $tableheaders['grade']->header = true;
