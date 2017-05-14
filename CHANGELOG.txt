@@ -1,5 +1,15 @@
 CHANGELOG
 =========
+3.3.0 (2017-05-15)
+------------------
+* Moodle 3.3 compatible version
+* [FIXED] #4441 overwritten and locked gradebook grades get correctly marked in tables
+* [FIXED] #4442 sorting by course sums (grade, presentation grade and attendances) now correctly uses overwritten gradebook grades
+* [FIXED] #4094 fixed malformed XML export due to wrong version attribute
+* [CHANGED] #4094 Font-Awesome support
+* [CHANGED] #4094 reduced custom CSS by using more Boost/Bootstrap classes
+* reduced duplicated code and improved code organisation
+
 
 3.2.0 (2016-12-05)
 ------------------
