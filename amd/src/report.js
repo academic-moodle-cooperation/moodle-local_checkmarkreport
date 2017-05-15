@@ -58,11 +58,11 @@ define(['jquery', 'jqueryui', 'core/str', 'core/log'], function($, jqueryui, str
             log.info('Successfully acquired strings: ' + s, 'local_checkmarkreport');
             log.info('Register tooltips!', 'local_checkmarkreport');
 
-            $( ".path-local-checkmarkreport #checkmarkreporttable" ).tooltip({
+            $(".path-local-checkmarkreport #checkmarkreporttable").tooltip({
                 items: ".current",
                 track: true,
                 content: function() {
-                    var element = $( this );
+                    var element = $(this);
 
                     var dategraded = element.data('dategraded');
                     var grader = element.data('grader');
@@ -71,7 +71,7 @@ define(['jquery', 'jqueryui', 'core/str', 'core/log'], function($, jqueryui, str
                     content += 'aria-describedby="' + element.attr('id') + '">';
                     content += s[0]; // Is string 'overwritten' from 'local_checkmarkreport'!
 
-                    if ( !element.is( "[data-username][data-grader][data-dategraded]" ) ) {
+                    if (!element.is("[data-username][data-grader][data-dategraded]")) {
                         return content + '</div>';
                     }
 

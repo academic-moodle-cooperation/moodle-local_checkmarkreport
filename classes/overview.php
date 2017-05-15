@@ -966,7 +966,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     /**
      * Returns the grade percentage (if applicable) or '-' for the instance!
      *
-     * @param stdClass Instancedata to process
+     * @param stdClass $instancedata Instancedata to process
      * @return string grade percentage (human readable)
      */
     protected function get_instance_percgrade($instancedata) {
