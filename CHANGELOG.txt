@@ -1,5 +1,12 @@
 CHANGELOG
 =========
+
+3.3.1 (2017-08-10)
+------------------
+* [FIXED] #4444 fixed wrong CSS class for table in userview
+* [FIXED] removed CSS class "course-context"
+
+
 3.3.0 (2017-05-15)
 ------------------
 * Moodle 3.3 compatible version
