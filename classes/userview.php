@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
 class local_checkmarkreport_userview extends local_checkmarkreport_useroverview implements renderable {
 
     /** @var string classes to assign to the reporttables */
-    protected $tableclass = 'table table-condensed table-hover table-striped userview';
+    protected $tableclass = 'table table-condensed table-bordered userview';
 
     /**
      * Constructor
