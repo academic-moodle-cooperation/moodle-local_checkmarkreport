@@ -59,7 +59,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $table = $report->get_table();
 
         $out .= html_writer::tag('div', $this->table($table, $report),
-                                array('class' => 'scrollforced course-content'));
+                                array('class' => 'scrollforced'));
 
         return $this->output->container($out, 'submission', 'checkmarkreporttable');
     }
@@ -109,7 +109,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
             // Skip wrapper for userview. It has its own wrapper!
             return $out;
         }
-        return $this->output->container($out, 'report course-content', 'checkmarkreporttable');
+        return $this->output->container($out, 'report', 'checkmarkreporttable');
     }
 
     /**
