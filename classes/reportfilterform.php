@@ -126,7 +126,7 @@ class local_checkmarkreport_reportfilterform extends moodleform {
             $userselects = array(get_string('all').' '.get_string('user'));
             $groups = optional_param_array('groups', array(0), PARAM_INT);
             foreach ($groups as $curgrp) {
-                $users = get_enrolled_users($context, '', $curgrp, 'u.*', 'lastname ASC');
+                $users = get_enrolled_users($context, 'mod/checkmark:submit', $curgrp, 'u.*', 'lastname ASC');
                 foreach ($users as $user) {
                     $userselects[$user->id] = fullname($user);
                 }
