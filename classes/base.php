@@ -60,8 +60,8 @@ class local_checkmarkreport_base {
     /** @var int[] instance ids */
     protected $instances = array(0);
 
-    /** @var int tracksattendances amount of attendance tracking instances */
-    protected $trackattendances = null;
+    /** @var int trackingattendances amount of attendance tracking instances */
+    protected $trackingattendances = null;
     /** @var bool attendancestracked tells if at least 1 instance tracks attendance */
     protected $attendancestracked = null;
     /** @var bool[] tracksattendance boolean array stating which instances track attendance */
@@ -308,7 +308,7 @@ class local_checkmarkreport_base {
             $fields = "id, presentationgrading, presentationgrade, presentationgradebook";
             $this->gradespresentations = $DB->get_records_select("checkmark", $select, $params, '', $fields);
             foreach ($this->gradespresentations as $id => $cur) {
-                if ($cur->presentationgrading == 0) {
+                if ($cur->presentationgrading == 0 || $cur->presentationgrade == 0) {
                     $this->gradespresentations[$id] = false;
                 }
             }
@@ -323,6 +323,34 @@ class local_checkmarkreport_base {
         } else {
             return $this->gradespresentations[$chkmkid];
         }
+    }
+
+    /**
+     * returns how many instances use presentationgrading (counts only displayed instances)
+     *
+     * @return int amount of instances which grade presentations
+     */
+    public function countgradingpresentations() {
+        static $i = null;
+
+        if ($i !== null) {
+            return $i;
+        }
+
+        $all = in_array(0, $this->instances);
+
+        $i = 0;
+        $gradepresentations = $this->gradepresentations();
+        foreach ($gradepresentations as $key => $cur) {
+            if (!$all && !in_array($key, $this->instances)) {
+                continue;
+            }
+            if ($cur !== false) {
+                $i++;
+            }
+        }
+
+        return $i;
     }
 
     /**
@@ -588,8 +616,6 @@ class local_checkmarkreport_base {
                 }
                 $prespercsql = "100 * SUM( f.presentationgrade ) / :presentationgrademax";
             } else {
-                $prespointssql = ' = :presids';
-                $prespointsparams = array('presids' => -1);
                 $presentationgrademax = 0;
                 $prespercsql = "0";
             }
@@ -598,17 +624,13 @@ class local_checkmarkreport_base {
                                           ".$prespercsql." AS presentationpercent
                                      FROM {user} u
                                 LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ".$sqlcheckmarkids."
-                                    WHERE u.id ".$sqluserids." AND f.checkmarkid ".$prespointssql."
+                                    WHERE u.id ".$sqluserids."
                                  GROUP BY u.id";
-            if (key_exists('presentationgrade', $sortarr)) {
-                $presentationgrades .= " ORDER BY presentationgrade ".$sortarr['presentationgrade'];
-            }
 
             $presentationgrades = $DB->get_records_sql($presentationgrades,
                                                        array_merge(array('presentationgrademax' => $presentationgrademax),
                                                                    $checkmarkparams,
-                                                                   $userparams,
-                                                                   $prespointsparams));
+                                                                   $userparams));
 
             $data = $DB->get_records_sql($sql, $params);
             foreach ($data as $key => $cur) {
@@ -634,12 +656,14 @@ class local_checkmarkreport_base {
                     if (!key_exists($key, $presentationgrades)) {
                         $data[$key]->presentationgrade = null;
                         $data[$key]->presentationpercent = 0;
+                        $data[$key]->presentationsgraded = 0;
                     } else {
                         $data[$key]->presentationgrade = $presentationgrades[$key]->presentationgrade;
-                        $data[$key]->presentationpercent = $presentationgrades[$key]->presentationpercent;
                     }
                 }
+                $data[$key]->presentationsgradedmax = $this->countgradingpresentations();
                 $data[$key]->coursepressum = 0; // Sum it up during per-instance-data!
+                $data[$key]->presentationsgraded = 0; // We calculate the sum during instance data due to maybe overwritten grades!
                 $data[$key]->presoverridden = false;
             }
 
@@ -671,6 +695,8 @@ class local_checkmarkreport_base {
                 $reorder = "presentationgrade";
             } else if ($primesort === "gradedgrade") {
                 $reorder = "gradedgrade";
+            } else if ($primesort === "presentationsgraded") {
+                $reorder = "presentationsgraded";
             }
 
             $gradinginfo = array();
@@ -740,10 +766,18 @@ class local_checkmarkreport_base {
                     $userids = array_keys($attendances);
                     $returndata = array();
                     $sortafterdata = 'courseatsum';
-                } else if ($reorder === "presentationgrade") {
+                } else if ($reorder === "presentationgrade" || $reorder === "presentationsgraded" || $reorder === "coursepressum") {
                     $userids = array_keys($presentationgrades);
-                    $returndata = array();
-                    $sortafterdata = 'coursepressum';
+                    $returndata = $data;
+                    switch ($reorder) {
+                        case 'presentationgrade':
+                        case 'coursepressum':
+                            $sortafterdata = 'coursepressum';
+                            break;
+                        case 'presentationsgraded':
+                            $sortafterdata = 'presentationsgraded';
+                            break;
+                    }
                 } else if ($reorder === "gradedgrade") {
                     // This is more complicated, we have to extract and sort by hand after data has been accumulated!
                     $userids = array_keys($data);
@@ -858,15 +892,22 @@ class local_checkmarkreport_base {
                                 if (empty($gradinginfo[$chkmkid]->items[CHECKMARK_PRESENTATION_ITEM]->scaleid)
                                         && !empty($gradinginfo[$chkmkid]->items[CHECKMARK_PRESENTATION_ITEM]->grademax)
                                         && $this->pointsforpresentations($chkmkid) && ($finalgrade->grade > 0)) {
-                                    // We use gradebook grades whereever it's possible!
+                                    // We use gradebook grades wherever it's possible!
                                     $returndata[$key]->coursepressum += $finalgrade->grade;
-                                    if ($finalgrade->overridden || $finalgrade->locked) {
-                                        // Overridden scales don't count for course sum, so we mark it only here!
-                                        $returndata[$key]->presoverridden = true;
-                                    }
-                                } // Should we check, if the grade item was changed in gradebook only? (For the course sum's calc?)
-                            } else if ($this->pointsforpresentations($chkmkid) && ($presgrade > 0)) {
-                                $returndata[$key]->coursepressum += $presgrade;
+                                }
+                                if ($finalgrade->grade !== null) {
+                                    $returndata[$key]->presentationsgraded++;
+                                }
+                                if ($finalgrade->overridden || $finalgrade->locked) {
+                                    // Overridden scales don't count for course sum, so we mark it only here!
+                                    $returndata[$key]->presoverridden = true;
+                                }
+                                // Should we check, if the grade item was changed in gradebook only? (For the course sum's calc?)
+                            } else if ($presgrade >= 0) {
+                                if ($this->pointsforpresentations($chkmkid)) {
+                                    $returndata[$key]->coursepressum += $presgrade;
+                                }
+                                $returndata[$key]->presentationsgraded++;
                             }
                         }
 
@@ -899,6 +940,12 @@ class local_checkmarkreport_base {
                                 break;
                             case 'coursepressum':
                                 $userids[$userid] = $tmp->coursepressum;
+                                break;
+                            case 'presentationgrade':
+                                $userids[$userid] = $tmp->presentationgrade;
+                                break;
+                            case 'presentationsgraded':
+                                $userids[$userid] = $tmp->presentationsgraded;
                                 break;
                             case 'coursesum':
                                 $userids[$userid] = $tmp->coursesum;

@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+3.4-dev
+------------------
+
+* [FEATURE] #4750 added column showing amount of graded presentations
+
+
 3.3.1 (2017-08-10)
 ------------------
 * [FIXED] #4444 fixed wrong CSS class for table in userview

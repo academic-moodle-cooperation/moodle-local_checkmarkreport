@@ -205,11 +205,19 @@ class local_checkmarkreport_reportfilterform extends moodleform {
                                                     get_string('showpresentationgrades', 'local_checkmarkreport').
                                                     $OUTPUT->render($presgradehelp));
             $mform->setDefault('showpresentationgrades', get_user_preferences('checkmarkreport_showpresentationgrades', 0));
+            $prescounthelp = new help_icon('showpresentationcount', 'local_checkmarkreport');
+            $addsettings[] =& $mform->createElement('advcheckbox', 'showpresentationsgraded', '',
+                                                    get_string('showpresentationcount', 'local_checkmarkreport').
+                                                    $OUTPUT->render($prescounthelp));
+            $mform->setDefault('showpresentationsgraded', get_user_preferences('checkmarkreport_showpresentationcount', 0));
         } else {
             $mform->addElement('hidden', 'showpresentationgrades');
             $mform->setDefault('showpresentationgrades', get_user_preferences('checkmarkreport_showpresentationgrades', 0));
+            $mform->addElement('hidden', 'showpresentationsgraded');
+            $mform->setDefault('showpresentationsgraded', get_user_preferences('checkmarkreport_showpresentationcount', 0));
         }
         $mform->setType('showpresentationgrades', PARAM_BOOL);
+        $mform->setType('showpresentationsgraded', PARAM_BOOL);
 
         $sighelp = new help_icon('showsignature', 'local_checkmarkreport');
         $addsettings[] =& $mform->createElement('advcheckbox', 'signature', '',
