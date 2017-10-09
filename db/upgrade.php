@@ -34,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Execute checkmarkreport upgrade from the given old version
- * @todo clean before first release (don't need to take all the db-changes with us)
  *
  * @param int $oldversion
  * @return bool

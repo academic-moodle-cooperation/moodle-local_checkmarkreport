@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/grade/querylib.php');
  */
 class local_checkmarkreport_base {
 
-    /** @var protected the courses id */
+    /** @var int the courses id */
     protected $courseid = 0;
 
     /** xml based excel format */
@@ -413,8 +413,6 @@ class local_checkmarkreport_base {
             }
         }
 
-        $data = array();
-
         // Get all userdata in 1 query!
         $context = context_course::instance($course->id);
 
@@ -462,7 +460,6 @@ class local_checkmarkreport_base {
         // Construct the SQL!
         $params = array();
 
-        $sort = '';
         $ufields = user_picture::fields('u');
 
         if ($course == null) {
