@@ -23,7 +23,6 @@ cache:
 # here will create a separate build and run the tests against that version of PHP.
 # WARNING, PHP7 only works in Moodle 3.0.1 or later!
 php:
- - 5.6
  - 7.0
  - 7.1
 
@@ -31,7 +30,7 @@ php:
 env:
  global:
 # This line determines which version of Moodle to test against.
-  - MOODLE_BRANCH=MOODLE_33_STABLE
+  - MOODLE_BRANCH=master
 
 # This matrix is used for testing against multiple databases.  So for each version of
 # PHP being tested, one build will be created for each database listed here.  EG: for
@@ -54,8 +53,6 @@ notifications:
     rooms:
         #travisci channel
       - secure: "yTD5ioj9q66Y+PqavWIdpinEaXf4O5XbgbtmkhRwr0YajtFyLZSyZOXyMkz7X5+eMrK/BT5qUDMpiPNdAj6rrc3di3noCa1rdOqAtmUca7SnR2pvrjqyA/7b6u1BafZcDTfjNf28qJnbR4grYL9pQFHB+MBJyftuGkMSjvUKC4H0rQ4fJUOxzJHZdUBP2eWAaEn7QEqYbJZdzBdTFDorsqr83OhxrfjgKE4jFgHJmpVeesAKSO+xVGpTd30lbPjv2RHgZbya54tZhBgkdOjMpviIAtBwoNxsyAIXLxy42qpcmQTTa7SfCA2+hAqrq0AMFMVbW1OXlW5+YQa+TIk+j7qarx9EhRFzEntFUnKvNmPz55hEwb5tYYoOzj/PaqRxm1dNGw0Babl1HNGe0CWutPmF4QNQbFJxEG/sxakstbsTv7zYaS5PNRaQtX6eyuQ4r2O9Hsz4neiiE6rcAkKQ1yX8y2PBMZU+l0zfz/KijYx6co82Kqq2VJh6UY/k6+3EA9jFTqzuCIQN6iy0nWBCPGAjwZVUqRIaVOZm0b83Y0QPfNzkykv9GFUzFmuVvUVYftkz/kYJklJAKea7s+oxiD4iEfunMl0wrfMA0o+CgEVpfAH/5iR3ejg9paK67VhxIzd7jrvh03F+pi+KbNTzGWjY00leOYGTde2jLv67pbE="
-        #local_checkmarkreport channel
-      - secure: "Rf4hwOSNH12p7d+DNlL467f6ltaVxII3XYyQjZDxRmHYfp8Rcd7FN45JGFOtqXRZCzNo21vNYz3nBu0mBguq00XTaL092iHKovbCntPId0SVJkXpooOaF1n5flXRtX7jEAnpNh6JGIQ4q01sFOa3JziVmVVFEkTjE5egfxjl2ZCB3Su1AQgWlygDnhZnEllN47GBgX2tnSx1fAAAHZNqMplaC0/cZdoHOUVL7LQB+BTyFkNDiN5EJbZMy1okcC8FTe1Vt9hthgViokQterd56tNOjd1Bagj5diqSJT5dVDmBGGhMNo6kSJx87lsM24Vxb6JmXkTZm5DJy4Hc7lHUVnhl4B1jbDiiyeluQmQXkkn/6ESIQ9GVNM0/AOaQ+ED6TPnceC/e3iaEfYI0ByahLRSRZASOA9AvwZGOyD7TUQpuJfbOvZKFp1UdjwF8F4OkWh7nvIZNq8Aq8J8dcPmuAHsawGkdd6BMCPWupejaZFUjkhxIB63BfThUTmCoRkzJz1amgLuQMyIRvSY4LTwxScWZBoWyJ18Z/MRVKpg5rrCZC740yDtWLwMlBDneOmY9JA9IGXqRkmI3RRCT5cvgQQk+Qxc9DPIdp48vSngv4ahtTjavrol4l72wRyYZrFuOUYZy2q8ZgU76HSEbE6ikoTpw0ZouNdkvKVAAD0bF4HA="
     on_success: always # default: change
     on_failure: always # default: always
 
