@@ -22,6 +22,7 @@
  * @copyright 2017 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_checkmarkreport;
 
 use \html_table as html_table;
@@ -38,5 +39,5 @@ defined('MOODLE_INTERNAL') || die();
  */
 class html_table_colgroups extends html_table {
     /** @var array colgroups elements to render */
-    public $colgroups = array();
+    public $colgroups = [];
 }

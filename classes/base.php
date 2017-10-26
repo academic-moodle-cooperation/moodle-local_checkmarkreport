@@ -24,8 +24,8 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/grade/lib.php');
-require_once($CFG->dirroot.'/grade/querylib.php');
+require_once($CFG->dirroot . '/grade/lib.php');
+require_once($CFG->dirroot . '/grade/querylib.php');
 
 /**
  * Base class for checkmarkreports with common logic and definitions
@@ -54,11 +54,11 @@ class local_checkmarkreport_base {
     /** @var object[] report's data */
     protected $data = null;
     /** @var int[] groups */
-    protected $groups = array(0);
+    protected $groups = [0];
     /** @var int[] user ids */
-    protected $users = array(0);
+    protected $users = [0];
     /** @var int[] instance ids */
-    protected $instances = array(0);
+    protected $instances = [0];
 
     /** @var int trackingattendances amount of attendance tracking instances */
     protected $trackingattendances = null;
@@ -77,7 +77,7 @@ class local_checkmarkreport_base {
     protected $presentationpoints = null;
 
     /** @var array[] scaleitems of scales used in the grade items in checkmark instances */
-    protected $scaleitems = array();
+    protected $scaleitems = [];
 
 
     /**
@@ -88,7 +88,7 @@ class local_checkmarkreport_base {
      * @param int[] $users (optional) array of users to include
      * @param int[] $instances (optional) array of checkmark instances to include
      */
-    public function __construct($id, $groups=array(0), $users=array(0), $instances=array(0)) {
+    public function __construct($id, $groups = [0], $users = [0], $instances = [0]) {
         $this->courseid = $id;
         $this->groups = $groups;
         $this->users = $users;
@@ -133,7 +133,7 @@ class local_checkmarkreport_base {
     public static function attendancestrackedincourse($courseid) {
         global $DB;
 
-        return $DB->record_exists("checkmark", array('trackattendance' => 1, 'course' => $courseid)) ? true : false;
+        return $DB->record_exists("checkmark", ['trackattendance' => 1, 'course' => $courseid]) ? true : false;
     }
 
     /**
@@ -147,11 +147,11 @@ class local_checkmarkreport_base {
         if ($this->attendancestracked === null) {
             if (!in_array(0, $this->instances)) {
                 list($select, $params) = $DB->get_in_or_equal($this->instances);
-                $params = array_merge(array($this->courseid), $params);
-                $select = "trackattendance = 1 AND course = ? AND id ".$select;
+                $params = array_merge([$this->courseid], $params);
+                $select = "trackattendance = 1 AND course = ? AND id " . $select;
             } else {
                 $select = "trackattendance = 1 AND course = ? ";
-                $params = array($this->courseid);
+                $params = [$this->courseid];
             }
 
             $this->attendancestracked = $DB->record_exists_select("checkmark", $select, $params) ? true : false;
@@ -173,11 +173,11 @@ class local_checkmarkreport_base {
         } else {
             if (!in_array(0, $this->instances)) {
                 list($select, $params) = $DB->get_in_or_equal($this->instances);
-                $select = "trackattendance = 1 AND course = ? AND id ".$select;
-                $params = array_merge(array($COURSE->id), $params);
+                $select = "trackattendance = 1 AND course = ? AND id " . $select;
+                $params = array_merge([$COURSE->id], $params);
             } else {
                 $select = "trackattendance = 1 AND course = ?";
-                $params = array($COURSE->id);
+                $params = [$COURSE->id];
             }
 
             $this->trackingattendances = $DB->count_records_select("checkmark", $select, $params);
@@ -198,12 +198,12 @@ class local_checkmarkreport_base {
         if ($this->tracksattendance === null) {
             $fields = "id, trackattendance, attendancegradebook";
             $select = "course = ?";
-            $params = array($COURSE->id);
+            $params = [$COURSE->id];
             $this->tracksattendance = $DB->get_records_select("checkmark", $select, $params, '', $fields);
         }
 
         if (!empty($chkmkid) && (!array_key_exists($chkmkid, $this->tracksattendance) ||
-                !$this->tracksattendance[$chkmkid]->trackattendance)) {
+                        !$this->tracksattendance[$chkmkid]->trackattendance)) {
             return false;
         }
 
@@ -224,7 +224,8 @@ class local_checkmarkreport_base {
         global $DB;
 
         $select = "presentationgrading = 1 AND presentationgrade <> 0 AND course = ?";
-        return $DB->record_exists_select("checkmark", $select, array($courseid)) ? true : false;
+
+        return $DB->record_exists_select("checkmark", $select, [$courseid]) ? true : false;
     }
 
     /**
@@ -236,7 +237,7 @@ class local_checkmarkreport_base {
     public static function presentationscommentedincourse($courseid) {
         global $DB;
 
-        return $DB->record_exists("checkmark", array('presentationgrading' => 1, 'course' => $courseid)) ? true : false;
+        return $DB->record_exists("checkmark", ['presentationgrading' => 1, 'course' => $courseid]) ? true : false;
     }
 
     /**
@@ -255,11 +256,11 @@ class local_checkmarkreport_base {
         if ($this->presentationsgraded === null) {
             if (!in_array(0, $this->instances)) {
                 list($select, $params) = $DB->get_in_or_equal($this->instances);
-                $params = array_merge(array($this->courseid), $params);
-                $select = "presentationgrading = 1 AND presentationgrade <> 0 AND course = ? AND id ".$select;
+                $params = array_merge([$this->courseid], $params);
+                $select = "presentationgrading = 1 AND presentationgrade <> 0 AND course = ? AND id " . $select;
             } else {
                 $select = "presentationgrading = 1 AND presentationgrade <> 0 AND course = ? ";
-                $params = array($this->courseid);
+                $params = [$this->courseid];
             }
 
             $this->presentationsgraded = $DB->record_exists_select("checkmark", $select, $params) ? true : false;
@@ -279,11 +280,11 @@ class local_checkmarkreport_base {
         if ($this->prescommented === null) {
             if (!in_array(0, $this->instances)) {
                 list($select, $params) = $DB->get_in_or_equal($this->instances);
-                $params = array_merge(array($this->courseid), $params);
-                $select = "presentationgrading = 1 AND course = ? AND id ".$select;
+                $params = array_merge([$this->courseid], $params);
+                $select = "presentationgrading = 1 AND course = ? AND id " . $select;
             } else {
                 $select = "presentationgrading = 1 AND course = ? ";
-                $params = array($this->courseid);
+                $params = [$this->courseid];
             }
 
             $this->prescommented = $DB->record_exists_select("checkmark", $select, $params) ? true : false;
@@ -304,7 +305,7 @@ class local_checkmarkreport_base {
 
         if ($this->gradespresentations === null) {
             $select = "course = ?";
-            $params = array($COURSE->id);
+            $params = [$COURSE->id];
             $fields = "id, presentationgrading, presentationgrade, presentationgradebook";
             $this->gradespresentations = $DB->get_records_select("checkmark", $select, $params, '', $fields);
             foreach ($this->gradespresentations as $id => $cur) {
@@ -364,7 +365,7 @@ class local_checkmarkreport_base {
 
         if ($this->presentationpoints === null) {
             $select = "presentationgrading = 1 AND presentationgrade > 0 AND course = ?";
-            $params = array($COURSE->id);
+            $params = [$COURSE->id];
             $fields = "id, presentationgrade";
             $this->presentationpoints = $DB->get_records_select_menu("checkmark", $select, $params, '', $fields);
         }
@@ -394,25 +395,26 @@ class local_checkmarkreport_base {
 
         if ($maxgradeorscale < 0) {
             if (!key_exists(-$maxgradeorscale, $this->scaleitems)) {
-                if (!$scale = grade_scale::fetch(array('id' => -$maxgradeorscale))) {
+                if (!$scale = grade_scale::fetch(['id' => -$maxgradeorscale])) {
                     throw new coding_exception('Scale not found!');
                 }
                 $scale->load_items();
                 // This is to ensure compatibility with make_grades_menu(), because every scale is used as 1-indexed-array!
-                $this->scaleitems[-$maxgradeorscale] = array();
+                $this->scaleitems[-$maxgradeorscale] = [];
                 foreach ($scale->scale_items as $key => $item) {
                     $this->scaleitems[-$maxgradeorscale][$key + 1] = $item;
                 }
             }
             if (!key_exists((int)$gradeoritem, $this->scaleitems[-$maxgradeorscale])) {
-                throw new coding_exception('Scale item '.(int)$gradeoritem.' not found for scale '.(-$maxgradeorscale).'!');
+                throw new coding_exception('Scale item ' . (int)$gradeoritem . ' not found for scale ' . (-$maxgradeorscale) . '!');
             }
+
             return $this->scaleitems[-$maxgradeorscale][(int)$gradeoritem];
         } else if ($maxgradeorscale > 0) {
             if (empty($gradeoritem)) {
-                return round(0, 2).'/'.$maxgradeorscale;
+                return round(0, 2) . '/' . $maxgradeorscale;
             } else {
-                return round($gradeoritem, 2).'/'.$maxgradeorscale;
+                return round($gradeoritem, 2) . '/' . $maxgradeorscale;
             }
         }
 
@@ -427,7 +429,7 @@ class local_checkmarkreport_base {
     public function get_coursedata() {
         global $DB;
 
-        $course = $DB->get_record('course', array('id' => $this->courseid), '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $this->courseid], '*', MUST_EXIST);
 
         $context = context_course::instance($course->id);
 
@@ -447,12 +449,12 @@ class local_checkmarkreport_base {
         // Get general data from users!
         list($esql, $params) = get_enrolled_sql($context, 'mod/checkmark:submit', 0);
 
-        $sql = 'SELECT u.id FROM {user} u '.
-               'LEFT JOIN ('.$esql.') eu ON eu.id=u.id '.
-               'WHERE u.deleted = 0 AND eu.id=u.id ';
+        $sql = 'SELECT u.id FROM {user} u ' .
+                'LEFT JOIN (' . $esql . ') eu ON eu.id=u.id ' .
+                'WHERE u.deleted = 0 AND eu.id=u.id ';
         if (!empty($this->users) && !in_array(0, $this->users)) {
             list($insql, $inparams) = $DB->get_in_or_equal($this->users, SQL_PARAMS_NAMED, 'user');
-            $sql .= ' AND u.id '.$insql;
+            $sql .= ' AND u.id ' . $insql;
             $params = array_merge($params, $inparams);
         }
 
@@ -482,18 +484,18 @@ class local_checkmarkreport_base {
      * @param int[] $instances (optional) array of checkmark ids to include
      * @return object[]|null
      */
-    public function get_general_data($course = null, $userids=0, $instances = array(0)) {
+    public function get_general_data($course = null, $userids = 0, $instances = [0]) {
         global $DB, $COURSE, $SESSION;
 
         // Construct the SQL!
-        $params = array();
+        $params = [];
 
         $ufields = user_picture::fields('u');
 
         if ($course == null) {
             $course = $COURSE;
         } else {
-            $course = $DB->get_record('course', array('id' => $course->id), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $course->id], '*', MUST_EXIST);
         }
         $courseid = $course->id;
 
@@ -505,9 +507,9 @@ class local_checkmarkreport_base {
         }
 
         $tmp = get_all_instances_in_course('checkmark', $course);
-        $checkmarks = array();
-        $checkmarkids = array();
-        $cmids = array();
+        $checkmarks = [];
+        $checkmarkids = [];
+        $cmids = [];
         $noinstancefilter = in_array(0, $instances);
         foreach ($tmp as $checkmark) {
             if ($noinstancefilter || in_array($checkmark->id, $instances)) {
@@ -536,30 +538,35 @@ class local_checkmarkreport_base {
                             SELECT 0 id, SUM(gex.grade) AS grade
                               FROM {checkmark_examples} gex
                               JOIN {checkmark} c ON gex.checkmarkid = c.id AND c.grade > 0
-                             WHERE gex.checkmarkid '.$sqlcheckmarkbids.'
+                             WHERE gex.checkmarkid ' . $sqlcheckmarkbids . '
                              UNION
                             SELECT gex.checkmarkid id, SUM(gex.grade) AS grade
                               FROM {checkmark_examples} gex
                               JOIN {checkmark} c ON gex.checkmarkid = c.id AND c.grade > 0
-                             WHERE gex.checkmarkid '.$sqlcheckmarkids.'
+                             WHERE gex.checkmarkid ' . $sqlcheckmarkids . '
                           GROUP BY gex.checkmarkid', $params);
             $examples = $DB->get_records_sql_menu('
                             SELECT 0 id, COUNT(DISTINCT gex.id) AS examples
                               FROM {checkmark_examples} gex
-                             WHERE gex.checkmarkid '.$sqlcheckmarkbids.'
+                             WHERE gex.checkmarkid ' . $sqlcheckmarkbids . '
                              UNION
                             SELECT gex.checkmarkid id, COUNT(DISTINCT gex.id) AS examples
                               FROM {checkmark_examples} gex
-                             WHERE gex.checkmarkid '.$sqlcheckmarkids.'
+                             WHERE gex.checkmarkid ' . $sqlcheckmarkids . '
                           GROUP BY gex.checkmarkid', $params);
 
             $params['maxgrade'] = $grades[0];
             $params['maxgradeb'] = $grades[0];
             $params['maxchecks'] = $examples[0];
             $params['maxchecksb'] = $examples[0];
-            $sortable = array('firstname', 'lastname',
-                              'percentchecked', 'checks',
-                              'percentgrade', 'checkgrade');
+            $sortable = [
+                    'firstname',
+                    'lastname',
+                    'percentchecked',
+                    'checks',
+                    'percentgrade',
+                    'checkgrade'
+            ];
             $sortable = array_merge($sortable, get_extra_user_fields($context));
 
             $sortarr = $SESSION->checkmarkreport->{$courseid}->sort;
@@ -569,42 +576,42 @@ class local_checkmarkreport_base {
                     if (!empty($sort)) {
                         $sort .= ', ';
                     }
-                    $sort .= $field.' '.$direction;
+                    $sort .= $field . ' ' . $direction;
                 }
             }
             if (!empty($sort)) {
-                $sort = ' ORDER BY '.$sort;
+                $sort = ' ORDER BY ' . $sort;
             }
-            $sql = 'SELECT '.$ufields.' '.$useridentityfields.',
+            $sql = 'SELECT ' . $ufields . ' ' . $useridentityfields . ',
                            100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
                            COUNT( DISTINCT cchks.id ) AS checks,
                            100 * SUM( cex.grade ) / :maxgrade AS percentgrade,
                            SUM( cex.grade ) AS checkgrade
                       FROM {user} u
-                 LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid '.$sqlcheckmarkids.'
-                 LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid '.$sqlcheckmarkbids.'
+                 LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid ' . $sqlcheckmarkids . '
+                 LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ' . $sqlcheckmarkbids . '
                  LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id
                                                       AND cchks.state = 1
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
-                     WHERE u.id '.$sqluserids.'
-                  GROUP BY u.id'.
-                  $sort;
+                     WHERE u.id ' . $sqluserids . '
+                  GROUP BY u.id' .
+                    $sort;
 
             $attendances = "SELECT u.id, SUM( f.attendance ) AS attendances
                               FROM {user} u
-                         LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ".$sqlcheckmarkids."
+                         LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid " . $sqlcheckmarkids . "
                               JOIN {checkmark} c ON c.id = f.checkmarkid AND c.trackattendance = 1
-                             WHERE u.id ".$sqluserids." AND f.attendance = 1
+                             WHERE u.id " . $sqluserids . " AND f.attendance = 1
                           GROUP BY u.id";
             if (key_exists('attendances', $sortarr)) {
-                $attendances .= " ORDER BY attendances ".$sortarr['attendances'];
+                $attendances .= " ORDER BY attendances " . $sortarr['attendances'];
             }
             $attendances = $DB->get_records_sql_menu($attendances, array_merge($checkmarkparams, $userparams));
 
             $presentationpoints = $this->pointsforpresentations();
             if (!empty($presentationpoints)) {
                 list($prespointssql, $prespointsparams) = $DB->get_in_or_equal(array_keys($presentationpoints), SQL_PARAMS_NAMED,
-                                                                               'presids');
+                        'presids');
                 if (in_array(0, $this->instances)) {
                     $presentationgrademax = array_sum($presentationpoints);
                 } else {
@@ -621,16 +628,16 @@ class local_checkmarkreport_base {
             }
 
             $presentationgrades = "SELECT u.id, SUM( f.presentationgrade ) AS presentationgrade,
-                                          ".$prespercsql." AS presentationpercent
+                                          " . $prespercsql . " AS presentationpercent
                                      FROM {user} u
-                                LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ".$sqlcheckmarkids."
-                                    WHERE u.id ".$sqluserids."
+                                LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid " . $sqlcheckmarkids . "
+                                    WHERE u.id " . $sqluserids . "
                                  GROUP BY u.id";
 
             $presentationgrades = $DB->get_records_sql($presentationgrades,
-                                                       array_merge(array('presentationgrademax' => $presentationgrademax),
-                                                                   $checkmarkparams,
-                                                                   $userparams));
+                    array_merge(['presentationgrademax' => $presentationgrademax],
+                            $checkmarkparams,
+                            $userparams));
 
             $data = $DB->get_records_sql($sql, $params);
             foreach ($data as $key => $cur) {
@@ -682,10 +689,10 @@ class local_checkmarkreport_base {
                  LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid = :chkmkidb
                  LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id AND cchks.state = 1
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
-                     WHERE u.id '.$sqluserids.'
+                     WHERE u.id ' . $sqluserids . '
                   GROUP BY u.id';
             $params = $userparams;
-            $instancedata = array();
+            $instancedata = [];
             $reorder = false;
             reset($sortarr);
             $primesort = key($sortarr);
@@ -699,11 +706,11 @@ class local_checkmarkreport_base {
                 $reorder = "presentationsgraded";
             }
 
-            $gradinginfo = array();
+            $gradinginfo = [];
             foreach ($checkmarkids as $chkmkid) {
                 // Get instance gradebook data!
                 $gradinginfo[$chkmkid] = grade_get_grades($courseid, 'mod', 'checkmark',
-                                                          $chkmkid, $userids);
+                        $chkmkid, $userids);
                 $grademax[$chkmkid] = $gradinginfo[$chkmkid]->items[CHECKMARK_GRADE_ITEM]->grademax;
 
                 $params['chkmkid'] = $chkmkid;
@@ -718,28 +725,28 @@ class local_checkmarkreport_base {
                 $params['maxgrade'] = $grades[$chkmkid];
                 $params['maxgradeb'] = $grades[$chkmkid];
                 $sort = '';
-                if ($primesort == 'checks'.$chkmkid) {
-                    $sort = ' ORDER BY checks '.current($sortarr);
+                if ($primesort == 'checks' . $chkmkid) {
+                    $sort = ' ORDER BY checks ' . current($sortarr);
                     $reorder = $chkmkid;
                 }
-                if ($primesort == 'percentchecked'.$chkmkid) {
-                    $sort = ' ORDER BY percentchecked '.current($sortarr);
+                if ($primesort == 'percentchecked' . $chkmkid) {
+                    $sort = ' ORDER BY percentchecked ' . current($sortarr);
                     $reorder = $chkmkid;
                 }
-                if ($primesort == 'grade'.$chkmkid) {
-                    $sort = ' ORDER BY gradedgrade '.current($sortarr);
+                if ($primesort == 'grade' . $chkmkid) {
+                    $sort = ' ORDER BY gradedgrade ' . current($sortarr);
                     $reorder = $chkmkid;
                 }
-                if ($primesort == 'percentgrade'.$chkmkid) {
-                    $sort = ' ORDER BY percentgradedgrade '.current($sortarr);
+                if ($primesort == 'percentgrade' . $chkmkid) {
+                    $sort = ' ORDER BY percentgradedgrade ' . current($sortarr);
                     $reorder = $chkmkid;
                 }
-                if ($primesort == 'attendance'.$chkmkid) {
-                    $sort = ' ORDER BY attendance '.current($sortarr);
+                if ($primesort == 'attendance' . $chkmkid) {
+                    $sort = ' ORDER BY attendance ' . current($sortarr);
                     $reorder = $chkmkid;
                 }
-                if ($this->gradepresentations($chkmkid) && ($primesort == 'presentationgrade'.$chkmkid)) {
-                    $sort = ' ORDER BY presentationgrade '.current($sortarr);
+                if ($this->gradepresentations($chkmkid) && ($primesort == 'presentationgrade' . $chkmkid)) {
+                    $sort = ' ORDER BY presentationgrade ' . current($sortarr);
                     $reorder = $chkmkid;
                 }
                 $sql .= $sort;
@@ -764,7 +771,7 @@ class local_checkmarkreport_base {
                 $sortafterdata = false;
                 if ($reorder === "attendances") {
                     $userids = array_keys($attendances);
-                    $returndata = array();
+                    $returndata = [];
                     $sortafterdata = 'courseatsum';
                 } else if ($reorder === "presentationgrade" || $reorder === "presentationsgraded" || $reorder === "coursepressum") {
                     $userids = array_keys($presentationgrades);
@@ -785,18 +792,18 @@ class local_checkmarkreport_base {
                     $sortafterdata = 'coursesum';
                 } else if ($reorder !== false) {
                     $userids = array_keys($instancedata[$reorder]);
-                    $returndata = array();
+                    $returndata = [];
                 } else {
                     $userids = array_keys($data);
                     $returndata = $data;
                 }
                 if (key_exists('checkmark', $sortarr)) {
-                    $params = array_merge(array('courseid' => $courseid), $checkmarkparams);
+                    $params = array_merge(['courseid' => $courseid], $checkmarkparams);
                     $checkmarkids = $DB->get_fieldset_sql('SELECT id
                                                              FROM {checkmark}
                                                             WHERE {checkmark}.course = :courseid
-                                                                  AND {checkmark}.id '.$sqlcheckmarkids.'
-                                                         ORDER BY {checkmark}.name '.$sortarr['checkmark'], $params);
+                                                                  AND {checkmark}.id ' . $sqlcheckmarkids . '
+                                                         ORDER BY {checkmark}.name ' . $sortarr['checkmark'], $params);
                 }
                 foreach ($userids as $key) {
                     if ($reorder !== false) {
@@ -804,12 +811,12 @@ class local_checkmarkreport_base {
                            If we don't sort again, $returndata has been filled with $data already! */
                         $returndata[$key] = $data[$key];
                     }
-                    $returndata[$key]->userdata = array();
+                    $returndata[$key]->userdata = [];
                     foreach ($useridentity as $useridfield) {
                         $returndata[$key]->userdata[$useridfield] = $data[$key]->$useridfield;
                         unset($useridfield);
                     }
-                    $data[$key]->instancedata = array();
+                    $data[$key]->instancedata = [];
                     foreach ($checkmarkids as $chkmkid) {
                         $returndata[$key]->instancedata[$chkmkid] = new stdClass();
                         if ($instancedata[$chkmkid][$key]->gradedgrade === null) {
@@ -849,7 +856,7 @@ class local_checkmarkreport_base {
                         $returndata[$key]->instancedata[$chkmkid]->finalgrade = $finalgrade;
 
                         $returndata[$key]->instancedata[$chkmkid]->formatted_grade = $this->display_grade($finalgrade->grade,
-                                                                                                          $grademax[$chkmkid]);
+                                $grademax[$chkmkid]);
 
                         if (($checkmarks[$chkmkid]->grade > 0)
                                 && ($finalgrade->locked || $finalgrade->overridden || ($finalgrade->grade != $grade))
@@ -921,7 +928,7 @@ class local_checkmarkreport_base {
                                 if ($finalgrade->grade == 1.0) {
                                     $returndata[$key]->courseatsum++;
                                 }
-                                if ($finalgrade->overridden ||$finalgrade->locked) {
+                                if ($finalgrade->overridden || $finalgrade->locked) {
                                     $returndata[$key]->atoverridden = true;
                                 }
                             } else if ($instancedata[$chkmkid][$key]->attendance) {
@@ -932,7 +939,7 @@ class local_checkmarkreport_base {
                 }
                 // TODO rework the whole sorting thing, it's no good that we sort in approximately a million places!
                 if ($sortafterdata) {
-                    $userids = array();
+                    $userids = [];
                     foreach ($returndata as $userid => $tmp) {
                         switch ($sortafterdata) {
                             case 'courseatsum':
@@ -960,7 +967,7 @@ class local_checkmarkreport_base {
                         $userids = array_reverse($userids);
                     }
                     $tmparray = $returndata;
-                    $returndata = array();
+                    $returndata = [];
                     foreach ($userids as $cur) {
                         $returndata[$cur] = $tmparray[$cur];
                     }
@@ -981,7 +988,7 @@ class local_checkmarkreport_base {
      *
      * @return int[] associative array of example-states indexed by example ids
      */
-    public function get_examples_data($checkmarkid=0, $userid=0) {
+    public function get_examples_data($checkmarkid = 0, $userid = 0) {
         global $DB;
 
         // Get instances examples!
@@ -991,8 +998,10 @@ class local_checkmarkreport_base {
              LEFT JOIN {checkmark_checks} chks ON chks.submissionid = sub.id
                                                  AND chks.exampleid = ex.id
                  WHERE ex.checkmarkid = :checkmarkid';
-        $params = array('checkmarkid' => $checkmarkid,
-                        'userid'      => $userid);
+        $params = [
+                'checkmarkid' => $checkmarkid,
+                'userid' => $userid
+        ];
 
         return $DB->get_records_sql_menu($sql, $params);
     }
@@ -1005,9 +1014,9 @@ class local_checkmarkreport_base {
     public function get_courseinstances() {
         global $DB;
         if (!empty($this->courseid)) {
-            $course = $DB->get_record('course', array('id' => $this->courseid), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $this->courseid], '*', MUST_EXIST);
             $instances = get_all_instances_in_course('checkmark', $course);
-            $newinstances = array();
+            $newinstances = [];
             if (!in_array(0, $this->instances)) {
                 foreach ($instances as $key => $inst) {
                     if (in_array($inst->id, $this->instances)) {
@@ -1019,6 +1028,7 @@ class local_checkmarkreport_base {
                     $newinstances[$inst->id] = $inst;
                 }
             }
+
             return $newinstances;
         } else {
             return null;
@@ -1050,7 +1060,7 @@ class local_checkmarkreport_base {
             $SESSION->checkmarkreport->{$this->courseid} = new stdClass();
         }
         if (!isset($SESSION->checkmarkreport->{$this->courseid}->hidden)) {
-            $SESSION->checkmarkreport->{$this->courseid}->hidden = array();
+            $SESSION->checkmarkreport->{$this->courseid}->hidden = [];
         }
         if (!empty($thide) && !in_array($thide, $SESSION->checkmarkreport->{$this->courseid}->hidden)) {
             $SESSION->checkmarkreport->{$this->courseid}->hidden[] = $thide;
@@ -1081,7 +1091,7 @@ class local_checkmarkreport_base {
             $SESSION->checkmarkreport->{$this->courseid} = new stdClass();
         }
         if (!isset($SESSION->checkmarkreport->{$this->courseid}->sort)) {
-            $SESSION->checkmarkreport->{$this->courseid}->sort = array();
+            $SESSION->checkmarkreport->{$this->courseid}->sort = [];
         }
 
         if (!empty($tsort)) {
@@ -1092,10 +1102,10 @@ class local_checkmarkreport_base {
                 $arr[$tsort] = 'ASC';
                 $SESSION->checkmarkreport->{$this->courseid}->sort = array_reverse($arr, true);
             } else {
-                switch($tsort) {
+                switch ($tsort) {
                     case 'checkmark':
                         if ($arr[$tsort] == 'ASC') {
-                                $arr[$tsort] = 'DESC';
+                            $arr[$tsort] = 'DESC';
                         } else {
                             unset($arr[$tsort]);
                         }
@@ -1138,7 +1148,7 @@ class local_checkmarkreport_base {
             $primesort = key($sortarr);
         }
         if (($column == $primesort)
-            || (($column == 'checkmark') && key_exists($column, $sortarr))) {
+                || (($column == 'checkmark') && key_exists($column, $sortarr))) {
             // We show only the first sortby column and checkmark!
             switch ($sortarr[$column]) {
                 case 'ASC':
@@ -1149,8 +1159,9 @@ class local_checkmarkreport_base {
                     break;
             }
         }
-        $sorturl = new moodle_url($url, array('tsort' => $column));
+        $sorturl = new moodle_url($url, ['tsort' => $column]);
         $sortlink = html_writer::link($sorturl, $text);
+
         return $sortlink;
     }
 
@@ -1160,21 +1171,24 @@ class local_checkmarkreport_base {
      * @param string $column internal column name
      * @return bool true if column is hidden
      */
-    public function column_is_hidden($column='nonexistend') {
+    public function column_is_hidden($column = 'nonexistend') {
         global $SESSION;
         if (!isset($SESSION->checkmarkreport)) {
             $SESSION->checkmarkreport = new stdClass();
             $SESSION->checkmarkreport->{$this->courseid} = new stdClass();
-            $SESSION->checkmarkreport->{$this->courseid}->hidden = array();
+            $SESSION->checkmarkreport->{$this->courseid}->hidden = [];
+
             return 0;
         }
         if (!isset($SESSION->checkmarkreport->{$this->courseid})) {
             $SESSION->checkmarkreport->{$this->courseid} = new stdClass();
-            $SESSION->checkmarkreport->{$this->courseid}->hidden = array();
+            $SESSION->checkmarkreport->{$this->courseid}->hidden = [];
+
             return 0;
         }
         if (!isset($SESSION->checkmarkreport->{$this->courseid}->hidden)) {
-            $SESSION->checkmarkreport->{$this->courseid}->hidden = array();
+            $SESSION->checkmarkreport->{$this->courseid}->hidden = [];
+
             return 0;
         }
 
@@ -1185,6 +1199,7 @@ class local_checkmarkreport_base {
             foreach ($column as $cur) {
                 $return = $return || in_array($cur, $SESSION->checkmarkreport->{$this->courseid}->hidden);
             }
+
             return $return;
         }
     }
@@ -1203,10 +1218,10 @@ class local_checkmarkreport_base {
 
         $this->fill_workbook($workbook);
 
-        $course = $DB->get_record('course', array('id' => $this->courseid));
+        $course = $DB->get_record('course', ['id' => $this->courseid]);
 
-        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
-        $workbook->send($filename.'.ods');
+        $filename = get_string('pluginname', 'local_checkmarkreport') . '_' . $course->shortname;
+        $workbook->send($filename . '.ods');
         $workbook->close();
     }
 
@@ -1224,9 +1239,9 @@ class local_checkmarkreport_base {
 
         $this->fill_workbook($workbook);
 
-        $course = $DB->get_record('course', array('id' => $this->courseid));
+        $course = $DB->get_record('course', ['id' => $this->courseid]);
 
-        $filename = get_string('pluginname', 'local_checkmarkreport').'_'.$course->shortname;
+        $filename = get_string('pluginname', 'local_checkmarkreport') . '_' . $course->shortname;
         $workbook->send($filename);
         $workbook->close();
     }
@@ -1336,7 +1351,7 @@ class local_checkmarkreport_base {
      * @param bool $gradepresentation if the presentation get graded in this instance (or just given feedback)
      */
     public function add_xml_presentation_data(&$instnode, $instancedata, $instanceid, $gradepresentation) {
-        if (!$this->column_is_hidden('presentationgrade'.$instanceid) && $this->presentationsgraded() && $gradepresentation) {
+        if (!$this->column_is_hidden('presentationgrade' . $instanceid) && $this->presentationsgraded() && $gradepresentation) {
             $presnode = $instnode->appendChild(new DOMElement('presentation'));
             // TODO replace empty node with node with text-comment for presentation in future version!
             if ($gradepresentation->presentationgradebook) {
@@ -1379,8 +1394,8 @@ class local_checkmarkreport_base {
         $str = $xml->saveXML();
         header("Content-type: application/xml; charset=utf-8");
         header('Content-Length: ' . strlen($str));
-        header('Content-Disposition: attachment;filename="'.$filename.'.xml";'.
-                                               'filename*="'.rawurlencode($filename).'.xml"');
+        header('Content-Disposition: attachment;filename="' . $filename . '.xml";' .
+                'filename*="' . rawurlencode($filename) . '.xml"');
         header('Content-Transfer-Encoding: binary');
         header('Content-Encoding: utf-8');
         echo $str;
@@ -1395,8 +1410,8 @@ class local_checkmarkreport_base {
     public function output_text_with_headers($text, $filename) {
         header("Content-type: text/txt; charset=utf-8");
         header('Content-Length: ' . strlen($text));
-        header('Content-Disposition: attachment;filename="'.$filename.'.txt";'.
-                                               'filename*="'.rawurlencode($filename).'.txt"');
+        header('Content-Disposition: attachment;filename="' . $filename . '.txt";' .
+                'filename*="' . rawurlencode($filename) . '.txt"');
         header('Content-Transfer-Encoding: binary');
         header('Content-Encoding: utf-8');
         echo $text;

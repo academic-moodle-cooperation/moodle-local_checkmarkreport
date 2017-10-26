@@ -22,6 +22,7 @@
  * @copyright 2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_checkmarkreport\event;
 defined('MOODLE_INTERNAL') || die();
 
@@ -50,8 +51,9 @@ abstract class exported_base extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' exported the checkmarkreport '".$this->data['other']['tab'].
-               "' for the course with the "."id '$this->contextinstanceid' as '".$this->data['other']['format_readable']."'.";
+        return "The user with id '$this->userid' exported the checkmarkreport '" . $this->data['other']['tab'] .
+                "' for the course with the " . "id '$this->contextinstanceid' as '" . $this->data['other']['format_readable'] .
+                "'.";
     }
 
     /**
@@ -69,9 +71,11 @@ abstract class exported_base extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url("/local/checkmarkreport/download.php", array('id' => $this->contextinstanceid,
-                                                                            'tab' => $this->data['other']['tab'],
-                                                                            'format' => $this->data['other']['format']));
+        return new \moodle_url("/local/checkmarkreport/download.php", [
+                'id' => $this->contextinstanceid,
+                'tab' => $this->data['other']['tab'],
+                'format' => $this->data['other']['format']
+        ]);
     }
 
     /**
@@ -80,11 +84,16 @@ abstract class exported_base extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, $this->objecttable, 'export',
-                     "download.php?id=".$this->contextinstanceid."&tab=".$this->data['other']['tab'].
-                     "&format=".$this->data['other']['format'],
-                     get_string($this->data['other']['tab'],
-                     'local_checkmarkreport').' '.$this->data['other']['format_readable'], $this->contextinstanceid);
+        return [
+                $this->courseid,
+                $this->objecttable,
+                'export',
+                "download.php?id=" . $this->contextinstanceid . "&tab=" . $this->data['other']['tab'] .
+                "&format=" . $this->data['other']['format'],
+                get_string($this->data['other']['tab'],
+                        'local_checkmarkreport') . ' ' . $this->data['other']['format_readable'],
+                $this->contextinstanceid
+        ];
     }
 
     /**

@@ -51,6 +51,6 @@ class local_checkmarkreport_userview extends local_checkmarkreport_useroverview 
         set_user_preference('checkmarkreport_showattendances', 1);
         set_user_preference('checkmarkreport_showpresentationgrades', 1);
         set_user_preference('checkmarkreport_showpresentationcount', 1);
-        parent::__construct($id, array(0), array(0), array($USER->id));
+        parent::__construct($id, [0], [0], [$USER->id]);
     }
 }

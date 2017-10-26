@@ -22,6 +22,7 @@
  * @copyright 2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_checkmarkreport\event;
 defined('MOODLE_INTERNAL') || die();
 
@@ -41,10 +42,11 @@ class userview_viewed extends viewed_base {
      * @return userview_viewed event object
      */
     public static function userview(\stdClass $course) {
-        $event = self::create(array(
-            'context'  => \context_course::instance($course->id),
-            'other'    => array('tab' => 'userview'),
-        ));
+        $event = self::create([
+                'context' => \context_course::instance($course->id),
+                'other' => ['tab' => 'userview'],
+        ]);
+
         return $event;
     }
 

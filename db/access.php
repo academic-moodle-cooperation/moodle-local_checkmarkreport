@@ -47,44 +47,44 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = array(
-        'local/checkmarkreport:view' => array(
+$capabilities = [
+        'local/checkmarkreport:view' => [
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_COURSE,
-                'legacy' => array(
+                'legacy' => [
                         'student' => CAP_ALLOW,
                         'editingteacher' => CAP_ALLOW,
                         'teacher' => CAP_ALLOW,
                         'manager' => CAP_ALLOW,
-                )
-        ),
+                ]
+        ],
 
-        'local/checkmarkreport:view_courseoverview' => array(
+        'local/checkmarkreport:view_courseoverview' => [
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_COURSE,
-                'legacy' => array(
+                'legacy' => [
                         'editingteacher' => CAP_ALLOW,
                         'teacher' => CAP_ALLOW,
                         'manager' => CAP_ALLOW,
-                )
-        ),
+                ]
+        ],
 
-        'local/checkmarkreport:view_students_overview' => array(
+        'local/checkmarkreport:view_students_overview' => [
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_COURSE,
-                'legacy' => array(
+                'legacy' => [
                         'editingteacher' => CAP_ALLOW,
                         'teacher' => CAP_ALLOW,
                         'manager' => CAP_ALLOW,
-                )
-        ),
+                ]
+        ],
 
-        'local/checkmarkreport:view_own_overview' => array(
+        'local/checkmarkreport:view_own_overview' => [
                 'captype' => 'read',
                 'contextlevel' => CONTEXT_COURSE,
-                'legacy' => array(
+                'legacy' => [
                         'student' => CAP_ALLOW,
-                )
-        ),
-);
+                ]
+        ],
+];
 

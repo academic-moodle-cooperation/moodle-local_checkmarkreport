@@ -23,22 +23,22 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once($CFG->dirroot.'/local/checkmarkreport/lib.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once($CFG->dirroot . '/local/checkmarkreport/lib.php');
 
 $id = required_param('id', PARAM_INT);   // Course.
 
-$groupings = optional_param_array('groupings', array(0), PARAM_INT);
-$groups = optional_param_array('groups', array(0), PARAM_INT);
-$users = optional_param_array('users', array(0), PARAM_INT);
-$instances = optional_param_array('checkmarks', array(0), PARAM_INT);
+$groupings = optional_param_array('groupings', [0], PARAM_INT);
+$groups = optional_param_array('groups', [0], PARAM_INT);
+$users = optional_param_array('users', [0], PARAM_INT);
+$instances = optional_param_array('checkmarks', [0], PARAM_INT);
 $showgrade = optional_param('showgrade', true, PARAM_BOOL);
 $showabs = optional_param('showabs', true, PARAM_BOOL);
 $showrel = optional_param('showrel', true, PARAM_BOOL);
 $showpoints = optional_param('showpoints', false, PARAM_BOOL);
 $format = optional_param('format', local_checkmarkreport_base::FORMAT_XLSX, PARAM_INT);
 
-$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 
 require_course_login($course);
 
@@ -47,59 +47,63 @@ $coursecontext = context_course::instance($course->id);
 require_capability('local/checkmarkreport:view', $coursecontext, $USER->id);
 
 $PAGE->set_pagelayout('popup');
-$arrays = http_build_query(array('groups'    => $groups,
-                                 'users'     => $users,
-                                 'instances' => $instances));
-$PAGE->set_url('/local/checkmarkreport/download.php?'.$arrays, array('id'         => $id,
-                                                                     'showgrade'  => $showgrade,
-                                                                     'showabs'    => $showabs,
-                                                                     'showrel'    => $showrel,
-                                                                     'showpoints' => $showpoints,
-                                                                     'format'     => $format));
+$arrays = http_build_query([
+        'groups' => $groups,
+        'users' => $users,
+        'instances' => $instances
+]);
+$PAGE->set_url('/local/checkmarkreport/download.php?' . $arrays, [
+        'id' => $id,
+        'showgrade' => $showgrade,
+        'showabs' => $showabs,
+        'showrel' => $showrel,
+        'showpoints' => $showpoints,
+        'format' => $format
+]);
 
 // Get Tabs according to capabilities!
 list($tabs, $availabletabs, $tab) = local_checkmarkreport_get_tabs($coursecontext, $id);
 
 $output = $PAGE->get_renderer('local_checkmarkreport');
 
-switch($format) {
+switch ($format) {
     case local_checkmarkreport_base::FORMAT_XML:
         $formatreadable = 'XML';
-    break;
+        break;
     case local_checkmarkreport_base::FORMAT_TXT:
         $formatreadable = 'TXT';
-    break;
+        break;
     case local_checkmarkreport_base::FORMAT_ODS:
         $formatreadable = 'ODS';
-    break;
+        break;
     default:
     case local_checkmarkreport_base::FORMAT_XLSX:
         $formatreadable = 'XLSX';
-    break;
+        break;
 }
 
-switch($tab) {
+switch ($tab) {
     case 'overview':
         $report = new local_checkmarkreport_overview($id, $groupings, $groups, $instances);
         $event = \local_checkmarkreport\event\overview_exported::overview($course, $format, $formatreadable);
-    break;
+        break;
     case 'useroverview':
         $report = new local_checkmarkreport_useroverview($id, $groupings, $groups, $users);
         $event = \local_checkmarkreport\event\useroverview_exported::useroverview($course, $format, $formatreadable);
-    break;
+        break;
     case 'userview':
         $report = new local_checkmarkreport_userview($id);
         $event = \local_checkmarkreport\event\userview_exported::userview($course, $format, $formatreadable);
-    break;
+        break;
     case 'noaccess':
         $notification = $output->notification(get_string('noaccess', 'local_checkmarkreport'), 'notifyproblem');
         echo $output->box($notification, 'generalbox centered');
         echo $output->footer();
         die;
-    break;
+        break;
     default:
         $notification = $output->notification(get_string('incorrect_tab', 'local_checkmarkreport'),
-                                              'notifyproblem');
+                'notifyproblem');
         echo $output->box($notification, 'generalbox centered');
         echo $output->footer();
         die;
@@ -107,18 +111,18 @@ switch($tab) {
 
 $event->trigger();
 
-switch($format) {
+switch ($format) {
     case local_checkmarkreport_base::FORMAT_XML:
         $report->get_xml();
-    break;
+        break;
     case local_checkmarkreport_base::FORMAT_TXT:
         $report->get_txt();
-    break;
+        break;
     case local_checkmarkreport_base::FORMAT_ODS:
         $report->get_ods();
-    break;
+        break;
     default:
     case local_checkmarkreport_base::FORMAT_XLSX:
         $report->get_xlsx();
-    break;
+        break;
 }

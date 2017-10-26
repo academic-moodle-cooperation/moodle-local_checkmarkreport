@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir .'/formslib.php');
+require_once($CFG->libdir . '/formslib.php');
 
 /**
  * Filter form
@@ -49,42 +49,42 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $mform->setType('userid', PARAM_INT);
 
         $context = CONTEXT_COURSE::instance($COURSE->id);
-        $groupmode = $DB->get_field('course', 'groupmode', array('id' => $COURSE->id), MUST_EXIST);
+        $groupmode = $DB->get_field('course', 'groupmode', ['id' => $COURSE->id], MUST_EXIST);
 
         // Groupings filter!
         if (empty($this->_customdata['hidegroups'])
-            && $groupmode != NOGROUPS) {
+                && $groupmode != NOGROUPS) {
             $groupings = groups_get_all_groupings($COURSE->id);
             $groupingsel = $mform->createElement('select', 'groupings[]',
-                                                 get_string('groupings', 'local_checkmarkreport'),
-                                                 null, array('id' => 'groupings'));
-            $groupingsel->addOption(get_string('all').' '.get_string('groupings', 'local_checkmarkreport'), 0);
+                    get_string('groupings', 'local_checkmarkreport'),
+                    null, ['id' => 'groupings']);
+            $groupingsel->addOption(get_string('all') . ' ' . get_string('groupings', 'local_checkmarkreport'), 0);
             if (count($groupings)) {
                 list($grpgssql, $grpgsparams) = $DB->get_in_or_equal(array_keys($groupings));
                 $groupinggroups = $DB->get_records_sql_menu("
                 SELECT groupingid, COUNT(DISTINCT groupid)
                   FROM {groupings_groups}
-                 WHERE groupingid ".$grpgssql."
+                 WHERE groupingid " . $grpgssql . "
               GROUP BY groupingid", $grpgsparams);
                 foreach ($groupings as $grouping) {
                     if (empty($groupinggroups[$grouping->id])) {
-                        $disabled = array('disabled' => 'disabled');
+                        $disabled = ['disabled' => 'disabled'];
                     } else {
-                        $disabled = array();
+                        $disabled = [];
                     }
                     $groupingsel->addOption($grouping->name, $grouping->id, $disabled);
                 }
             }
             $groupings = $mform->addElement($groupingsel);
-            $mform->setDefault('groupings[]', optional_param_array('groupings', array(0), PARAM_INT));
+            $mform->setDefault('groupings[]', optional_param_array('groupings', [0], PARAM_INT));
             $groupings->setMultiple(false);
         }
 
         // Groups filter!
         if (empty($this->_customdata['hidegroups'])
-            && $groupmode != NOGROUPS) {
-            $groupingids = optional_param_array('groupings', array(0), PARAM_INT);
-            $groups = array();
+                && $groupmode != NOGROUPS) {
+            $groupingids = optional_param_array('groupings', [0], PARAM_INT);
+            $groups = [];
             foreach ($groupingids as $groupingid) {
                 $groupinggroups = groups_get_all_groups($COURSE->id, 0, $groupingid);
                 foreach ($groupinggroups as $group) {
@@ -92,23 +92,23 @@ class local_checkmarkreport_reportfilterform extends moodleform {
                 }
             }
             $groupsel = $mform->createElement('select', 'groups[]', get_string('groups'), null,
-                                              array('id' => 'groups'));
-            $groupsel->addOption(get_string('all').' '.get_string('groups'), 0);
+                    ['id' => 'groups']);
+            $groupsel->addOption(get_string('all') . ' ' . get_string('groups'), 0);
             if (count($groups)) {
                 list($grpssql, $grpsparams) = $DB->get_in_or_equal(array_keys($groups));
                 $groupmembers = $DB->get_records_sql_menu("
                 SELECT groupid, COUNT(DISTINCT userid)
                   FROM {groups_members}
-                 WHERE groupid ".$grpssql."
+                 WHERE groupid " . $grpssql . "
               GROUP BY groupid", $grpsparams);
                 foreach ($groups as $group) {
                     if (empty($groupmembers[$group->id])) {
-                        $disabled = array('disabled' => 'disabled');
+                        $disabled = ['disabled' => 'disabled'];
                     } else {
-                        $disabled = array();
+                        $disabled = [];
                     }
                     if (strlen($group->name) > 27) {
-                        $name = substr($group->name, 0, 22).'...'.substr($group->name, -2);
+                        $name = substr($group->name, 0, 22) . '...' . substr($group->name, -2);
                     } else {
                         $name = $group->name;
                     }
@@ -117,36 +117,38 @@ class local_checkmarkreport_reportfilterform extends moodleform {
             }
             $groups = $mform->addElement($groupsel);
             $groups->setMultiple(false);
-            $mform->setDefault('groups[]', optional_param_array('groups', array(0), PARAM_INT));
+            $mform->setDefault('groups[]', optional_param_array('groups', [0], PARAM_INT));
             $mform->addHelpButton('groups[]', 'groups', 'local_checkmarkreport');
         }
 
         // User filter!
         if (empty($this->_customdata['hideusers'])) {
-            $userselects = array(get_string('all').' '.get_string('user'));
-            $groups = optional_param_array('groups', array(0), PARAM_INT);
+            $userselects = [get_string('all') . ' ' . get_string('user')];
+            $groups = optional_param_array('groups', [0], PARAM_INT);
             foreach ($groups as $curgrp) {
                 $users = get_enrolled_users($context, 'mod/checkmark:submit', $curgrp, 'u.*', 'lastname ASC');
                 foreach ($users as $user) {
                     $userselects[$user->id] = fullname($user);
                 }
             }
-            $users = $mform->addElement('select', 'users[]', get_string('users'), $userselects, array('id' => 'users'));
-            $mform->setDefault('users[]', optional_param_array('users', array(0), PARAM_INT));
+            $users = $mform->addElement('select', 'users[]', get_string('users'), $userselects, ['id' => 'users']);
+            $mform->setDefault('users[]', optional_param_array('users', [0], PARAM_INT));
             $users->setMultiple(false);
         }
 
         // Instance filter!
         if (empty($this->_customdata['hideinstances'])) {
-            $checkmarkselects = array(get_string('all').' '.
-                                      get_string('modulenameplural', 'checkmark'));
+            $checkmarkselects = [
+                    get_string('all') . ' ' .
+                    get_string('modulenameplural', 'checkmark')
+            ];
             if ($checkmarks = get_all_instances_in_course('checkmark', $COURSE)) {
                 foreach ($checkmarks as $checkmark) {
                     $checkmarkselects[$checkmark->id] = $checkmark->name;
                 }
                 $instances = $mform->addElement('select', 'instances',
-                                   get_string('modulenameplural', 'checkmark'),
-                                   $checkmarkselects, array('size' => 5));
+                        get_string('modulenameplural', 'checkmark'),
+                        $checkmarkselects, ['size' => 5]);
                 $instances->setMultiple(true);
                 $mform->addRule('instances', get_string('required'), 'required', '', 'client');
             }
@@ -157,41 +159,41 @@ class local_checkmarkreport_reportfilterform extends moodleform {
             $this->_customdata['header'] = get_string('additional_columns', 'local_checkmarkreport');
         }
 
-        $addcolumns = array();
+        $addcolumns = [];
         $exampleshelp = new help_icon('showexamples', 'local_checkmarkreport');
         $gradehelp = new help_icon('grade', 'local_checkmarkreport');
         $sumabshelp = new help_icon('sumabs', 'local_checkmarkreport');
         $sumrelhelp = new help_icon('sumrel', 'local_checkmarkreport');
 
         $addcolumns[] =& $mform->createElement('advcheckbox', 'showexamples', '',
-                                               get_string('showexamples', 'local_checkmarkreport').$OUTPUT->render($exampleshelp));
+                get_string('showexamples', 'local_checkmarkreport') . $OUTPUT->render($exampleshelp));
         $mform->setDefault('showexamples', get_user_preferences('checkmarkreport_showexamples', 1));
 
         $addcolumns[] =& $mform->createElement('advcheckbox', 'grade', '',
-                                               get_string('showgrade', 'local_checkmarkreport').$OUTPUT->render($gradehelp));
+                get_string('showgrade', 'local_checkmarkreport') . $OUTPUT->render($gradehelp));
         $mform->setDefault('grade', get_user_preferences('checkmarkreport_showgrade'));
         // Add x/y ex!
         $addcolumns[] =& $mform->createElement('advcheckbox', 'sumabs', '',
-                                               get_string('sumabs', 'local_checkmarkreport').$OUTPUT->render($sumabshelp));
+                get_string('sumabs', 'local_checkmarkreport') . $OUTPUT->render($sumabshelp));
         $mform->setDefault('sumabs', get_user_preferences('checkmarkreport_sumabs'));
         // Add % ex!
         $addcolumns[] =& $mform->createElement('advcheckbox', 'sumrel', '',
-                                               get_string('sumrel', 'local_checkmarkreport').$OUTPUT->render($sumrelhelp));
+                get_string('sumrel', 'local_checkmarkreport') . $OUTPUT->render($sumrelhelp));
         $mform->setDefault('sumrel', get_user_preferences('checkmarkreport_sumrel'));
 
         $mform->addGroup($addcolumns, 'additionalcolumns', $this->_customdata['header'], html_writer::empty_tag('br'), false);
 
         // Additional settings ?? don't need them...
-        $addsettings = array();
+        $addsettings = [];
         $pointshelp = new help_icon('showpoints', 'local_checkmarkreport');
         $addsettings[] =& $mform->createElement('advcheckbox', 'showpoints', '',
-                                                get_string('showpoints', 'local_checkmarkreport').$OUTPUT->render($pointshelp));
+                get_string('showpoints', 'local_checkmarkreport') . $OUTPUT->render($pointshelp));
 
         if (\local_checkmarkreport_base::attendancestrackedincourse($COURSE->id)) {
             $attendanceshelp = new help_icon('showattendances', 'local_checkmarkreport');
             $addsettings[] =& $mform->createElement('advcheckbox', 'showattendances', '',
-                                                    get_string('showattendances', 'local_checkmarkreport').
-                                                    $OUTPUT->render($attendanceshelp));
+                    get_string('showattendances', 'local_checkmarkreport') .
+                    $OUTPUT->render($attendanceshelp));
             $mform->setDefault('showattendances', get_user_preferences('checkmarkreport_showattendances', 0));
         } else {
             $mform->addElement('hidden', 'showattendances');
@@ -202,13 +204,13 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         if (\local_checkmarkreport_base::presentationsgradedincourse($COURSE->id)) {
             $presgradehelp = new help_icon('showpresentationgrades', 'local_checkmarkreport');
             $addsettings[] =& $mform->createElement('advcheckbox', 'showpresentationgrades', '',
-                                                    get_string('showpresentationgrades', 'local_checkmarkreport').
-                                                    $OUTPUT->render($presgradehelp));
+                    get_string('showpresentationgrades', 'local_checkmarkreport') .
+                    $OUTPUT->render($presgradehelp));
             $mform->setDefault('showpresentationgrades', get_user_preferences('checkmarkreport_showpresentationgrades', 0));
             $prescounthelp = new help_icon('showpresentationcount', 'local_checkmarkreport');
             $addsettings[] =& $mform->createElement('advcheckbox', 'showpresentationsgraded', '',
-                                                    get_string('showpresentationcount', 'local_checkmarkreport').
-                                                    $OUTPUT->render($prescounthelp));
+                    get_string('showpresentationcount', 'local_checkmarkreport') .
+                    $OUTPUT->render($prescounthelp));
             $mform->setDefault('showpresentationsgraded', get_user_preferences('checkmarkreport_showpresentationcount', 0));
         } else {
             $mform->addElement('hidden', 'showpresentationgrades');
@@ -221,12 +223,12 @@ class local_checkmarkreport_reportfilterform extends moodleform {
 
         $sighelp = new help_icon('showsignature', 'local_checkmarkreport');
         $addsettings[] =& $mform->createElement('advcheckbox', 'signature', '',
-                                                get_string('showsignature', 'local_checkmarkreport').$OUTPUT->render($sighelp));
+                get_string('showsignature', 'local_checkmarkreport') . $OUTPUT->render($sighelp));
         $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
         $mform->setDefault('signature', get_user_preferences('checkmarkreport_signature'));
 
         $mform->addGroup($addsettings, 'additionalsettings', get_string('additional_settings', 'local_checkmarkreport'),
-                         html_writer::empty_tag('br'), false);
+                html_writer::empty_tag('br'), false);
 
         $mform->addElement('submit', 'submitbutton', get_string('update', 'local_checkmarkreport'));
         $mform->disable_form_change_checker();

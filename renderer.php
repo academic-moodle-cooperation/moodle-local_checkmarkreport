@@ -42,24 +42,26 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      */
     protected function render_local_checkmarkreport_overview(local_checkmarkreport_overview $report) {
         // Render download links!
-        $data = array('id'         => $report->get_courseid(),
-                      'tab'        => optional_param('tab', null, PARAM_ALPHANUM),
-                      'showgrade'  => false,
-                      'showabs'    => false,
-                      'showrel'    => false,
-                      'showpoints' => false,
-                      'sesskey'    => sesskey(),
-                      'format'     => local_checkmarkreport_base::FORMAT_XLSX);
+        $data = [
+                'id' => $report->get_courseid(),
+                'tab' => optional_param('tab', null, PARAM_ALPHANUM),
+                'showgrade' => false,
+                'showabs' => false,
+                'showrel' => false,
+                'showpoints' => false,
+                'sesskey' => sesskey(),
+                'format' => local_checkmarkreport_base::FORMAT_XLSX
+        ];
         $groups = $report->get_groups();
         $checkmarks = $report->get_instances();
-        $out = html_writer::tag('div', $this->get_downloadlinks(array('groups' => $groups, 'checkmarks' => $checkmarks), $data),
-                                array('class' => 'download'));
+        $out = html_writer::tag('div', $this->get_downloadlinks(['groups' => $groups, 'checkmarks' => $checkmarks], $data),
+                ['class' => 'download']);
 
         // Render the table!
         $table = $report->get_table();
 
         $out .= html_writer::tag('div', $this->table($table, $report),
-                                array('class' => 'scrollforced'));
+                ['class' => 'scrollforced']);
 
         return $this->output->container($out, 'submission', 'checkmarkreporttable');
     }
@@ -75,15 +77,19 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $out = '';
 
         // Render download links!
-        $data = array('id'         => $report->get_courseid(),
-                      'tab'        => optional_param('tab', null, PARAM_ALPHANUM),
-                      'sesskey'    => sesskey(),
-                      'format'     => local_checkmarkreport_base::FORMAT_XLSX);
+        $data = [
+                'id' => $report->get_courseid(),
+                'tab' => optional_param('tab', null, PARAM_ALPHANUM),
+                'sesskey' => sesskey(),
+                'format' => local_checkmarkreport_base::FORMAT_XLSX
+        ];
         $groups = $report->get_groups();
         $users = $report->get_user();
-        $out .= html_writer::tag('div', $this->get_downloadlinks(array('groups' => $groups,
-                                                                       'users'  => $users), $data),
-                                                                 array('class' => 'download'));
+        $out .= html_writer::tag('div', $this->get_downloadlinks([
+                'groups' => $groups,
+                'users' => $users
+        ], $data),
+                ['class' => 'download']);
 
         // Render the tables!
         $data = $report->get_coursedata();
@@ -94,12 +100,14 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                     continue;
                 }
                 $table = $report->get_table($userdata);
-                $url = new moodle_url('/user/view.php', array('id'     => $userdata->id,
-                                                              'course' => $report->get_courseid()));
+                $url = new moodle_url('/user/view.php', [
+                        'id' => $userdata->id,
+                        'course' => $report->get_courseid()
+                ]);
                 $userlink = html_writer::link($url, fullname($userdata));
-                $headingtext = get_string('overview', 'local_checkmarkreport').' - '.$userlink;
+                $headingtext = get_string('overview', 'local_checkmarkreport') . ' - ' . $userlink;
                 $out .= $this->output->heading($headingtext, 1, strip_tags($headingtext));
-                $out .= html_writer::tag('div', $this->table($table, $report), array('class' => 'collapsible'));
+                $out .= html_writer::tag('div', $this->table($table, $report), ['class' => 'collapsible']);
             }
         } else {
             $out .= $this->output->notification(get_string('nousers', 'checkmark'), 'notifyproblem');
@@ -109,6 +117,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
             // Skip wrapper for userview. It has its own wrapper!
             return $out;
         }
+
         return $this->output->container($out, 'report', 'checkmarkreporttable');
     }
 
@@ -134,23 +143,24 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      */
     private function get_downloadlinks($arrays, $data) {
         $arrays = http_build_query($arrays);
-        $uri = new moodle_url('/local/checkmarkreport/download.php?'.$arrays, $data);
+        $uri = new moodle_url('/local/checkmarkreport/download.php?' . $arrays, $data);
         $downloadlinks = get_string('exportas', 'local_checkmarkreport');
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.XLSX'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_ODS));
+                html_writer::link($uri, '.XLSX'),
+                ['class' => 'downloadlink']);
+        $uri = new moodle_url($uri, ['format' => local_checkmarkreport_base::FORMAT_ODS]);
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.ODS'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_XML));
+                html_writer::link($uri, '.ODS'),
+                ['class' => 'downloadlink']);
+        $uri = new moodle_url($uri, ['format' => local_checkmarkreport_base::FORMAT_XML]);
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.XML'),
-                                           array('class' => 'downloadlink'));
-        $uri = new moodle_url($uri, array('format' => local_checkmarkreport_base::FORMAT_TXT));
+                html_writer::link($uri, '.XML'),
+                ['class' => 'downloadlink']);
+        $uri = new moodle_url($uri, ['format' => local_checkmarkreport_base::FORMAT_TXT]);
         $downloadlinks .= html_writer::tag('span',
-                                           html_writer::link($uri, '.TXT'),
-                                           array('class' => 'downloadlink'));
+                html_writer::link($uri, '.TXT'),
+                ['class' => 'downloadlink']);
+
         return $downloadlinks;
     }
 
@@ -178,7 +188,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         if (!empty($table->align)) {
             foreach ($table->align as $key => $aa) {
                 if ($aa) {
-                    $table->align[$key] = 'text-align:'. fix_align_rtl($aa) .';';  // Fix for RTL languages!
+                    $table->align[$key] = 'text-align:' . fix_align_rtl($aa) . ';';  // Fix for RTL languages!
                 } else {
                     $table->align[$key] = null;
                 }
@@ -187,7 +197,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         if (!empty($table->size)) {
             foreach ($table->size as $key => $ss) {
                 if ($ss) {
-                    $table->size[$key] = 'width:'. $ss .';';
+                    $table->size[$key] = 'width:' . $ss . ';';
                 } else {
                     $table->size[$key] = null;
                 }
@@ -225,11 +235,13 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
 
         // Explicitly assigned properties override those defined via $table->attributes!
         $table->attributes['class'] = trim($table->attributes['class']);
-        $attributes = array_merge($table->attributes, array('id'            => $table->id,
-                                                            'width'         => $table->width,
-                                                            'summary'       => $table->summary,
-                                                            'cellpadding'   => $table->cellpadding,
-                                                            'cellspacing'   => $table->cellspacing));
+        $attributes = array_merge($table->attributes, [
+                'id' => $table->id,
+                'width' => $table->width,
+                'summary' => $table->summary,
+                'cellpadding' => $table->cellpadding,
+                'cellspacing' => $table->cellspacing
+        ]);
         $output = html_writer::start_tag('table', $attributes) . "\n";
 
         $countcols = 0;
@@ -244,10 +256,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
 
         if (!empty($table->head)) {
 
-            $output .= html_writer::start_tag('thead', array()) . "\n";
+            $output .= html_writer::start_tag('thead', []) . "\n";
 
             foreach ($table->head as $headrow) {
-                $output .= html_writer::start_tag('tr', array()) . "\n";
+                $output .= html_writer::start_tag('tr', []) . "\n";
                 $keys = array_keys($headrow->cells);
                 $lastkey = end($keys);
                 $countcols = count($headrow->cells);
@@ -287,12 +299,12 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                         $classes = '';
                     }
                     $heading->attributes['class'] = trim($heading->attributes['class']);
-                    $attributes = array_merge($heading->attributes, array(
-                            'style'     => $heading->style,
-                            'scope'     => $heading->scope,
-                            'colspan'   => $heading->colspan,
-                            'rowspan'   => $heading->rowspan
-                        ));
+                    $attributes = array_merge($heading->attributes, [
+                            'style' => $heading->style,
+                            'scope' => $heading->scope,
+                            'colspan' => $heading->colspan,
+                            'rowspan' => $heading->rowspan
+                    ]);
 
                     $tagtype = 'td';
                     if ($heading->header === true) {
@@ -303,8 +315,8 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                         $attributes['class'] .= ' hiddencol';
                     }
                     $content = html_writer::tag('div', $heading->text,
-                                                array('class' => 'content')).
-                               $this->get_toggle_links($key, $heading->text, $report);
+                                    ['class' => 'content']) .
+                            $this->get_toggle_links($key, $heading->text, $report);
                     $output .= html_writer::tag($tagtype, $content, $attributes) . "\n";
                     $idx++;
                 }
@@ -317,25 +329,25 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                  * For valid XHTML strict every table must contain either a valid tr
                  * or a valid tbody... both of which must contain a valid td
                  */
-                $output .= html_writer::start_tag('tbody', array('class' => 'empty'));
-                $output .= html_writer::tag('tr', html_writer::tag('td', '', array('colspan' => count($table->head))));
+                $output .= html_writer::start_tag('tbody', ['class' => 'empty']);
+                $output .= html_writer::tag('tr', html_writer::tag('td', '', ['colspan' => count($table->head)]));
                 $output .= html_writer::end_tag('tbody');
             }
         }
 
         if (!empty($table->data)) {
-            $oddeven    = 1;
-            $keys       = array_keys($table->data);
+            $oddeven = 1;
+            $keys = array_keys($table->data);
             $lastrowkey = end($keys);
-            $output .= html_writer::start_tag('tbody', array());
+            $output .= html_writer::start_tag('tbody', []);
 
             foreach ($table->data as $key => $row) {
                 if (($row === 'hr') && ($countcols)) {
-                    $output .= html_writer::start_tag('tr').
-                               html_writer::tag('td', html_writer::tag('div', '',
-                                                                       array('class' => 'tabledivider')),
-                                                array('colspan' => $countcols)).
-                               html_writer::end_tag('tr') . "\n";;
+                    $output .= html_writer::start_tag('tr') .
+                            html_writer::tag('td', html_writer::tag('div', '',
+                                    ['class' => 'tabledivider']),
+                                    ['colspan' => $countcols]) .
+                            html_writer::end_tag('tr') . "\n";;
                 } else {
                     $idx = 0;
                     // Convert array rows to html_table_rows and cell strings to html_table_cell objects!
@@ -361,9 +373,11 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                         $row->attributes['class'] .= ' lastrow';
                     }
 
-                    $output .= html_writer::start_tag('tr', array('class' => trim($row->attributes['class']),
-                                                                  'style' => $row->style,
-                                                                  'id' => $row->id))."\n";
+                    $output .= html_writer::start_tag('tr', [
+                                    'class' => trim($row->attributes['class']),
+                                    'style' => $row->style,
+                                    'id' => $row->id
+                            ]) . "\n";
                     $keys2 = array_keys($row->cells);
                     $lastkey = end($keys2);
 
@@ -403,12 +417,14 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                         $tdstyle .= isset($table->size[$key]) ? $table->size[$key] : '';
                         $tdstyle .= isset($table->wrap[$key]) ? $table->wrap[$key] : '';
                         $cell->attributes['class'] = trim($cell->attributes['class']);
-                        $tdattributes = array_merge($cell->attributes, array('style'   => $tdstyle . $cell->style,
-                                                                             'colspan' => $cell->colspan,
-                                                                             'rowspan' => $cell->rowspan,
-                                                                             'id'      => $cell->id,
-                                                                             'abbr'    => $cell->abbr,
-                                                                             'scope'   => $cell->scope));
+                        $tdattributes = array_merge($cell->attributes, [
+                                'style' => $tdstyle . $cell->style,
+                                'colspan' => $cell->colspan,
+                                'rowspan' => $cell->rowspan,
+                                'id' => $cell->id,
+                                'abbr' => $cell->abbr,
+                                'scope' => $cell->scope
+                        ]);
                         $tagtype = 'td';
                         if ($cell->header === true) {
                             $tagtype = 'th';
@@ -421,7 +437,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                         if (!$nohide && ($report->column_is_hidden($key) || $report->column_is_hidden($classes))) {
                             $tdattributes['class'] .= ' hiddencol';
                         }
-                        $content = html_writer::tag('div', $cell->text, array('class' => 'content'));
+                        $content = html_writer::tag('div', $cell->text, ['class' => 'content']);
                         $output .= html_writer::tag($tagtype, $content, $tdattributes) . "\n";
                         $idx++;
                     }
@@ -453,19 +469,24 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $hideicon = $OUTPUT->pix_icon('t/switch_minus', get_string('hide'));
         if ($report->column_is_hidden($column)) {
             // Show link!
-            $html = html_writer::link(new moodle_url($PAGE->url, array('tshow' => $column)),
-                                      $showicon,
-                                      array('class' => $column.' showcol',
-                                            'title' => get_string('show').
-                                                       ' '.clean_param($columnstring, PARAM_NOTAGS)));
+            $html = html_writer::link(new moodle_url($PAGE->url, ['tshow' => $column]),
+                    $showicon,
+                    [
+                            'class' => $column . ' showcol',
+                            'title' => get_string('show') .
+                                    ' ' . clean_param($columnstring, PARAM_NOTAGS)
+                    ]);
         } else {
             // Hide link!
-            $html = html_writer::link(new moodle_url($PAGE->url, array('thide' => $column)),
-                                      $hideicon,
-                                      array('class' => $column.' hidecol',
-                                            'title' => get_string('hide').
-                                                       ' '.clean_param($columnstring, PARAM_NOTAGS)));
+            $html = html_writer::link(new moodle_url($PAGE->url, ['thide' => $column]),
+                    $hideicon,
+                    [
+                            'class' => $column . ' hidecol',
+                            'title' => get_string('hide') .
+                                    ' ' . clean_param($columnstring, PARAM_NOTAGS)
+                    ]);
         }
+
         return $html;
     }
 

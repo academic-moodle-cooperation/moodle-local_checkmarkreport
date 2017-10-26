@@ -22,6 +22,7 @@
  * @copyright 2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_checkmarkreport\event;
 defined('MOODLE_INTERNAL') || die();
 
@@ -44,10 +45,11 @@ class useroverview_exported extends exported_base {
      * @return useroverview_exported event object
      */
     public static function useroverview(\stdClass $course, $format, $formatreadable) {
-        $event = self::create(array(
-            'context'  => \context_course::instance($course->id),
-            'other'    => array('tab' => 'useroverview', 'format' => $format, 'format_readable' => $formatreadable),
-        ));
+        $event = self::create([
+                'context' => \context_course::instance($course->id),
+                'other' => ['tab' => 'useroverview', 'format' => $format, 'format_readable' => $formatreadable],
+        ]);
+
         return $event;
     }
 

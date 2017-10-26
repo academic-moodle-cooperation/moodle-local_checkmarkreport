@@ -22,9 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- /**
-  * @module local_checkmarkreport/report
-  */
+/**
+ * @module local_checkmarkreport/report
+ */
 define(['jquery', 'jqueryui', 'core/str', 'core/log'], function($, jqueryui, str, log) {
 
     /**
@@ -51,15 +51,17 @@ define(['jquery', 'jqueryui', 'core/str', 'core/log'], function($, jqueryui, str
 
         log.info('Initialize report JS!', 'local_checkmarkreport');
 
-        var tofetch = [{key: 'overwritten', component: 'local_checkmarkreport'},
-                       {key: 'by', component: 'local_checkmarkreport'}];
+        var tofetch = [
+            {key: 'overwritten', component: 'local_checkmarkreport'},
+            {key: 'by', component: 'local_checkmarkreport'}
+        ];
         str.get_strings(tofetch).done(function(s) {
 
             log.info('Successfully acquired strings: ' + s, 'local_checkmarkreport');
             log.info('Register tooltips!', 'local_checkmarkreport');
 
-            $(".path-local-checkmarkreport #checkmarkreporttable").tooltip({
-                items: ".current",
+            $('.path-local-checkmarkreport #checkmarkreporttable').tooltip({
+                items: '.current',
                 track: true,
                 content: function() {
                     var element = $(this);
@@ -71,13 +73,13 @@ define(['jquery', 'jqueryui', 'core/str', 'core/log'], function($, jqueryui, str
                     content += 'aria-describedby="' + element.attr('id') + '">';
                     content += s[0]; // Is string 'overwritten' from 'local_checkmarkreport'!
 
-                    if (!element.is("[data-username][data-grader][data-dategraded]")) {
+                    if (!element.is('[data-username][data-grader][data-dategraded]')) {
                         return content + '</div>';
                     }
 
                     if (grader !== '') {
                         content += '<div class="fullname">' + s[1] + // Is string 'by' from 'local_checkmarkreport']!
-                                   '&nbsp;' + grader + '</div>';
+                                '&nbsp;' + grader + '</div>';
                     }
                     if (dategraded !== '') {
                         content += '<div class="dategraded">' + dategraded + '</div>';
@@ -89,7 +91,7 @@ define(['jquery', 'jqueryui', 'core/str', 'core/log'], function($, jqueryui, str
                 }
             });
         }).fail(function(ex) {
-            log.error("Error getting strings: " + ex, "local_checkmarkreport");
+            log.error('Error getting strings: ' + ex, 'local_checkmarkreport');
         });
     };
 
