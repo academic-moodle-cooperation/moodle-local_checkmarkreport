@@ -1,9 +1,10 @@
 CHANGELOG
 =========
 
-3.4-dev
+3.4.0 (2017-11-09)
 ------------------
 
+* Moodle 3.4 compatible version
 * [FEATURE] #4750 added column showing amount of graded presentations
 * [CHANGED] we now show only enrolled users with capability mod/checkmark:submit in selects
 * reformated much code automatically via code style rules
