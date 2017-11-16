@@ -997,7 +997,8 @@ class local_checkmarkreport_base {
              LEFT JOIN {checkmark_submissions} sub ON sub.checkmarkid = ex.checkmarkid AND sub.userid = :userid
              LEFT JOIN {checkmark_checks} chks ON chks.submissionid = sub.id
                                                  AND chks.exampleid = ex.id
-                 WHERE ex.checkmarkid = :checkmarkid';
+                 WHERE ex.checkmarkid = :checkmarkid
+              ORDER BY ex.id ASC';
         $params = [
                 'checkmarkid' => $checkmarkid,
                 'userid' => $userid
