@@ -895,8 +895,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 if (!empty($showexamples) && (!$this->column_is_hidden('examples')
                                 || !$this->column_is_hidden('checked')
                                 || (!$this->column_is_hidden('points') && $showgrade))) {
-                    foreach (array_keys($examplenames[$instance->id]) as $key) {
-                        $examplename = $examplenames[$instance->id][$key];
+                    foreach ($examplenames[$instance->id] as $key => $examplename) {
                         if (!$this->column_is_hidden('examples')) {
                             $txt .= "\t" . $examplename->name .
                                     " (" . $examplename->grade . 'P)';

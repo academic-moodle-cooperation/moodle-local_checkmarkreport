@@ -967,9 +967,6 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             $examplecount = 1;
             foreach ($instances as $instance) {
-                if (!isset($examplenames[$instance->id])) {
-                    $examplenames[$instance->id] = $DB->get_records('checkmark_examples', ['checkmarkid' => $instance->id]);
-                }
                 $instancedata = $row->instancedata[$instance->id];
                 $gradepresentation = $this->gradepresentations($instance->id);
                 if ($gradepresentation && !$gradepresentation->presentationgrade) {
