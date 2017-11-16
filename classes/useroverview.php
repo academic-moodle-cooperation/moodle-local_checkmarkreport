@@ -846,7 +846,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 // Dynamically add examples!
                 // Get example data!
                 if (!isset($examplenames[$instance->id])) {
-                    $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
+                    $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id),
+                            'id ASC');
                 }
                 $instancedata = $row->instancedata[$instance->id];
                 if (!empty($showexamples) && (!$this->column_is_hidden('examples')

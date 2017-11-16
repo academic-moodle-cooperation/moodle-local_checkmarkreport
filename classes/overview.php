@@ -289,7 +289,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!empty($showexamples)) {
                 // First get example data!
                 if (!isset($examplenames[$instance->id])) {
-                    $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
+                    $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id),
+                            'id ASC');
                 }
                 foreach ($examplenames[$instance->id] as $key => $example) {
                     $span++;
@@ -817,7 +818,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         foreach ($instances as $instance) {
             // Get example data!
             if (!isset($examplenames[$instance->id])) {
-                $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id));
+                $examplenames[$instance->id] = $DB->get_records('checkmark_examples', array('checkmarkid' => $instance->id), 'id ASC');
             }
             if ($this->column_is_hidden('instance'.$instance->id)) {
                 foreach ($examplenames[$instance->id] as $key => $example) {
