@@ -690,7 +690,7 @@ class local_checkmarkreport_base {
                  LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id AND cchks.state = 1
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
                      WHERE u.id ' . $sqluserids . '
-                  GROUP BY u.id';
+                  GROUP BY u.id, f.grade, f.attendance, f.presentationgrade';
             $params = $userparams;
             $instancedata = [];
             $reorder = false;
@@ -721,9 +721,9 @@ class local_checkmarkreport_base {
                 if (!isset($grades[$chkmkid])) {
                     $grades[$chkmkid] = 0;
                 }
-                $params['maxchecks'] = $examples[$chkmkid];
-                $params['maxgrade'] = $grades[$chkmkid];
-                $params['maxgradeb'] = $grades[$chkmkid];
+                $params['maxchecks'] = $examples[$chkmkid] ? $examples[$chkmkid] : 1;
+                $params['maxgrade'] = $grades[$chkmkid] ? $grades[$chkmkid] : 1;
+                $params['maxgradeb'] = $grades[$chkmkid] ? $grades[$chkmkid] : 1;
                 $sort = '';
                 if ($primesort == 'checks' . $chkmkid) {
                     $sort = ' ORDER BY checks ' . current($sortarr);
