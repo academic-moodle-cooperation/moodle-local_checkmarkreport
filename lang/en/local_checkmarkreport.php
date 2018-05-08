@@ -33,6 +33,16 @@ $string['pluginname'] = 'Checkmark report';
 $string['pluginname_help'] = 'Checkmark reports extend the functionality of mod_checkmark by making convenient course-overview reports for all checkmarks available.';
 $string['pluginnameplural'] = 'Checkmark reports';
 
+$string['privacy:metadata:showexamples'] = 'Persistently saved setting whether or not to show examples.';
+$string['privacy:metadata:showgrade'] = 'Persistently saved setting whether or not to show grades.';
+$string['privacy:metadata:sumabs'] = 'Persistently saved setting whether or not to show absolute values.';
+$string['privacy:metadata:sumrel'] = 'Persistently saved setting whether or not to show percentage values.';
+$string['privacy:metadata:showpoints'] = 'Persistently saved setting whether to show icons/symbols or points for checked examples.';
+$string['privacy:metadata:showattendances'] = 'Persistently saved setting whether or not to show attendance infos.';
+$string['privacy:metadata:showpresentationgrades'] = 'Persistently saved setting whether or not to show presentation grades.';
+$string['privacy:metadata:showpresentationcounts'] = 'Persistently saved setting whether or not to show amount of graded presentations.';
+$string['privacy:metadata:signature'] = 'Persistently saved setting whether or not to include a signature field.';
+
 $string['additional_information'] = 'Additional information';
 $string['additional_columns'] = 'Additional columns';
 $string['additional_settings'] = 'Additional settings';
