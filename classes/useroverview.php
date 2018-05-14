@@ -342,7 +342,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             // If the examples are shown and the examplecount is gt 0 we start a new line for sums!
             if ((!empty($showabs) || !empty($showrel) || !empty($showgrade)) && !empty($showexamples)
                     && ((count($userdata->instancedata[$instance->id]->examples) > 0))) {
-                $row['checkmark'] = new html_table_cell('S ' . $instance->name);
+                $row['checkmark'] = new html_table_cell('Σ ' . $instance->name);
                 $row['checkmark']->header = true;
                 $row['checkmark']->style = ' text-align: left; ';
                 if (!empty($showexamples)) {
@@ -574,7 +574,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 || (!empty($showattendances) && $this->attendancestracked())
                 || ((!empty($showpresgrades) || !empty($showprescount)) && $this->presentationsgraded())) {
             $row = [];
-            $row['checkmark'] = new html_table_cell('S ' . get_string('total'));
+            $row['checkmark'] = new html_table_cell('Σ ' . get_string('total'));
             $row['checkmark']->header = true;
             $row['checkmark']->style = ' text-align: left; ';
             if (!empty($showexamples) && (count($userdata->instancedata[$instance->id]->examples) >= 0)) {
@@ -863,20 +863,20 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 } else {
                     $grade = empty($row->checkgrade) ? 0 : $row->checkgrade;
                 }
-                $txt .= "S " . get_string('grade') . "\t" . $grade . '/' . (empty($row->maxgrade) ? 0 : $row->maxgrade) . "\n";
+                $txt .= "Σ " . get_string('grade') . "\t" . $grade . '/' . (empty($row->maxgrade) ? 0 : $row->maxgrade) . "\n";
             }
             if (!$this->column_is_hidden('checked') && $showabs) {
-                $txt .= "S " . get_string('examples', 'local_checkmarkreport') . "\t" . $row->checks . '/' . $row->maxchecks . "\n";
+                $txt .= "Σ " . get_string('examples', 'local_checkmarkreport') . "\t" . $row->checks . '/' . $row->maxchecks . "\n";
             }
             if ($showrel) {
-                $txt .= "S % " . get_string('examples', 'local_checkmarkreport') . "\t" . $row->percentchecked . '%' . "\n";
+                $txt .= "Σ % " . get_string('examples', 'local_checkmarkreport') . "\t" . $row->percentchecked . '%' . "\n";
                 if ($row->overridden) {
                     $grade = empty($row->coursesum) ? 0 : $row->coursesum;
                     $percgrade = round(100 * $grade / $row->maxgrade, 2);
                 } else {
                     $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
                 }
-                $txt .= "S % " . get_string('grade', 'local_checkmarkreport') . "\t" . $percgrade . '%' . "\n";
+                $txt .= "Σ % " . get_string('grade', 'local_checkmarkreport') . "\t" . $percgrade . '%' . "\n";
             }
             if (!empty($showrel)
                     || (!$this->column_is_hidden('checked') && !empty($showabs))
@@ -911,7 +911,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     }
                 }
                 if ($showexamples && !$this->column_is_hidden('examples')) {
-                    $txt .= "S " . $instance->name;
+                    $txt .= "Σ " . $instance->name;
                 }
                 if (!$this->column_is_hidden('checked')) {
                     if ($showabs && $showrel) {
@@ -978,11 +978,11 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $txt .= "\n";
             }
             if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
-                $txt .= 'S ' . get_string('attendance', 'checkmark') . ': ' .
+                $txt .= 'Σ ' . get_string('attendance', 'checkmark') . ': ' .
                         $row->attendances . '/' . $row->maxattendances . "\n";
             }
             if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded()) {
-                $txt .= 'S ' . get_string('presentationgrade', 'checkmark') . ': ' .
+                $txt .= 'Σ ' . get_string('presentationgrade', 'checkmark') . ': ' .
                         $this->display_grade($row->presentationgrade, $row->presentationgrademax) . "\n";
             }
             if (!$this->column_is_hidden('presentationsgraded') && !empty($showprescount) && $this->presentationsgraded()) {

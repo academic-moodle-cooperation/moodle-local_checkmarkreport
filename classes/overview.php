@@ -137,7 +137,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         // Coursesum of course grade.
         if (!empty($showgrade)) {
-            $sortlink = $this->get_sortlink('gradedgrade', 'S ' . get_string('grade'), $PAGE->url);
+            $sortlink = $this->get_sortlink('gradedgrade', 'Σ ' . get_string('grade'), $PAGE->url);
             $sortable[] = 'grade';
             $tableheaders['grade'] = new html_table_cell($sortlink);
             $tableheaders['grade']->header = true;
@@ -153,7 +153,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         // Coursesum of course examples.
         if (!empty($showabs)) {
-            $text = 'S ' . get_string('examples', 'local_checkmarkreport');
+            $text = 'Σ ' . get_string('examples', 'local_checkmarkreport');
             $sortlink = $this->get_sortlink('checks', $text, $PAGE->url);
             $sortable[] = 'examples';
             $tableheaders['examples'] = new html_table_cell($sortlink);
@@ -170,7 +170,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         if (!empty($showrel)) {
             // Percent of course examples.
-            $text = 'S % ' .
+            $text = 'Σ % ' .
                     $this->get_sortlink('percentchecked',
                             get_string('examples',
                                     'local_checkmarkreport'),
@@ -195,7 +195,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             // Amount of attendances.
             $text = get_string('attendance', 'checkmark');
             $sortable[] = 'attendances';
-            $text = $this->get_sortlink('attendances', 'S ' . get_string('attendances', 'local_checkmarkreport'), $PAGE->url);
+            $text = $this->get_sortlink('attendances', 'Σ ' . get_string('attendances', 'local_checkmarkreport'), $PAGE->url);
             $tableheaders['attendances'] = new html_table_cell($text);
             $tableheaders['attendances']->header = true;
             $tableheaders['attendances']->rowspan = 2;
@@ -209,7 +209,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         }
 
         if (!empty($showpresgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
-            $sortlink = $this->get_sortlink('presentationgrade', 'S ' . get_string('presentationgrade', 'checkmark'), $PAGE->url);
+            $sortlink = $this->get_sortlink('presentationgrade', 'Σ ' . get_string('presentationgrade', 'checkmark'), $PAGE->url);
             $sortable[] = 'presentationgrade';
             $tableheaders['presentationgrade'] = new html_table_cell($sortlink);
             $tableheaders['presentationgrade']->header = true;
@@ -851,21 +851,21 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
         }
         if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
-            $txt .= "\tS " . get_string('grade');
+            $txt .= "\tΣ " . get_string('grade');
         }
         if (!$this->column_is_hidden('examples') && !empty($showabs)) {
-            $txt .= "\tS " . get_string('examples', 'local_checkmarkreport');
+            $txt .= "\tΣ " . get_string('examples', 'local_checkmarkreport');
         }
         if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
             $txt .= "\t";
-            $txt .= 'S % ' . get_string('examples', 'local_checkmarkreport') . ' (S % ' . get_string('grade') . ')';
+            $txt .= 'Σ % ' . get_string('examples', 'local_checkmarkreport') . ' (Σ % ' . get_string('grade') . ')';
         }
         if (!empty($showattendances) && $this->attendancestracked()) {
-            $txt .= "\tS " . get_string('attendance', 'checkmark');
+            $txt .= "\tΣ " . get_string('attendance', 'checkmark');
         }
         if (!$this->column_is_hidden('presentationgrade', 'checkmark') && !empty($showpresgrades)
                 && $this->presentationsgraded()) {
-            $txt .= "\tS " . get_string('presentationgrade', 'checkmark');
+            $txt .= "\tΣ " . get_string('presentationgrade', 'checkmark');
         }
         if (!$this->column_is_hidden('presentationsgraded', 'checkmark') && !empty($showprescount)
                 && $this->presentationsgraded()) {
@@ -898,7 +898,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
                 $txt .= "\t";
-                $txt .= $instance->name . ' S % ' . get_string('examples', 'local_checkmarkreport') . ' (S % ' .
+                $txt .= $instance->name . ' Σ % ' . get_string('examples', 'local_checkmarkreport') . ' (Σ % ' .
                         get_string('grade') . ')';
             }
             if (!$this->column_is_hidden('attendance' . $instance->id) && !empty($showattendances) && $this->attendancestracked()
