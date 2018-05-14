@@ -1,5 +1,13 @@
 CHANGELOG
 =========
+3.5.0 (2018-05-14)
+------------------
+
+* Moodle 3.5 compatible version
+* [FEATURE] #5378 implement privacy API
+* [CHANGED] #5094 removed german lang strings from repository
+* [CHANGED] #5299 we now use the common 'Σ' instead of 'S' for sums
+
 
 3.4.1 (2018-01-26)
 ------------------
