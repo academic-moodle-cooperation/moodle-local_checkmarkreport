@@ -1007,6 +1007,10 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $worksheets = [];
         $data = $this->get_coursedata();
         $sheetnames = [];
+        if (empty($data) || count($data) == 0) {
+            $workbook->add_worksheet('');
+            return;
+        }
         foreach ($data as $userid => $userdata) {
             $x = 0;
             $y = 0;

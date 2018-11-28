@@ -125,7 +125,9 @@ function local_checkmarkreport_get_tabs($coursecontext, $id) {
         $availabletabs[] = 'useroverview';
     }
 
-    if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id)) {
+    // Here we check for capability and enrolment, to prevent admins from getting empty views or errors!
+    if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id)
+            && is_enrolled($coursecontext, null, 'local/checkmarkreport:view_own_overview', true)) {
         $tabs[] = new tabobject('userview',
                 $CFG->wwwroot . '/local/checkmarkreport/index.php?id=' . $id .
                 '&amp;tab=userview',

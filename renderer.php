@@ -76,8 +76,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
     protected function render_local_checkmarkreport_useroverview(local_checkmarkreport_useroverview $report, $hidefilter = false) {
         $out = '';
 
+        $data = $report->get_coursedata();
+
         // Render download links!
-        $data = [
+        $linkdata = [
                 'id' => $report->get_courseid(),
                 'tab' => optional_param('tab', null, PARAM_ALPHANUM),
                 'sesskey' => sesskey(),
@@ -85,15 +87,14 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         ];
         $groups = $report->get_groups();
         $users = $report->get_user();
-        $out .= html_writer::tag('div', $this->get_downloadlinks([
-                'groups' => $groups,
-                'users' => $users
-        ], $data),
-                ['class' => 'download']);
+        if (!empty($data) && !empty($users)) {
+            $out .= html_writer::tag('div', $this->get_downloadlinks([
+                    'groups' => $groups,
+                    'users' => $users
+            ], $linkdata), ['class' => 'download']);
+        }
 
         // Render the tables!
-        $data = $report->get_coursedata();
-        $users = $report->get_user();
         if (!empty($data) && !empty($users)) {
             foreach ($data as $userdata) {
                 if (!in_array($userdata->id, $users) && !in_array(0, $users)) {
