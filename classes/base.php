@@ -480,7 +480,7 @@ class local_checkmarkreport_base {
      * Get's the general data from the DB, saves it and returns it
      *
      * @param object $course (optional) course object
-     * @param int[] $userids (optional) array of user ids to include
+     * @param int|int[] $userids (optional) array of user ids to include
      * @param int[] $instances (optional) array of checkmark ids to include
      * @return object[]|null
      */
