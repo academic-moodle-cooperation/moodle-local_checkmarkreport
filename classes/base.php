@@ -431,8 +431,6 @@ class local_checkmarkreport_base {
 
         $course = $DB->get_record('course', ['id' => $this->courseid], '*', MUST_EXIST);
 
-        $context = context_course::instance($course->id);
-
         // Get all checkmark instances in course!
         $checkmarks = get_all_instances_in_course('checkmark', $course);
         if (!in_array(0, $this->instances)) {

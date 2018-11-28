@@ -28,7 +28,6 @@ namespace local_checkmarkreport\privacy;
 defined('MOODLE_INTERNAL') || die();
 
 use \core_privacy\local\metadata\provider as metadataprovider;
-use \core_privacy\local\request\core_user_data_provider as pluginprovider;
 use \core_privacy\local\request\user_preference_provider as preference_provider;
 use \core_privacy\local\metadata\collection;
 use \core_privacy\local\request\writer;
