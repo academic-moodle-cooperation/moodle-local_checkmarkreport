@@ -25,6 +25,17 @@
  */
 
 /** General Styles **/
+.path-local-checkmarkreport #reportfilterform .form-inline.felement label {
+    margin-right: 0;
+}
+
+.path-local-checkmarkreport #reportfilterform .break {
+    flex-basis: 100%;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
 .path-local-checkmarkreport div.scrollforced {
     overflow-x: scroll;
     width: 100%;

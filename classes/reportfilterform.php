@@ -36,6 +36,12 @@ require_once($CFG->libdir . '/formslib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_checkmarkreport_reportfilterform extends moodleform {
+    public function __construct($action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true,
+                                $ajaxformdata=null) {
+        $attributes['id'] = 'reportfilterform';
+        parent::__construct($action, $customdata, $method, $target, $attributes, $editable, $ajaxformdata);
+    }
+
     /**
      * Definition of filter form
      */
@@ -164,6 +170,7 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $gradehelp = new help_icon('grade', 'local_checkmarkreport');
         $sumabshelp = new help_icon('sumabs', 'local_checkmarkreport');
         $sumrelhelp = new help_icon('sumrel', 'local_checkmarkreport');
+        $break = html_writer::tag('div', '', ['class' => 'break']);
 
         $formelement =& $mform->createElement('advcheckbox', 'showexamples', '',
                 get_string('showexamples', 'local_checkmarkreport'));
@@ -189,7 +196,7 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $addcolumns[] = $formelement;
         $mform->setDefault('sumrel', get_user_preferences('checkmarkreport_sumrel'));
 
-        $mform->addGroup($addcolumns, 'additionalcolumns', $this->_customdata['header'], html_writer::empty_tag('br'), false);
+        $mform->addGroup($addcolumns, 'additionalcolumns', $this->_customdata['header'], $break, false);
 
         // Additional settings ?? don't need them...
         $addsettings = [];
@@ -242,8 +249,8 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
         $mform->setDefault('signature', get_user_preferences('checkmarkreport_signature'));
 
-        $mform->addGroup($addsettings, 'additionalsettings', get_string('additional_settings', 'local_checkmarkreport'),
-                html_writer::empty_tag('br'), false);
+        $mform->addGroup($addsettings, 'additionalsettings', get_string('additional_settings', 'local_checkmarkreport'), $break,
+                false);
 
         $mform->addElement('submit', 'submitbutton', get_string('update', 'local_checkmarkreport'));
         $mform->disable_form_change_checker();
