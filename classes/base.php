@@ -665,6 +665,8 @@ class local_checkmarkreport_base {
                     } else {
                         $data[$key]->presentationgrade = $presentationgrades[$key]->presentationgrade;
                     }
+                } else {
+                    $data[$key]->presentationgrademax = 0;
                 }
                 $data[$key]->presentationsgradedmax = $this->countgradingpresentations();
                 $data[$key]->coursepressum = 0; // Sum it up during per-instance-data!

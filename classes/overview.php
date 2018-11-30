@@ -958,7 +958,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $txt .= "\t";
                 $txt .= $row->attendances . '/' . $row->maxattendances;
             }
-            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded()) {
+            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded() &&
+                    !empty($this->pointsforpresentations())) {
                 $txt .= "\t";
                 $txt .= $this->display_grade($row->presentationgrade, $row->presentationgrademax);
             }

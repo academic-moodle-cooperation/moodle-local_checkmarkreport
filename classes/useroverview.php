@@ -981,7 +981,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $txt .= 'Σ ' . get_string('attendance', 'checkmark') . ': ' .
                         $row->attendances . '/' . $row->maxattendances . "\n";
             }
-            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded()) {
+            if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded() &&
+                    !empty($this->pointsforpresentations())) {
                 $txt .= 'Σ ' . get_string('presentationgrade', 'checkmark') . ': ' .
                         $this->display_grade($row->presentationgrade, $row->presentationgrademax) . "\n";
             }
