@@ -115,16 +115,7 @@
     vertical-align: middle;
 }
 
-.path-local-checkmarkreport .ui-tooltip {
-    background-color: #ffee69;
-    border-color: #d4c237 #a6982b #a6982b;
-    border-style: solid;
-    border-width: 1px;
-    font-size: 0.7em;
-    left: 0;
-    padding: 2px 5px;
-}
-
-.path-local-checkmarkreport .ui-tooltip {
-    display: inline-block;
+.path-local-checkmarkreport [role=tooltip] {
+    /* Timing has to be synced with JS! */
+    transition: opacity 200ms ease-in-out;
 }

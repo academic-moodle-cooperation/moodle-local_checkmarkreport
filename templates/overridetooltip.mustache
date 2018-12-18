@@ -1,0 +1,48 @@
+{{!
+    This file is part of local_checkmarkreport for Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_checkmarkreport/overridetooltip
+
+    Checkmarkreport's override-tooltip
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * none
+
+    Example context (json):
+    {
+        "id": "someuniquehtmlid",
+        "item": 456,
+        "curuser": { "id": 78912, "fullname": "Max Mustermann" },
+        "dategraded": 17895468435435,
+        "grader": { "id": 78954, "fullname": "Theodore Teacher" }
+    }
+}}
+<div role="tooltip" id="{{id}}" class="local_checkmarkreport_tooltip checkmarkreportoverlay">
+    {{#str}}overwritten, local_checkmarkreport{{/str}}
+    {{#grader}}<div class="fullname">
+        {{#str}}by, local_checkmarkreport{{/str}}&nbsp;{{fullname}}
+    </div>{{/grader}}
+    {{#dategraded}}<div class="dategraded">
+        {{#userdate}}{{.}}, {{#str}} strftimedate {{/str}}{{/userdate}}
+    </div>{{/dategraded}}
+</div>

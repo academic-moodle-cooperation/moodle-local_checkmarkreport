@@ -863,20 +863,20 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 } else {
                     $grade = empty($row->checkgrade) ? 0 : $row->checkgrade;
                 }
-                $txt .= "Σ " . get_string('grade') . "\t" . $grade . '/' . (empty($row->maxgrade) ? 0 : $row->maxgrade) . "\n";
+                $txt .= "Σ ".get_string('grade')."\t".$grade.'/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
             }
             if (!$this->column_is_hidden('checked') && $showabs) {
-                $txt .= "Σ " . get_string('examples', 'local_checkmarkreport') . "\t" . $row->checks . '/' . $row->maxchecks . "\n";
+                $txt .= "Σ ".get_string('examples', 'local_checkmarkreport')."\t".$row->checks.'/'.$row->maxchecks."\n";
             }
             if ($showrel) {
-                $txt .= "Σ % " . get_string('examples', 'local_checkmarkreport') . "\t" . $row->percentchecked . '%' . "\n";
+                $txt .= "Σ % ".get_string('examples', 'local_checkmarkreport')."\t".$row->percentchecked.'%'."\n";
                 if ($row->overridden) {
                     $grade = empty($row->coursesum) ? 0 : $row->coursesum;
                     $percgrade = round(100 * $grade / $row->maxgrade, 2);
                 } else {
                     $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
                 }
-                $txt .= "Σ % " . get_string('grade', 'local_checkmarkreport') . "\t" . $percgrade . '%' . "\n";
+                $txt .= "Σ % ".get_string('grade', 'local_checkmarkreport')."\t".$percgrade.'%'."\n";
             }
             if (!empty($showrel)
                     || (!$this->column_is_hidden('checked') && !empty($showabs))

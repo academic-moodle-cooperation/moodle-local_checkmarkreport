@@ -491,4 +491,40 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         return $html;
     }
 
+    /**
+     * @param html_table_cell $cell
+     * @param int|null $item
+     * @param string $user
+     * @param int|null $datetime
+     * @param string $grader
+     * @return void
+     * @throws moodle_exception
+     */
+    public static function add_cell_tooltip(html_table_cell &$cell, int $item=null, string $user=null, int $datetime=null,
+                                            string $grader=null) {
+        global $OUTPUT;
+
+        if (!key_exists('class', $cell->attributes) || empty($cell->attributes['class'])) {
+            $cell->attributes['class'] = '';
+        }
+        $cell->attributes['class'] .= 'current';
+
+        if (empty($cell->id)) {
+            $id = html_writer::random_id();
+        } else {
+            $id = $cell->id;
+        }
+        $cell->id = $id;
+        $cell->attributes['data-toggle'] = "tooltip";
+        $cell->attributes['data-html'] = "true";
+
+        $cell->attributes['data-content'] = $OUTPUT->render_from_template('local_checkmarkreport/overridetooltip', (object)[
+            'id'         => $cell->attributes['aria-describedby'],
+            'describes'  => $cell->id,
+            'item'       => $item,
+            'user'       => (object)['fullname' => $user],
+            'dategraded' => $datetime,
+            'grader'     => empty($grader) ? false : (object)['fullname' => $grader],
+        ]);
+    }
 }
