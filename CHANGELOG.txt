@@ -1,5 +1,13 @@
 CHANGELOG
 =========
+3.6.0 (2018-12-18)
+------------------
+
+* Moodle 3.6 compatible version
+* [CHANGED] #5608 updated tooltips to use popper.js instead of jQueryUI
+* [FIXED] #5873 fix regression caused by #5608 (missing array-element)
+
+
 3.5.0 (2018-05-14)
 ------------------
 
