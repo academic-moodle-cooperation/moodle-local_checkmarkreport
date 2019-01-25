@@ -519,7 +519,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $cell->attributes['data-html'] = "true";
 
         $cell->attributes['data-content'] = $OUTPUT->render_from_template('local_checkmarkreport/overridetooltip', (object)[
-            'id'         => $cell->attributes['aria-describedby'],
+            'id'         => 'tooltip_'.$cell->id,
             'describes'  => $cell->id,
             'item'       => $item,
             'user'       => (object)['fullname' => $user],
