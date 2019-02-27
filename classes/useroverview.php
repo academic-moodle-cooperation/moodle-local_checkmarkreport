@@ -1005,6 +1005,9 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
      */
     public function fill_workbook($workbook) {
         // Initialise everything!
+        $context = context_course::instance($this->courseid);
+        $textonlycolumns = get_extra_user_fields($context);
+        array_push($textonlycolumns, "fullname");
         $worksheets = [];
         $data = $this->get_coursedata();
         $sheetnames = [];
@@ -1111,9 +1114,13 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         if (!isset($cell->colspan)) {
                             $cell->colspan = 1;
                         }
-
+                        // We need this, to overwrite the images for attendance with simple characters!
+                        /* If text to be written is numeric, it will be written in number format
+                         so it can be used in calculations without further conversion. */
                         if (!empty($cell->character)) {
                             $worksheets[$userid]->write_string($y, $x, $cell->character);
+                        } else if (is_numeric($cell->text) && (!in_array($key, $textonlycolumns))) {
+                            $worksheets[$userid]->write_number($y, $x, strip_tags($cell->text));
                         } else {
                             $worksheets[$userid]->write_string($y, $x, strip_tags($cell->text));
                         }
