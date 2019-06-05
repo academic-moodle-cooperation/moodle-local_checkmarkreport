@@ -1007,9 +1007,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         // Initialise everything!
         $context = context_course::instance($this->courseid);
         $textonlycolumns = get_extra_user_fields($context);
-        // Codereview SN: same with the '' and "" as in overview.php.
-        // also, same mod/checkmark, you can use array_flip and then isset(..), but that's up to you.
-        array_push($textonlycolumns, "fullname");
+        array_push($textonlycolumns, 'fullname');
         $worksheets = [];
         $data = $this->get_coursedata();
         $sheetnames = [];

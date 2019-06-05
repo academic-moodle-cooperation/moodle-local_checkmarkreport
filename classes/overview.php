@@ -1035,9 +1035,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $x = $y = 0;
         $context = context_course::instance($this->courseid);
         $textonlycolumns = get_extra_user_fields($context);
-        // Codereview SN: it is preferable to use '' instead of "" if you are not going to include directly any variables
-        // in the string.
-        array_push($textonlycolumns, "fullname");
+        array_push($textonlycolumns, 'fullname');
         // We start with the html_table-Object.
         $table = $this->get_table();
 
