@@ -1,5 +1,12 @@
 CHANGELOG
 =========
+
+3.7.0 (2019-07-03)
+------------------
+
+* Moodle 3.7 compatible version
+* [FEATURE] #5264 Set field type of cells containing numeric values in .xlsx and .ods to number
+
 3.6.0 (2018-12-18)
 ------------------
 
