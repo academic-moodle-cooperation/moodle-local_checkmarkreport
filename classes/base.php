@@ -1003,8 +1003,13 @@ class local_checkmarkreport_base {
                 'checkmarkid' => $checkmarkid,
                 'userid' => $userid
         ];
+        $examples = $DB->get_records_sql_menu($sql, $params);
+        $objexamples = array();
+        foreach($examples as $key => $example) {
+            $objexamples[$key] = \local_checkmarkreport\example::from_id($key,$userid);
+        }
 
-        return $DB->get_records_sql_menu($sql, $params);
+        return $objexamples;
     }
 
     /**

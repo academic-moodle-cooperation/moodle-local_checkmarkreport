@@ -78,7 +78,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
      * @param object $userdata
      * @return html_table report part for this user as html_table object
      */
-    public function get_table($userdata) {
+    public function get_table($userdata, $for_export = false) {
         global $DB, $PAGE, $OUTPUT;
 
         $showexamples = get_user_preferences('checkmarkreport_showexamples', 1);
@@ -251,14 +251,19 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     }
                     if (!empty($showabs) || !empty($showrel)) {
                         if ($showpoints) {
-                            $row['checked'] = new html_table_cell($example ? $examplenames[$instance->id][$exid]->grade : 0);
+                            //todo Check tthat
+                            $row['checked'] = new html_table_cell($example->print_pointsstring());
                         } else {
-                            $row['checked'] = new html_table_cell($example ? "☒" : "☐");
+                            if($for_export) {
+                                $row['checked'] = new html_table_cell($example->get_examplestate_for_export());
+                            }
+                            else {
+                                $row['checked'] = new html_table_cell($example->print_examplestate());
+                            }
                         }
                     }
                     if (!empty($showgrade)) {
-                        $row['points'] = new html_table_cell(($example ? $examplenames[$instance->id][$exid]->grade : 0) . '/' .
-                                $examplenames[$instance->id][$exid]->grade);
+                        $row['points'] = new html_table_cell($example->get_checked_of_max_points());
                     }
                     if ($idx == 0) {
                         if (!empty($showattendances) && $this->attendancestracked()) {
@@ -448,8 +453,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
 
                 // Write attendance and/or grade in line with checkmark name if no examples are shown!
-                if ($idx == 0 && (empty($showexamples) || (count($userdata->instancedata[$instance->id]->examples) == 0))) {
-                    if (!empty($showattendances) && $this->attendancestracked()) {
+                if ($idx == 0 && (empty($showexamples) || (count($userdata->instancedata[$instance->id]->examples) == 0))) {if (!empty($showattendances) && $this->attendancestracked()) {
                         if ($tracksattendance = $this->tracksattendance($instance->id)) {
                             if ($tracksattendance->attendancegradebook) {
                                 // We can't use already formatted grade here, because we have to parse the float value!
@@ -817,8 +821,9 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             $exnode->setAttribute('name', $examplenames[$instance->id][$key]->name);
                         }
                         if (!$this->column_is_hidden('checked')) {
-                            $exnode->setAttribute('state', $example ? 1 : 0);
-                            $exnode->setAttribute('statesymbol', $example ? "☒" : "☐");
+                            $exnode->setAttribute('state', $example->is_checked() ? 1 : 0);
+                            $exnode->setAttribute('overwrite', $example->is_forced() ? 1 : 0);
+                            $exnode->setAttribute('statesymbol', $example->get_examplestate_for_export());
                         }
                     }
                 }
@@ -896,16 +901,16 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 if (!empty($showexamples) && (!$this->column_is_hidden('examples')
                                 || !$this->column_is_hidden('checked')
                                 || (!$this->column_is_hidden('points') && $showgrade))) {
-                    foreach ($examplenames[$instance->id] as $key => $examplename) {
+                    foreach ($instancedata->examples as $key => $example) {
                         if (!$this->column_is_hidden('examples')) {
-                            $txt .= "\t" . $examplename->name .
-                                    " (" . $examplename->grade . 'P)';
+                            $txt .= "\t" . $example->name .
+                                    " (" . $example->grade . 'P)';
                         }
                         if (!$this->column_is_hidden('checked')) {
-                            $txt .= "\t" . ($instancedata->examples[$key] ? "☒" : "☐");
+                            $txt .= "\t" . ($example->get_examplestate_for_export());
                         }
                         if (!$this->column_is_hidden('points') && $showgrade) {
-                            $txt .= "\t" . ($instancedata->examples[$key] ? $examplename->grade : 0) . '/' . $examplename->grade;
+                            $txt .= "\t" . $example->get_checked_of_max_points();
                         }
                         $txt .= "\n";
                     }
@@ -1029,7 +1034,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $worksheets[$userid] = $workbook->add_worksheet(fullname($userdata));
                 $sheetnames[] = fullname($userdata);
             }
-            $table = $this->get_table($userdata);
+            $table = $this->get_table($userdata,true);
             $worksheets[$userid]->write_string($y, $x, strip_tags(fullname($data[$userid])));
             $worksheets[$userid]->merge_cells($y, $x, $y, $x + 3);
 

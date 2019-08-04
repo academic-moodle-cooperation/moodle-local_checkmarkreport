@@ -72,7 +72,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
      *
      * @return html_table report as html_table object
      */
-    public function get_table() {
+    public function get_table($for_export = false) {
         global $DB, $PAGE;
 
         $context = context_course::instance($this->courseid);
@@ -620,10 +620,21 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     // Dynamically add examples!
                     foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
                         if (empty($showpoints)) {
-                            $row['example' . $key] = new html_table_cell($example ? "☒" : "☐");
+                            //$row['example' . $key] = new html_table_cell($example ? "☒" : "☐");
+                            if($for_export) {
+                                $row['example' . $key] = new html_table_cell($example->get_examplestate_for_export());
+                            }
+                            else {
+                                $row['example' . $key] = new html_table_cell($example->print_examplestate());
+                            }
                         } else {
-                            $examplegrade = $examplenames[$instance->id][$key]->grade;
-                            $row['example' . $key] = new html_table_cell($example ? $examplegrade : "0");
+                            if($for_export)  {
+                                $row['example' . $key] = new html_table_cell($example->get_points_for_export());
+                            }
+                            else {
+                                $row['example' . $key] = new html_table_cell($example->print_pointsstring());
+                            }
+
                         }
                     }
                 }
@@ -776,8 +787,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         if (!$this->column_is_hidden('example' . $examplecounter)) {
                             $exnode = $exsnode->appendChild(new DOMElement('example'));
                             $exnode->setAttribute('name', $examplenames[$instance->id][$key]->name);
-                            $exnode->setAttribute('state', $example ? 1 : 0);
-                            $exnode->setAttribute('statesymbol', $example ? "☒" : "☐");
+                            $exnode->setAttribute('state', $example->is_checked() ? 1 : 0);
+                            $exnode->setAttribute('overwrite', $example->is_forced() ? 1 : 0);
+                            $exnode->setAttribute('statesymbol', $example->get_examplestate_for_export());
                         }
                         $examplecounter++;
                     }
@@ -991,7 +1003,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 if (!empty($showexamples)) {
                     foreach ($instancedata->examples as $key => $example) {
                         if (!$this->column_is_hidden('example' . $examplecount)) {
-                            $txt .= "\t" . ($example ? "☒" : "☐");
+                            $txt .= "\t" . ($example->get_examplestate_for_export());
                         }
                         $examplecount++;
                     }
@@ -1037,7 +1049,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $textonlycolumns = get_extra_user_fields($context);
         array_push($textonlycolumns, 'fullname');
         // We start with the html_table-Object.
-        $table = $this->get_table();
+        $table = $this->get_table(true);
 
         $worksheet = $workbook->add_worksheet(time());
 
