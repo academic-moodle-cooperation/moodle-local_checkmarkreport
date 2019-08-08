@@ -621,16 +621,19 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
                         if (empty($showpoints)) {
                             //$row['example' . $key] = new html_table_cell($example ? "☒" : "☐");
+                            // Codereview SN: add spaces between the if and (
                             if($for_export) {
                                 $row['example' . $key] = new html_table_cell($example->get_examplestate_for_export());
+                                //Codereview SN: keep the } else { on one line :)
                             }
                             else {
                                 $row['example' . $key] = new html_table_cell($example->print_examplestate());
                             }
                         } else {
+                            // Codereview SN: same here
                             if($for_export)  {
                                 $row['example' . $key] = new html_table_cell($example->get_points_for_export());
-                            }
+                            }// Codereview SN: same here
                             else {
                                 $row['example' . $key] = new html_table_cell($example->print_pointsstring());
                             }
@@ -787,6 +790,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         if (!$this->column_is_hidden('example' . $examplecounter)) {
                             $exnode = $exsnode->appendChild(new DOMElement('example'));
                             $exnode->setAttribute('name', $examplenames[$instance->id][$key]->name);
+                            // Codereview SN: this can be shortened to intval($example->is_checked()). It will return
+                            // 0 or 1 again.
                             $exnode->setAttribute('state', $example->is_checked() ? 1 : 0);
                             $exnode->setAttribute('overwrite', $example->is_forced() ? 1 : 0);
                             $exnode->setAttribute('statesymbol', $example->get_examplestate_for_export());
