@@ -25,7 +25,6 @@
 
 
 namespace local_checkmarkreport;
-
 defined('MOODLE_INTERNAL') || die;
 
 class example extends \mod_checkmark\example {
@@ -62,44 +61,34 @@ class example extends \mod_checkmark\example {
         if($example) {
             return new self($id, $example->shortname, $example->grade, $example->prefix, $example->state);
         }
-        //Codereview SN: add a comement here that explains why you did that. It looks wrong at the first glance,
-        //but then after going through the code it is actually ok ;)
+        //Call the function again if a userid is present without userid when no example was found.
+        // By doing so, the fuction returns an example with no user allocation what we need for displaying examples without present submissions.
         if($userid) {
             return self::from_id($id);
         }
         return null;
-
     }
 
-    // Codereview SN: add blank lines between functions
-    /*
-     * public function ...() {
-     * }
-     *
-     * public function ..() {
-     * }
-     */
     public function print_examplestate() {
         global $OUTPUT;
 
         return $OUTPUT->render_from_template('local_checkmarkreport/examplestate', $this);
     }
+
     public function print_pointsstring() {
         global $OUTPUT;
 
         return $OUTPUT->render_from_template('local_checkmarkreport/examplepoints', $this);
     }
+
     public function get_points_if_checked() {
-        /*
-         * Codereview SN:
-         * add empty spaces between the if and the (
-         * if ($this->is_checked
-         */
-        if($this->is_checked()) {
+
+        if ($this->is_checked()) {
             return $this->grade;
         }
         return 0;
     }
+
     public function get_checked_of_max_points() {
         if($this->is_checked()) {
             return $this->grade . '/' . $this->grade;
@@ -109,15 +98,14 @@ class example extends \mod_checkmark\example {
 
     public function get_points_for_export() {
         if ($this->is_forced_checked()) {
-            return "(" . $this->grade . ")";
+            return '(' . $this->grade . ')' ;
         } else if ($this->is_forced_unchecked()) {
-            return "(" . 0 . ")";
+            return '(0)';
         } else if ($this->is_checked()) {
             return $this->grade;
         } else {
             return 0;
         }
     }
-
 }
 
