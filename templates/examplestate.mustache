@@ -36,6 +36,8 @@
         "is_forced": { "checked": false, "unchecked": true }
     }
 }}
+{{! Codereview SN: this template looks the same with mod_checkmark/examplestate, the only difference seems to be
+the class name. Is there a reason not to use the mod_checkmark/examplestate template directly? }}
 <span {{#checkid}}data-checkid="{{.}}"{{/checkid}}{{!
         }} class="local_checkmarkreport_examplestate fa-stack">
   <i class="fa fa-square-o fa-stack-2x{{#is_forced}} text-error{{/is_forced}}"></i>
