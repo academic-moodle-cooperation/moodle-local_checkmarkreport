@@ -68,12 +68,7 @@ class example extends \mod_checkmark\example {
         }
         return null;
     }
-
-    public function print_examplestate() {
-        global $OUTPUT;
-
-        return $OUTPUT->render_from_template('local_checkmarkreport/examplestate', $this);
-    }
+    
 
     public function print_pointsstring() {
         global $OUTPUT;
