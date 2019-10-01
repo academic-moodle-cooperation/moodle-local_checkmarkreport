@@ -70,6 +70,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     /**
      * get html table object representing report data
      *
+     * @param boolean $forexport
      * @return html_table report as html_table object
      */
     public function get_table($forexport = false) {

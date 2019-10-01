@@ -29,10 +29,24 @@ defined('MOODLE_INTERNAL') || die;
 
 class example extends \mod_checkmark\example {
 
+    /**
+     * function that returns the state
+     *
+     * @param $state
+     * @return mixed
+     */
     public function get_state($state) {
         return $state;
     }
 
+    /**
+     * create an instance from id
+     *
+     * @param $id
+     * @param bool $userid
+     * @return example|\mod_checkmark\example|null
+     * @throws \dml_exception
+     */
     public static function from_id($id, $userid=false) {
         global $DB;
 
@@ -69,14 +83,25 @@ class example extends \mod_checkmark\example {
         }
         return null;
     }
-    
 
+
+    /**
+     * renders the point string
+     *
+     * @return mixed
+     * @throws \coding_exception
+     */
     public function print_pointsstring() {
         global $OUTPUT;
 
         return $OUTPUT->render_from_template('local_checkmarkreport/examplepoints', $this);
     }
 
+    /**
+     * checks whether points are checked
+     *
+     * @return int|string
+     */
     public function get_points_if_checked() {
 
         if ($this->is_checked()) {
@@ -85,6 +110,11 @@ class example extends \mod_checkmark\example {
         return 0;
     }
 
+    /**
+     * gets the maximum number of points
+     *
+     * @return string
+     */
     public function get_checked_of_max_points() {
         if ($this->is_checked()) {
             return $this->grade . '/' . $this->grade;
@@ -92,6 +122,11 @@ class example extends \mod_checkmark\example {
         return '0/' . $this->grade;
     }
 
+    /**
+     * get points for export
+     *
+     * @return int|string
+     */
     public function get_points_for_export() {
         if ($this->is_forced_checked()) {
             return '(' . $this->grade . ')' ;

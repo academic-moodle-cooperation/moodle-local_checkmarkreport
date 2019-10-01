@@ -76,6 +76,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
      * get html table object representing report data for 1 user
      *
      * @param object $userdata
+     * @param boolean $forexport
      * @return html_table report part for this user as html_table object
      */
     public function get_table($userdata, $forexport = false) {
