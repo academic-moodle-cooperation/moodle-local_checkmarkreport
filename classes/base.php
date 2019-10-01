@@ -1005,8 +1005,8 @@ class local_checkmarkreport_base {
         ];
         $examples = $DB->get_records_sql_menu($sql, $params);
         $objexamples = array();
-        foreach($examples as $key => $example) {
-            $objexamples[$key] = \local_checkmarkreport\example::from_id($key,$userid);
+        foreach ($examples as $key => $example) {
+            $objexamples[$key] = \local_checkmarkreport\example::from_id($key, $userid);
         }
 
         return $objexamples;
