@@ -29,6 +29,8 @@ defined('MOODLE_INTERNAL') || die;
 
 /**
  * Class example
+ * @author    Daniel Binder
+ * @copyright 2019 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @package local_checkmarkreport
  */
 class example extends \mod_checkmark\example {
