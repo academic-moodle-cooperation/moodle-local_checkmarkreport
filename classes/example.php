@@ -31,6 +31,7 @@ defined('MOODLE_INTERNAL') || die;
  * Class example
  * @author    Daniel Binder
  * @copyright 2019 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @package local_checkmarkreport
  */
 class example extends \mod_checkmark\example {
