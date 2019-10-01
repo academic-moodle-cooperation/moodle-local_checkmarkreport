@@ -58,12 +58,13 @@ class example extends \mod_checkmark\example {
         ";
 
         $example = $DB->get_record_sql($sql, ['id' => $id] + $checkparams);
-        if($example) {
+        if ($example) {
             return new self($id, $example->shortname, $example->grade, $example->prefix, $example->state);
         }
         //Call the function again if a userid is present without userid when no example was found.
-        // By doing so, the fuction returns an example with no user allocation what we need for displaying examples without present submissions.
-        if($userid) {
+        // By doing so, the function returns an example with no user allocation what we need for
+        // displaying examples without present submissions.
+        if ($userid) {
             return self::from_id($id);
         }
         return null;
@@ -85,7 +86,7 @@ class example extends \mod_checkmark\example {
     }
 
     public function get_checked_of_max_points() {
-        if($this->is_checked()) {
+        if ($this->is_checked()) {
             return $this->grade . '/' . $this->grade;
         }
         return '0/' . $this->grade;

@@ -72,7 +72,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
      *
      * @return html_table report as html_table object
      */
-    public function get_table($for_export = false) {
+    public function get_table($forexport = false) {
         global $DB, $PAGE;
 
         $context = context_course::instance($this->courseid);
@@ -620,13 +620,13 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     // Dynamically add examples!
                     foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
                         if (empty($showpoints)) {
-                            if ($for_export) {
+                            if ($forexport) {
                                 $row['example' . $key] = new html_table_cell($example->get_examplestate_for_export());
                             } else {
                                 $row['example' . $key] = new html_table_cell($example->print_examplestate());
                             }
                         } else {
-                            if ($for_export)  {
+                            if ($forexport) {
                                 $row['example' . $key] = new html_table_cell($example->get_points_for_export());
                             } else {
                                 $row['example' . $key] = new html_table_cell($example->print_pointsstring());
