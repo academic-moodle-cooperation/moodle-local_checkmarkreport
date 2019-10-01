@@ -76,9 +76,10 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
      * get html table object representing report data for 1 user
      *
      * @param object $userdata
+     * @param boolean $forexport
      * @return html_table report part for this user as html_table object
      */
-    public function get_table($userdata, $for_export = false) {
+    public function get_table($userdata, $forexport = false) {
         global $DB, $PAGE, $OUTPUT;
 
         $showexamples = get_user_preferences('checkmarkreport_showexamples', 1);
@@ -253,10 +254,9 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         if ($showpoints) {
                             $row['checked'] = new html_table_cell($example->print_pointsstring());
                         } else {
-                            if ($for_export) {
+                            if ($forexport) {
                                 $row['checked'] = new html_table_cell($example->get_examplestate_for_export());
-                            }
-                            else {
+                            } else {
                                 $row['checked'] = new html_table_cell($example->print_examplestate());
                             }
                         }
@@ -452,7 +452,6 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
 
                 // Write attendance and/or grade in line with checkmark name if no examples are shown!
-                // Codereview SN: Not really. I guess this was just an oversight when adjusting the function
                 if ($idx == 0 && (empty($showexamples) || (count($userdata->instancedata[$instance->id]->examples) == 0))) {
                     if (!empty($showattendances) && $this->attendancestracked()) {
                         if ($tracksattendance = $this->tracksattendance($instance->id)) {
@@ -822,9 +821,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             $exnode->setAttribute('name', $examplenames[$instance->id][$key]->name);
                         }
                         if (!$this->column_is_hidden('checked')) {
-                            // Codereview SN: intval($example->is_checked()) will give out the same result
-                            $exnode->setAttribute('state', $example->is_checked() ? 1 : 0);
-                            $exnode->setAttribute('overwrite', $example->is_forced() ? 1 : 0);
+                            $exnode->setAttribute('state', intval($example->is_checked()));
+                            $exnode->setAttribute('overwrite', intval($example->is_forced()));
                             $exnode->setAttribute('statesymbol', $example->get_examplestate_for_export());
                         }
                     }
@@ -1036,7 +1034,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $worksheets[$userid] = $workbook->add_worksheet(fullname($userdata));
                 $sheetnames[] = fullname($userdata);
             }
-            $table = $this->get_table($userdata,true);
+            $table = $this->get_table($userdata, true);
             $worksheets[$userid]->write_string($y, $x, strip_tags(fullname($data[$userid])));
             $worksheets[$userid]->merge_cells($y, $x, $y, $x + 3);
 

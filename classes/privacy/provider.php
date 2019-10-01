@@ -17,7 +17,7 @@
 /**
  * Privacy class for requesting user data.
  *
- * @package    mod_checkmarkreport
+ * @package    local_checkmarkreport
  * @copyright  2018 Academic Moodle Cooperation
  * @author     Philipp Hager <philipp.hager@tuwien.ac.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -39,13 +39,15 @@ use \dml_exception;
 /**
  * Privacy class for requesting user data.
  *
- * @package    mod_checkmarkreport
+ * @package    local_checkmarkreport
  * @copyright  2018 Academic Moodle Cooperation
  * @author     Philipp Hager <philipp.hager@tuwien.ac.at>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements metadataprovider, preference_provider {
     /**
+     * get GDPR preferences for the plugin
+     *
      * @return array
      * @throws coding_exception
      */

@@ -492,11 +492,13 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
     }
 
     /**
-     * @param html_table_cell $cell
-     * @param int|null $item
-     * @param string $user
-     * @param int|null $datetime
-     * @param string $grader
+     * A function that adds a tooltip to a cell
+     *
+     * @param html_table_cell $cell an html_table_cell instance
+     * @param int|null $item itam that should be rendered
+     * @param string $user current users
+     * @param int|null $datetime current time
+     * @param string $grader grader string
      * @return void
      * @throws moodle_exception
      */
