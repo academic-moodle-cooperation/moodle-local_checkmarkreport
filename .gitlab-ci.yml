@@ -21,7 +21,6 @@ before_script:
 .job_template: &job_definition
   script:
     - moodle-plugin-ci phplint
-    - moodle-plugin-ci phpdoc
     - moodle-plugin-ci phpcpd
     - moodle-plugin-ci phpcbf
     - moodle-plugin-ci phpmd
@@ -29,6 +28,7 @@ before_script:
     - moodle-plugin-ci validate
     - moodle-plugin-ci phpunit
     - moodle-plugin-ci behat
+    - moodle-plugin-ci phpdoc
 
 code_checker:
   <<: *job_definition
