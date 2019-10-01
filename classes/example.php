@@ -27,12 +27,16 @@
 namespace local_checkmarkreport;
 defined('MOODLE_INTERNAL') || die;
 
+/**
+ * Class example
+ * @package local_checkmarkreport
+ */
 class example extends \mod_checkmark\example {
 
     /**
      * function that returns the state
      *
-     * @param $state
+     * @param int|null $state
      * @return mixed
      */
     public function get_state($state) {
@@ -42,7 +46,7 @@ class example extends \mod_checkmark\example {
     /**
      * create an instance from id
      *
-     * @param $id
+     * @param int $id
      * @param bool $userid
      * @return example|\mod_checkmark\example|null
      * @throws \dml_exception
