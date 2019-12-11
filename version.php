@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2019070300;
-$plugin->requires = 2019052000;
+$plugin->version   = 2019121100;
+$plugin->requires  = 2019111800;
 $plugin->component = 'local_checkmarkreport';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v3.7.0';
-$plugin->dependencies = ['mod_checkmark' => 2018012600];
+$plugin->release = 'v3.8.0';
+$plugin->dependencies = ['mod_checkmark' => 2019121100];
