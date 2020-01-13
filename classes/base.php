@@ -589,7 +589,7 @@ class local_checkmarkreport_base {
                  LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid ' . $sqlcheckmarkids . '
                  LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ' . $sqlcheckmarkbids . '
                  LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id
-                                                      AND (cchks.state = '. \mod_checkmark\example::CHECKED .' OR cchks.state = '. \mod_checkmark\example::UNCHECKED_OVERWRITTEN .')
+                     AND (cchks.state = '. \mod_checkmark\example::CHECKED .' OR cchks.state = '. \mod_checkmark\example::UNCHECKED_OVERWRITTEN .')
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
                      WHERE u.id ' . $sqluserids . '
                   GROUP BY u.id' .
@@ -687,7 +687,8 @@ class local_checkmarkreport_base {
                       FROM {user} u
                  LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid = :chkmkid
                  LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid = :chkmkidb
-                 LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id AND (cchks.state = '. \mod_checkmark\example::CHECKED .' OR cchks.state = '. \mod_checkmark\example::UNCHECKED_OVERWRITTEN .') 
+                 LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id AND 
+                 (cchks.state = '. \mod_checkmark\example::CHECKED .' OR cchks.state = '. \mod_checkmark\example::UNCHECKED_OVERWRITTEN .')
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
                      WHERE u.id ' . $sqluserids . '
                   GROUP BY u.id, f.grade, f.attendance, f.presentationgrade';
