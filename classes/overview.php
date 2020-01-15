@@ -622,13 +622,13 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
                         if (empty($showpoints)) {
                             if ($forexport) {
-                                $row['example' . $key] = new html_table_cell($example->get_examplestate_for_export());
+                                $row['example' . $key] = new html_table_cell($example->get_examplestate_for_export_with_colors());
                             } else {
                                 $row['example' . $key] = new html_table_cell($example->print_examplestate());
                             }
                         } else {
                             if ($forexport) {
-                                $row['example' . $key] = new html_table_cell($example->get_points_for_export());
+                                $row['example' . $key] = new html_table_cell($example->get_points_for_export_with_colors());
                             } else {
                                 $row['example' . $key] = new html_table_cell($example->print_pointsstring());
                             }
@@ -1139,15 +1139,21 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     if (!isset($cell->colspan)) {
                         $cell->colspan = 1;
                     }
+                    $colorparams = [];
+                    if ($this->startsWith($cell->text,'<colorred>')) {
+                        $colorparams['bg_color'] = '#e6b8b7';
+                    }
+                    $format = $workbook->add_format($colorparams);
+                    $cell->text = strip_tags($cell->text);
                     // We need this, to overwrite the images for attendance with simple characters!
                     /* If text to be written is numeric, it will be written in number format
                      so it can be used in calculations without further conversion. */
                     if (!empty($cell->character)) {
-                        $worksheet->write_string($y, $x, strip_tags($cell->character));
+                        $worksheet->write_string($y, $x, strip_tags($cell->character),$format);
                     } else if (is_numeric($cell->text) && (!in_array($key, $textonlycolumns))) {
-                        $worksheet->write_number($y, $x, strip_tags($cell->text));
+                        $worksheet->write_number($y, $x, $cell->text,$format);
                     } else {
-                        $worksheet->write_string($y, $x, strip_tags($cell->text));
+                        $worksheet->write_string($y, $x,$cell->text,$format);
                     }
                     $worksheet->merge_cells($y, $x, $y + $cell->rowspan - 1, $x + $cell->colspan - 1);
                     $x++;

@@ -136,14 +136,29 @@ class example extends \mod_checkmark\example {
      */
     public function get_points_for_export() {
         if ($this->is_forced_checked()) {
-            return '(' . $this->grade . ')' ;
+            return '(' . $this->grade . ')';
         } else if ($this->is_forced_unchecked()) {
-            return '(0)';
+            //return '(0)';!
+            return '0';
         } else if ($this->is_checked()) {
             return $this->grade;
         } else {
             return 0;
         }
+    }
+
+    public function get_points_for_export_with_colors() {
+            if ($this->is_forced_checked()) {
+                //return '(' . $this->grade . ')';!
+                return '<colorred>' . $this->grade;
+            } else if ($this->is_forced_unchecked()) {
+                //return '(0)';!
+                return '<colorred>0';
+            } else if ($this->is_checked()) {
+                return $this->grade;
+            } else {
+                return 0;
+            }
     }
 }
 

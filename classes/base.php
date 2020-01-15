@@ -1425,4 +1425,17 @@ class local_checkmarkreport_base {
         header('Content-Encoding: utf-8');
         echo $text;
     }
+
+    /**
+     * Checks if a given string starts with another given string
+     *
+     * @param string $string String that should be checked
+     * @param string $startString String $string's beginning schould be checked for
+     * @return bool True if $string starts with $startString, False if not
+     */
+    public function startsWith ($string, $startString)
+    {
+        $len = strlen($startString);
+        return (substr($string, 0, $len) === $startString);
+    }
 }

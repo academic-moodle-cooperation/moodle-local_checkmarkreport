@@ -255,7 +255,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             $row['checked'] = new html_table_cell($example->print_pointsstring());
                         } else {
                             if ($forexport) {
-                                $row['checked'] = new html_table_cell($example->get_examplestate_for_export());
+                                $row['checked'] = new html_table_cell($example->get_examplestate_for_export_with_colors());
                             } else {
                                 $row['checked'] = new html_table_cell($example->print_examplestate());
                             }
@@ -1119,15 +1119,21 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         if (!isset($cell->colspan)) {
                             $cell->colspan = 1;
                         }
+                        $colorparams = [];
+                        if ($this->startsWith($cell->text,'<colorred>')) {
+                            $colorparams['bg_color'] = '#e6b8b7';
+                        }
+                        $format = $workbook->add_format($colorparams);
+                        $cell->text = strip_tags($cell->text);
                         // We need this, to overwrite the images for attendance with simple characters!
                         /* If text to be written is numeric, it will be written in number format
                          so it can be used in calculations without further conversion. */
                         if (!empty($cell->character)) {
-                            $worksheets[$userid]->write_string($y, $x, $cell->character);
+                            $worksheets[$userid]->write_string($y, $x, $cell->character,$format);
                         } else if (is_numeric($cell->text) && (!in_array($key, $textonlycolumns))) {
-                            $worksheets[$userid]->write_number($y, $x, strip_tags($cell->text));
+                            $worksheets[$userid]->write_number($y, $x, $cell->text,$format);
                         } else {
-                            $worksheets[$userid]->write_string($y, $x, strip_tags($cell->text));
+                            $worksheets[$userid]->write_string($y, $x, $cell->text,$format);
                         }
                         if (($cell->rowspan > 1) || ($cell->colspan > 1)) {
                             $worksheets[$userid]->merge_cells($y, $x, $y + $cell->rowspan - 1, $x + $cell->colspan - 1);
