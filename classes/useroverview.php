@@ -1111,9 +1111,9 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         if ($key == $lastkey) {
                             $gotlastkey = true;
                         }
-                        $cell = $this->modifySpan($cell);
+                        $cell = $this->modify_span($cell);
                         $colorparams = [];
-                        if ($this->startsWith($cell->text,'<colorred>')) {
+                        if ($this->starts_with($cell->text, '<colorred>')) {
                             $colorparams['bg_color'] = '#e6b8b7';
                         }
                         $format = $workbook->add_format($colorparams);
@@ -1122,11 +1122,11 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         /* If text to be written is numeric, it will be written in number format
                          so it can be used in calculations without further conversion. */
                         if (!empty($cell->character)) {
-                            $worksheets[$userid]->write_string($y, $x, $cell->character,$format);
+                            $worksheets[$userid]->write_string($y, $x, $cell->character, $format);
                         } else if (is_numeric($cell->text) && (!in_array($key, $textonlycolumns))) {
-                            $worksheets[$userid]->write_number($y, $x, $cell->text,$format);
+                            $worksheets[$userid]->write_number($y, $x, $cell->text, $format);
                         } else {
-                            $worksheets[$userid]->write_string($y, $x, $cell->text,$format);
+                            $worksheets[$userid]->write_string($y, $x, $cell->text, $format);
                         }
                         if (($cell->rowspan > 1) || ($cell->colspan > 1)) {
                             $worksheets[$userid]->merge_cells($y, $x, $y + $cell->rowspan - 1, $x + $cell->colspan - 1);

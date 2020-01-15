@@ -1430,15 +1430,15 @@ class local_checkmarkreport_base {
      * Checks if a given string starts with another given string
      *
      * @param string $string String that should be checked
-     * @param string $startString String $string's beginning schould be checked for
+     * @param string $startstring String $string's beginning schould be checked for
      * @return bool True if $string starts with $startString, False if not
      */
-    public function startsWith ($string, $startString)
+    public function starts_with ($string, $startstring)
     {
-        $len = strlen($startString);
-        return (substr($string, 0, $len) === $startString);
+        $len = strlen($startstring);
+        return (substr($string, 0, $len) === $startstring);
     }
-    public function modifySpan($cell) {
+    public function modify_span($cell) {
         if (!isset($cell->rowspan)) {
             $cell->rowspan = 1;
         }

@@ -1132,9 +1132,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     if ($key == $lastkey) {
                         $gotlastkey = true;
                     }
-                    $cell = $this->modifySpan($cell);
+                    $cell = $this->modify_span($cell);
                     $colorparams = [];
-                    if ($this->startsWith($cell->text,'<colorred>')) {
+                    if ($this->starts_with($cell->text, '<colorred>')) {
                         $colorparams['bg_color'] = '#e6b8b7';
                     }
                     $format = $workbook->add_format($colorparams);
@@ -1143,11 +1143,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     /* If text to be written is numeric, it will be written in number format
                      so it can be used in calculations without further conversion. */
                     if (!empty($cell->character)) {
-                        $worksheet->write_string($y, $x, strip_tags($cell->character),$format);
+                        $worksheet->write_string($y, $x, strip_tags($cell->character), $format);
                     } else if (is_numeric($cell->text) && (!in_array($key, $textonlycolumns))) {
-                        $worksheet->write_number($y, $x, $cell->text,$format);
+                        $worksheet->write_number($y, $x, $cell->text, $format);
                     } else {
-                        $worksheet->write_string($y, $x,$cell->text,$format);
+                        $worksheet->write_string($y, $x, $cell->text, $format);
                     }
                     $worksheet->merge_cells($y, $x, $y + $cell->rowspan - 1, $x + $cell->colspan - 1);
                     $x++;
