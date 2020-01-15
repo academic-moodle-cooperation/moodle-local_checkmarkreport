@@ -147,6 +147,11 @@ class example extends \mod_checkmark\example {
         }
     }
 
+    /**
+     * get points for export with colors instead of brackets
+     *
+     * @return int|string
+     */
     public function get_points_for_export_with_colors() {
             if ($this->is_forced_checked()) {
                 //return '(' . $this->grade . ')';!
