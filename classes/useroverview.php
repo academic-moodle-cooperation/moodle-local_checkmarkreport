@@ -1108,17 +1108,10 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             $mycell->text = $cell;
                             $cell = $mycell;
                         }
-
                         if ($key == $lastkey) {
                             $gotlastkey = true;
                         }
-
-                        if (!isset($cell->rowspan)) {
-                            $cell->rowspan = 1;
-                        }
-                        if (!isset($cell->colspan)) {
-                            $cell->colspan = 1;
-                        }
+                        $cell = $this->modifySpan($cell);
                         $colorparams = [];
                         if ($this->startsWith($cell->text,'<colorred>')) {
                             $colorparams['bg_color'] = '#e6b8b7';

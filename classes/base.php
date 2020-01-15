@@ -1438,4 +1438,13 @@ class local_checkmarkreport_base {
         $len = strlen($startString);
         return (substr($string, 0, $len) === $startString);
     }
+    public function modifySpan($cell) {
+        if (!isset($cell->rowspan)) {
+            $cell->rowspan = 1;
+        }
+        if (!isset($cell->colspan)) {
+            $cell->colspan = 1;
+        }
+        return $cell;
+    }
 }
