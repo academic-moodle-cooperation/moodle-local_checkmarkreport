@@ -1442,7 +1442,7 @@ class local_checkmarkreport_base {
     /**
      * Utility function for modifying row and colspan
      *
-     * @param $cell stdClass Cell that should be modified
+     * @param stdClass $cell Cell that should be modified
      * @return stdClass Modified cell
      */
     public function modify_span($cell) {
