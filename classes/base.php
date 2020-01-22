@@ -1425,4 +1425,33 @@ class local_checkmarkreport_base {
         header('Content-Encoding: utf-8');
         echo $text;
     }
+
+    /**
+     * Checks if a given string starts with another given string
+     *
+     * @param string $string String that should be checked
+     * @param string $startstring String $string's beginning schould be checked for
+     * @return bool True if $string starts with $startString, False if not
+     */
+    public function starts_with ($string, $startstring)
+    {
+        $len = strlen($startstring);
+        return (substr($string, 0, $len) === $startstring);
+    }
+
+    /**
+     * Utility function for modifying row and colspan
+     *
+     * @param stdClass $cell Cell that should be modified
+     * @return stdClass Modified cell
+     */
+    public function modify_span($cell) {
+        if (!isset($cell->rowspan)) {
+            $cell->rowspan = 1;
+        }
+        if (!isset($cell->colspan)) {
+            $cell->colspan = 1;
+        }
+        return $cell;
+    }
 }
