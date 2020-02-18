@@ -773,11 +773,9 @@ class local_checkmarkreport_base {
             if (!empty($data)) {
                 $sortafterdata = false;
                 if ($reorder === "attendances") {
-                    $userids = array_keys($attendances);
                     $returndata = [];
                     $sortafterdata = 'courseatsum';
                 } else if ($reorder === "presentationgrade" || $reorder === "presentationsgraded" || $reorder === "coursepressum") {
-                    $userids = array_keys($presentationgrades);
                     $returndata = $data;
                     switch ($reorder) {
                         case 'presentationgrade':
@@ -790,14 +788,12 @@ class local_checkmarkreport_base {
                     }
                 } else if ($reorder === "gradedgrade") {
                     // This is more complicated, we have to extract and sort by hand after data has been accumulated!
-                    $userids = array_keys($data);
                     $returndata = $data;
                     $sortafterdata = 'coursesum';
                 } else if ($reorder !== false) {
                     $userids = array_keys($instancedata[$reorder]);
                     $returndata = [];
                 } else {
-                    $userids = array_keys($data);
                     $returndata = $data;
                 }
                 if (key_exists('checkmark', $sortarr)) {
