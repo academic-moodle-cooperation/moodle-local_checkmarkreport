@@ -3,9 +3,9 @@ Checkmark Report
 
 This file is part of the local_checkmarkreport plugin for Moodle - <http://moodle.org/>
 
-*Author:*    Philipp Hager
+*Author:*    Philipp Hager, Daniel Binder
 
-*Copyright:* 2014 [Academic Moodle Cooperation](http://www.academic-moodle-cooperation.org)
+*Copyright:* 2020 [Academic Moodle Cooperation](http://www.academic-moodle-cooperation.org)
 
 *License:*   [GNU GPL v3 or later](http://www.gnu.org/copyleft/gpl.html)
 
@@ -32,7 +32,7 @@ teachers have a complete overview of marks and have an upto date status and do n
 Requirements
 ------------
 
-The plugin is available for Moodle 2.7+. This version is for Moodle 3.8
+The plugin is available for Moodle 2.7+. This version is for Moodle 3.8.1
 
 
 Installation

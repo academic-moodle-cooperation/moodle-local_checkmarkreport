@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+3.8.1 (2020-02-18)
+------------------
+* [FIXED] #6496 Fix students with no attendance missing in report when sorting by sum of attendances
+
 3.8.0 (2019-07-03)
 ------------------
 * Moodle 3.8 compatible version
