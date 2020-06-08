@@ -68,7 +68,6 @@ class example extends \mod_checkmark\example {
             $checkparams = [];
         }
 
-
         $sql = "SELECT ex.id AS id, ex.checkmarkid, ex.name AS shortname, ex.grade,
                        ".$DB->sql_concat('c.exampleprefix', 'ex.name')." AS name, c.exampleprefix AS prefix
                        $checkfields
@@ -82,7 +81,8 @@ class example extends \mod_checkmark\example {
         if ($example) {
             return new self($id, $example->shortname, $example->grade, $example->prefix, $example->state);
         }
-        //Call the function again if a userid is present without userid when no example was found.
+
+        // Call the function again if a userid is present without userid when no example was found.
         // By doing so, the function returns an example with no user allocation what we need for
         // displaying examples without present submissions.
         if ($userid) {
@@ -90,7 +90,6 @@ class example extends \mod_checkmark\example {
         }
         return null;
     }
-
 
     /**
      * renders the point string
