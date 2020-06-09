@@ -68,7 +68,6 @@ class example extends \mod_checkmark\example {
             $checkparams = [];
         }
 
-
         $sql = "SELECT ex.id AS id, ex.checkmarkid, ex.name AS shortname, ex.grade,
                        ".$DB->sql_concat('c.exampleprefix', 'ex.name')." AS name, c.exampleprefix AS prefix
                        $checkfields
@@ -82,7 +81,8 @@ class example extends \mod_checkmark\example {
         if ($example) {
             return new self($id, $example->shortname, $example->grade, $example->prefix, $example->state);
         }
-        //Call the function again if a userid is present without userid when no example was found.
+
+        // Call the function again if a userid is present without userid when no example was found.
         // By doing so, the function returns an example with no user allocation what we need for
         // displaying examples without present submissions.
         if ($userid) {
@@ -90,7 +90,6 @@ class example extends \mod_checkmark\example {
         }
         return null;
     }
-
 
     /**
      * renders the point string
@@ -138,7 +137,6 @@ class example extends \mod_checkmark\example {
         if ($this->is_forced_checked()) {
             return '(' . $this->grade . ')';
         } else if ($this->is_forced_unchecked()) {
-            //return '(0)';!
             return '0';
         } else if ($this->is_checked()) {
             return $this->grade;
@@ -153,17 +151,15 @@ class example extends \mod_checkmark\example {
      * @return int|string
      */
     public function get_points_for_export_with_colors() {
-            if ($this->is_forced_checked()) {
-                //return '(' . $this->grade . ')';!
-                return '<colorred>' . $this->grade;
-            } else if ($this->is_forced_unchecked()) {
-                //return '(0)';!
-                return '<colorred>0';
-            } else if ($this->is_checked()) {
-                return $this->grade;
-            } else {
-                return 0;
-            }
+        if ($this->is_forced_checked()) {
+            return '<colorred>' . $this->grade;
+        } else if ($this->is_forced_unchecked()) {
+            return '<colorred>0';
+        } else if ($this->is_checked()) {
+            return $this->grade;
+        } else {
+            return 0;
+        }
     }
 }
 
