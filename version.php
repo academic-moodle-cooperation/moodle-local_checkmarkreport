@@ -18,8 +18,8 @@
  * Version information
  *
  * @package   local_checkmarkreport
- * @author    Philipp Hager
- * @copyright 2014 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
+ * @author    Philipp Hager, Daniel Binder
+ * @copyright 2020 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,6 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->version   = 2020060800;
 $plugin->requires  = 2020060700;
 $plugin->component = 'local_checkmarkreport';
-$plugin->maturity = MATURITY_ALPHA;
+$plugin->maturity = MATURITY_STABLE;
 $plugin->release = 'v3.9.0';
 $plugin->dependencies = ['mod_checkmark' => 2019121100];
