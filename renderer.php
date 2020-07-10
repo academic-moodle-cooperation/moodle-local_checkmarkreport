@@ -174,9 +174,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      * @throws coding_exception
      */
     private function get_reset_table_preferences_link($report) {
-
+        global $PAGE;
         if (!empty($report) && !$report->check_all_columns_visible()) {
-            return html_writer::tag('div', html_writer::link("test", get_string('resettable')));
+            return html_writer::tag('div', html_writer::link(new moodle_url($PAGE->url,
+                    ['tshow' => local_checkmarkreport_base::SHOW_ALL_COLUMNS]), get_string('resettable')));
         }
         return '';
     }

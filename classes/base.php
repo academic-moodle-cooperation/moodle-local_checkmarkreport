@@ -50,6 +50,8 @@ class local_checkmarkreport_base {
     const FORMAT_XML = 3;
     /** plain text file format */
     const FORMAT_TXT = 4;
+    /** show all columns */
+    const SHOW_ALL_COLUMNS = 'all';
 
     /** @var object[] report's data */
     protected $data = null;
@@ -1070,7 +1072,9 @@ class local_checkmarkreport_base {
         if (!empty($thide) && !in_array($thide, $SESSION->checkmarkreport->{$this->courseid}->hidden)) {
             $SESSION->checkmarkreport->{$this->courseid}->hidden[] = $thide;
         }
-        if (!empty($tshow)) {
+        if ($tshow === self::SHOW_ALL_COLUMNS) {
+            unset($SESSION->checkmarkreport->{$this->courseid}->hidden);
+        } else if (!empty($tshow)) {
             foreach ($SESSION->checkmarkreport->{$this->courseid}->hidden as $idx => $hidden) {
                 if ($hidden == $tshow) {
                     unset($SESSION->checkmarkreport->{$this->courseid}->hidden[$idx]);
