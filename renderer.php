@@ -54,9 +54,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         ];
         $groups = $report->get_groups();
         $checkmarks = $report->get_instances();
-        $out = html_writer::tag('div', $this->get_downloadlinks(['groups' => $groups, 'checkmarks' => $checkmarks], $data),
+        $tabletoolbar = html_writer::tag('div', $this->get_downloadlinks(['groups' => $groups, 'checkmarks' => $checkmarks], $data),
                 ['class' => 'download']);
-
+        $tabletoolbar .= html_writer::tag('div', $this->get_reset_table_preferences_link($report));
+        $out = html_writer::tag('div', $tabletoolbar, ['class' => 'tabletoolbar']);
         // Render the table!
         $table = $report->get_table();
 
@@ -163,6 +164,21 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                 ['class' => 'downloadlink']);
 
         return $downloadlinks;
+    }
+
+    /**
+     * Helper function to return link for resetting as table preferences if any columns are hidden
+     *
+     * @param null $report Report for determining if any columns are hidden
+     * @return string HTML for link if any columns are hidden, '' if not
+     * @throws coding_exception
+     */
+    private function get_reset_table_preferences_link($report) {
+
+        if (!empty($report) && !$report->check_all_columns_visible()) {
+            return html_writer::tag('div', html_writer::link("test", get_string('resettable')));
+        }
+        return '';
     }
 
     /**
