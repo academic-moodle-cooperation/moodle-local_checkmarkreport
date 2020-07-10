@@ -88,11 +88,14 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         ];
         $groups = $report->get_groups();
         $users = $report->get_user();
+
         if (!empty($data) && !empty($users)) {
-            $out .= html_writer::tag('div', $this->get_downloadlinks([
+            $tabletoolbar = html_writer::tag('div', $this->get_downloadlinks([
                     'groups' => $groups,
                     'users' => $users
             ], $linkdata), ['class' => 'download']);
+            $tabletoolbar .= html_writer::tag('div', $this->get_reset_table_preferences_link($report));
+            $out = html_writer::tag('div', $tabletoolbar, ['class' => 'tabletoolbar']);
         }
 
         // Render the tables!
