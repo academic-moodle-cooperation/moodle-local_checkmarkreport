@@ -1219,7 +1219,7 @@ class local_checkmarkreport_base {
      * @return bool True is no column is hidden, False if at least one column is hidden
      */
     public function check_all_columns_visible() {
-        //Call column_is_hidden to initialize hidden array if not present
+        // Call column_is_hidden to initialize hidden array if not present.
         global $SESSION;
         $this->column_is_hidden();
         if (empty($SESSION->checkmarkreport->{$this->courseid}->hidden)) {
