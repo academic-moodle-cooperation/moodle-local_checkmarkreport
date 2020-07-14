@@ -119,3 +119,8 @@
     /* Timing has to be synced with JS! */
     transition: opacity 200ms ease-in-out;
 }
+
+.tabletoolbar {
+    display: flex;
+    justify-content: space-between;
+}

@@ -50,6 +50,8 @@ class local_checkmarkreport_base {
     const FORMAT_XML = 3;
     /** plain text file format */
     const FORMAT_TXT = 4;
+    /** show all columns */
+    const SHOW_ALL_COLUMNS = 'all';
 
     /** @var object[] report's data */
     protected $data = null;
@@ -1070,7 +1072,9 @@ class local_checkmarkreport_base {
         if (!empty($thide) && !in_array($thide, $SESSION->checkmarkreport->{$this->courseid}->hidden)) {
             $SESSION->checkmarkreport->{$this->courseid}->hidden[] = $thide;
         }
-        if (!empty($tshow)) {
+        if ($tshow === self::SHOW_ALL_COLUMNS) {
+            unset($SESSION->checkmarkreport->{$this->courseid}->hidden);
+        } else if (!empty($tshow)) {
             foreach ($SESSION->checkmarkreport->{$this->courseid}->hidden as $idx => $hidden) {
                 if ($hidden == $tshow) {
                     unset($SESSION->checkmarkreport->{$this->courseid}->hidden[$idx]);
@@ -1207,6 +1211,21 @@ class local_checkmarkreport_base {
 
             return $return;
         }
+    }
+
+    /**
+     * Checks if no column is currently hidden
+     *
+     * @return bool True is no column is hidden, False if at least one column is hidden
+     */
+    public function check_all_columns_visible() {
+        // Call column_is_hidden to initialize hidden array if not present.
+        global $SESSION;
+        $this->column_is_hidden();
+        if (empty($SESSION->checkmarkreport->{$this->courseid}->hidden)) {
+            return true;
+        }
+        return false;
     }
 
     /**

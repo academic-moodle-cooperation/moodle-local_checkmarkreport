@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+3.9.1 (in development)
+------------------
+* [FEATURE] #4892 Add a reset table preferences button capable or resetting all collapsed columns
+                  to overview, student overview and userview
+
 3.9.0 (2020-06-08)
 ------------------
 * Moodle 3.9 compatible version

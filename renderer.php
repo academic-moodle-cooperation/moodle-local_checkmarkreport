@@ -54,9 +54,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         ];
         $groups = $report->get_groups();
         $checkmarks = $report->get_instances();
-        $out = html_writer::tag('div', $this->get_downloadlinks(['groups' => $groups, 'checkmarks' => $checkmarks], $data),
+        $tabletoolbar = html_writer::tag('div', $this->get_downloadlinks(['groups' => $groups, 'checkmarks' => $checkmarks], $data),
                 ['class' => 'download']);
-
+        $tabletoolbar .= html_writer::tag('div', $this->get_reset_table_preferences_link($report));
+        $out = html_writer::tag('div', $tabletoolbar, ['class' => 'tabletoolbar']);
         // Render the table!
         $table = $report->get_table();
 
@@ -87,11 +88,14 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         ];
         $groups = $report->get_groups();
         $users = $report->get_user();
+
         if (!empty($data) && !empty($users)) {
-            $out .= html_writer::tag('div', $this->get_downloadlinks([
+            $tabletoolbar = html_writer::tag('div', $this->get_downloadlinks([
                     'groups' => $groups,
                     'users' => $users
             ], $linkdata), ['class' => 'download']);
+            $tabletoolbar .= html_writer::tag('div', $this->get_reset_table_preferences_link($report));
+            $out = html_writer::tag('div', $tabletoolbar, ['class' => 'tabletoolbar']);
         }
 
         // Render the tables!
@@ -163,6 +167,22 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                 ['class' => 'downloadlink']);
 
         return $downloadlinks;
+    }
+
+    /**
+     * Helper function to return link for resetting as table preferences if any columns are hidden
+     *
+     * @param null $report Report for determining if any columns are hidden
+     * @return string HTML for link if any columns are hidden, '' if not
+     * @throws coding_exception
+     */
+    private function get_reset_table_preferences_link($report) {
+        global $PAGE;
+        if (!empty($report) && !$report->check_all_columns_visible()) {
+            return html_writer::tag('div', html_writer::link(new moodle_url($PAGE->url,
+                    ['tshow' => local_checkmarkreport_base::SHOW_ALL_COLUMNS]), get_string('resettable')));
+        }
+        return '';
     }
 
     /**
