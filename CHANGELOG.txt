@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-3.9.1 (in development)
+3.9.1 (2020-07-22)
 ------------------
 * [FEATURE] #4892 Add a reset table preferences button capable or resetting all collapsed columns
                   to overview, student overview and userview
