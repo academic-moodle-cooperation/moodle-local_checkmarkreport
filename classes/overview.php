@@ -654,9 +654,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     /**
     * Returns the header with user name
     * 
-    * @param $sortablearray - an array to be filled with names
-    * @param $alternativename - sets whether user alternative name should be used 
-    **/
+    * @param array $sortablearray an array to be filled with names
+    * @param bool $alternativename - sets whether user alternative name should be used 
+    * 
+    * @return full name for header
+    */
     private function get_name_header ($sortablearray, $alternativename = false) {
         global $CFG, $PAGE;
         // Find name fields used in nameformat and create columns in the same order.
