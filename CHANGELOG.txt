@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+3.10.0 (2020-07-22)
+------------------
+* [FEATURE] #6765 Use alternativefullnameformat for users with viewfullnames capability
+
+
 3.9.1 (2020-07-22)
 ------------------
 * [FEATURE] #4892 Add a reset table preferences button capable or resetting all collapsed columns

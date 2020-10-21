@@ -107,9 +107,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $firstname = $this->get_sortlink('firstname', get_string('firstname'), $PAGE->url);
         // Lastname sortlink.
         $lastname = $this->get_sortlink('lastname', get_string('lastname'), $PAGE->url);
-        $sortable[] = 'lasname';
-        $sortable[] = 'firstname';
-        $tableheaders['fullnameuser'] = new html_table_cell($firstname . ' / ' . $lastname);
+        $tableheaders['fullnameuser'] = new html_table_cell($this->get_name_header($sortable,
+                has_capability('moodle/site:viewfullnames', $context)));
         $tableheaders['fullnameuser']->header = true;
         $tableheaders['fullnameuser']->rowspan = 2;
         $tableheaders2['fullnameuser'] = null;
@@ -375,7 +374,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     'id' => $userid,
                     'course' => $this->courseid
             ]);
-            $userlink = html_writer::link($userurl, fullname($curuser));
+            $userlink = html_writer::link($userurl, fullname($curuser, has_capability('moodle/site:viewfullnames', $context)));
             $row['fullnameuser'] = new html_table_cell($userlink);
             foreach ($useridentity as $cur) {
                 $row[$cur] = new html_table_cell($curuser->$cur);
@@ -445,13 +444,13 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $conditions = ['id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified];
                     $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
                     $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                    $users[$usermodified] = fullname($userobj);
+                    $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                 }
                 if (empty($users[$curuser->id])) {
                     $conditions = ['id' => $curuser->id];
                     $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
                     $userid = $curuser->id;
-                    $users[$userid] = fullname($userobj);
+                    $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                 }
                 if (!empty($showgrade)) {
                     $grade = $curuser->instancedata[$instance->id]->grade;
@@ -549,13 +548,13 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         if (empty($users[$userid])) {
                             $userobj = $DB->get_record('user', ['id' => $userid],
                                     'id, ' . implode(', ', get_all_user_name_fields()));
-                            $users[$userid] = fullname($userobj);
+                            $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                         }
                         $usermodified = $curuser->instancedata[$instance->id]->finalatgrade->usermodified;
                         if (empty($users[$usermodified])) {
                             $userobj = $DB->get_record('user', ['id' => $usermodified],
                                     'id, ' . implode(', ', get_all_user_name_fields()));
-                            $users[$usermodified] = fullname($userobj);
+                            $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                         }
                     } else {
                         $attendance = $curuser->instancedata[$instance->id]->attendance;
@@ -587,7 +586,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $conditions = ['id' => $curuser->instancedata[$instance->id]->finalpresgrade->usermodified];
                         $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
                         $usermodified = $curuser->instancedata[$instance->id]->finalpresgrade->usermodified;
-                        $users[$usermodified] = fullname($userobj);
+                        $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                     }
                 }
                 if (!empty($showpresgrades) && $this->presentationsgraded() && $gradepresentation
@@ -654,12 +653,53 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     }
 
     /**
+     * Returns the header for the column user name based on the display settings for fullname
+     *
+     * @param array $sortablearray An array to be filled with all names that can be sorted for
+     * @param bool $alternativename - sets whether alternativefullname should be used
+     *
+     * @return fullname field names seperated by '/'
+     */
+    private function get_name_header(&$sortablearray, $alternativename = false) {
+        global $CFG, $PAGE;
+        // Find name fields used in nameformat and create columns in the same order.
+        if ($alternativename) {
+            $nameformat = $CFG->alternativefullnameformat;
+        } else {
+            $nameformat = $CFG->fullnamedisplay;
+        }
+        // Use default setting from language if no other format is defined.
+        if ($nameformat == 'language') {
+            $nameformat = get_string('fullnamedisplay');
+        }
+        $allnamefields = get_all_user_name_fields();
+        $usednamefields = [];
+        foreach ($allnamefields as $name) {
+            if (($position = strpos($nameformat, $name)) !== false) {
+                $usednamefields[$position] = $name;
+            }
+        }
+        // Sort names in the order stated in $nameformat.
+        ksort($usednamefields);
+        $links = [];
+        foreach ($usednamefields as $name) {
+            $links[] = $this->get_sortlink($name, get_string($name), $PAGE->url);
+            if (isset($sortablearray)) {
+                $sortablearray[] = $name;
+            }
+        }
+        return implode(' / ', $links);
+    }
+
+    /**
      * get data as xml file (sends to browser, forces download)
      *
      * @return void
      */
     public function get_xml() {
+
         global $DB;
+        $context = context_course::instance($this->courseid);
         $data = $this->get_coursedata();
         $course = $DB->get_record('course', ['id' => $this->courseid]);
         $xml = '';
@@ -684,7 +724,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $user->setAttribute('id', $userid);
             }
             if (!$this->column_is_hidden('fullnameuser')) {
-                $user->setAttribute('fullname', fullname($row));
+                $user->setAttribute('fullname', fullname($row, has_capability('moodle/site:viewfullnames', $context)));
             }
             foreach ($row->userdata as $key => $cur) {
                 if (!$this->column_is_hidden($key)) {
@@ -911,7 +951,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         // Data.
         foreach ($data as $row) {
             if (!$this->column_is_hidden('fullnameuser')) {
-                $txt .= fullname($row);
+                $txt .= fullname($row, has_capability('moodle/site:viewfullnames', $context));
             }
             foreach ($row->userdata as $key => $cur) {
                 if (!$this->column_is_hidden($key)) {
