@@ -107,7 +107,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $firstname = $this->get_sortlink('firstname', get_string('firstname'), $PAGE->url);
         // Lastname sortlink.
         $lastname = $this->get_sortlink('lastname', get_string('lastname'), $PAGE->url);
-        $tableheaders['fullnameuser'] = new html_table_cell($this->get_name_header($sortable, has_capability('moodle/site:viewfullnames', $context)));
+        $tableheaders['fullnameuser'] = new html_table_cell($this->get_name_header($sortable,
+                has_capability('moodle/site:viewfullnames', $context)));
         $tableheaders['fullnameuser']->header = true;
         $tableheaders['fullnameuser']->rowspan = 2;
         $tableheaders2['fullnameuser'] = null;
@@ -652,14 +653,14 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     }
 
     /**
-    * Returns the header with user name
-    * 
-    * @param array $sortablearray an array to be filled with names
-    * @param bool $alternativename - sets whether user alternative name should be used 
-    * 
-    * @return full name for header
+    * Returns the header for the column user name based on the display settings for fullname
+    *
+    * @param array $sortablearray An array to be filled with all names that can be sorted for
+    * @param bool $alternativename - sets whether alternativefullname should be used
+    *
+    * @return fullname field names seperated by '/'
     */
-    private function get_name_header ($sortablearray, $alternativename = false) {
+    private function get_name_header(&$sortablearray, $alternativename = false) {
         global $CFG, $PAGE;
         // Find name fields used in nameformat and create columns in the same order.
         if ($alternativename) {
