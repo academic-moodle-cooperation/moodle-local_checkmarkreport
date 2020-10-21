@@ -76,9 +76,8 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      */
     protected function render_local_checkmarkreport_useroverview(local_checkmarkreport_useroverview $report, $hidefilter = false) {
         $out = '';
-
         $data = $report->get_coursedata();
-
+        $context = context_course::instance($report->get_courseid());
         // Render download links!
         $linkdata = [
                 'id' => $report->get_courseid(),
@@ -109,7 +108,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                         'id' => $userdata->id,
                         'course' => $report->get_courseid()
                 ]);
-                $userlink = html_writer::link($url, fullname($userdata));
+                $userlink = html_writer::link($url, fullname($userdata, has_capability('moodle/site:viewfullnames', $context)));
                 $headingtext = get_string('overview', 'local_checkmarkreport') . ' - ' . $userlink;
                 $out .= $this->output->heading($headingtext, 1, strip_tags($headingtext));
                 $out .= html_writer::tag('div', $this->table($table, $report), ['class' => 'collapsible']);
