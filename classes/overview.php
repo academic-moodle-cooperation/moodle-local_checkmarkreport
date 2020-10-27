@@ -92,6 +92,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
         $showprescount = get_user_preferences('checkmarkreport_showpresentationcount');
         $signature = get_user_preferences('checkmarkreport_signature');
+        $seperatenamecolumns = get_user_preferences('checkmarkreport_seperatenamecolumns');
 
         $table = new \local_checkmarkreport\html_table_colgroups();
 
@@ -107,19 +108,30 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $firstname = $this->get_sortlink('firstname', get_string('firstname'), $PAGE->url);
         // Lastname sortlink.
         $lastname = $this->get_sortlink('lastname', get_string('lastname'), $PAGE->url);
-        $tableheaders['fullnameuser'] = new html_table_cell($this->get_name_header($sortable,
-                has_capability('moodle/site:viewfullnames', $context)));
-        $tableheaders['fullnameuser']->header = true;
-        $tableheaders['fullnameuser']->rowspan = 2;
-        $tableheaders2['fullnameuser'] = null;
-        $tablecolumns[] = 'fullnameuser';
-        $table->colgroups[] = [
-                'span' => '1',
-                'class' => 'fullnameuser'
-        ];
-        $table->colclasses['fullnameuser'] = 'fullnameuser';
+        if ($seperatenamecolumns) {
+            $sort = null;
+            $namecolumns = $this->get_name_header($sort,
+                    has_capability('moodle/site:viewfullnames', $context), $seperatenamecolumns);
+            $useridentity = array_merge($namecolumns, $useridentity);
+
+        } else {
+            $tableheaders['fullnameuser'] = new html_table_cell($this->get_name_header($sortable,
+                    has_capability('moodle/site:viewfullnames', $context)));
+
+            $tableheaders['fullnameuser']->header = true;
+            $tableheaders['fullnameuser']->rowspan = 2;
+            $tableheaders2['fullnameuser'] = null;
+            $tablecolumns[] = 'fullnameuser';
+            $table->colgroups[] = [
+                    'span' => '1',
+                    'class' => 'fullnameuser'
+            ];
+            $table->colclasses['fullnameuser'] = 'fullnameuser';
+        }
+
 
         foreach ($useridentity as $cur) {
+            //if ($this->starts_with($cur))
             $sortable[] = $cur;
             $text = ($cur == 'phone1') ? get_string('phone') : get_string($cur);
             $sortlink = $this->get_sortlink($cur, $text, $PAGE->url);
@@ -374,8 +386,10 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     'id' => $userid,
                     'course' => $this->courseid
             ]);
-            $userlink = html_writer::link($userurl, fullname($curuser, has_capability('moodle/site:viewfullnames', $context)));
-            $row['fullnameuser'] = new html_table_cell($userlink);
+            if (!$seperatenamecolumns) {
+                $userlink = html_writer::link($userurl, fullname($curuser, has_capability('moodle/site:viewfullnames', $context)));
+                $row['fullnameuser'] = new html_table_cell($userlink);
+            }
             foreach ($useridentity as $cur) {
                 $row[$cur] = new html_table_cell($curuser->$cur);
             }
@@ -658,9 +672,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
      * @param array $sortablearray An array to be filled with all names that can be sorted for
      * @param bool $alternativename - sets whether alternativefullname should be used
      *
-     * @return fullname field names seperated by '/'
+     * @return string|array fullname field names seperated by '/' or array coltaining all fullname fragments
      */
-    private function get_name_header(&$sortablearray, $alternativename = false) {
+    private function get_name_header(&$sortablearray = null, $alternativename = false, $seperatecolumns = false) {
         global $CFG, $PAGE;
         // Find name fields used in nameformat and create columns in the same order.
         if ($alternativename) {
@@ -683,10 +697,15 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         ksort($usednamefields);
         $links = [];
         foreach ($usednamefields as $name) {
-            $links[] = $this->get_sortlink($name, get_string($name), $PAGE->url);
             if (isset($sortablearray)) {
+            $links[] = $this->get_sortlink($name, get_string($name), $PAGE->url);
                 $sortablearray[] = $name;
+            } else {
+                $links[] = $name;
             }
+        }
+        if ($seperatecolumns) {
+            return $links;
         }
         return implode(' / ', $links);
     }
@@ -713,6 +732,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
         $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
         $showprescount = get_user_preferences('checkmarkreport_showpresentationcount');
+        $seperatenamecolumns = get_user_preferences('checkmarkreport_seperatenamecolumns');
 
         $xml = new DOMDocument('1.0', 'UTF-8');
         $xml->formatOutput = true;
@@ -858,6 +878,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
         $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
         $showprescount = get_user_preferences('checkmarkreport_showpresentationcount');
+        $seperatenamecolumns = get_user_preferences('checkmarkreport_seperatenamecolumns');
 
         $txt = '';
         $examplenames = [];
