@@ -109,14 +109,13 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         // Lastname sortlink.
         $lastname = $this->get_sortlink('lastname', get_string('lastname'), $PAGE->url);
         if ($seperatenamecolumns) {
-            $sort = null;
-            $namecolumns = $this->get_name_header($sort,
-                    has_capability('moodle/site:viewfullnames', $context), $seperatenamecolumns);
+            $namecolumns = $this->get_name_header(has_capability('moodle/site:viewfullnames', $context),
+                    $seperatenamecolumns);
             $useridentity = array_merge($namecolumns, $useridentity);
 
         } else {
-            $tableheaders['fullnameuser'] = new html_table_cell($this->get_name_header($sortable,
-                    has_capability('moodle/site:viewfullnames', $context)));
+            $tableheaders['fullnameuser'] = new html_table_cell($this->get_name_header(has_capability('moodle/site:viewfullnames',
+                    $context), $sortable));
 
             $tableheaders['fullnameuser']->header = true;
             $tableheaders['fullnameuser']->rowspan = 2;
@@ -669,12 +668,13 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     /**
      * Returns the header for the column user name based on the display settings for fullname
      *
-     * @param array $sortablearray An array to be filled with all names that can be sorted for
-     * @param bool $alternativename - sets whether alternativefullname should be used
-     *
+     * @param bool $alternativename - sets whether alternativefullname should be used     *
+     * @param bool $seperatecolumns - specifies if the names should be returned as one string seperated by '/' or as an array
+     * @param array $sortablearray An array to be filled with all names that can be sorted for. If set the names are returned as
+     *                             sortable links. Otherwise the attributes of the names are returned
      * @return string|array fullname field names seperated by '/' or array coltaining all fullname fragments
      */
-    private function get_name_header(&$sortablearray = null, $alternativename = false, $seperatecolumns = false) {
+    private function get_name_header($alternativename = false, $seperatecolumns = false, &$sortablearray = null) {
         global $CFG, $PAGE;
         // Find name fields used in nameformat and create columns in the same order.
         if ($alternativename) {
@@ -747,8 +747,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $user->setAttribute('fullname', fullname($row, has_capability('moodle/site:viewfullnames', $context)));
             } else if ($seperatenamecolumns) {
                 // Get name header fields and look them um in the $row object.
-                $sort = null;
-                $names = $this->get_name_header($sort, has_capability('moodle/site:viewfullnames', $context),
+                $names = $this->get_name_header(has_capability('moodle/site:viewfullnames', $context),
                         $seperatenamecolumns);
                 foreach ($names as $name) {
                     if (!$this->column_is_hidden($name) && isset($row->{$name})) {
@@ -901,9 +900,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         if (!$seperatenamecolumns && !$this->column_is_hidden('fullnameuser')) {
             $txt .= get_string('fullname');
         } else if ($seperatenamecolumns) {
-            $sort = null;
-            $names = $this->get_name_header($sort, has_capability('moodle/site:viewfullnames', $context),
-                    $seperatenamecolumns);
+            $names = $this->get_name_header(has_capability('moodle/site:viewfullnames', $context), $seperatenamecolumns);
             $nameheader = [];
             foreach ($names as $index => $name) {
                 if (!$this->column_is_hidden($name)) {
@@ -997,8 +994,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $txt .= fullname($row, has_capability('moodle/site:viewfullnames', $context));
             } else if ($seperatenamecolumns) {
                 // Get name header fields and look them up in the $row object.
-                $sort = null;
-                $names = $this->get_name_header($sort, has_capability('moodle/site:viewfullnames', $context),
+                $names = $this->get_name_header(has_capability('moodle/site:viewfullnames', $context),
                         $seperatenamecolumns);
                 $namefields = [];
                 foreach ($names as $name) {
