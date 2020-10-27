@@ -109,6 +109,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         // Lastname sortlink.
         $lastname = $this->get_sortlink('lastname', get_string('lastname'), $PAGE->url);
         if ($seperatenamecolumns) {
+            // Add names at beginning of $useridentity so they are output together with those fields.
             $namecolumns = $this->get_name_header(has_capability('moodle/site:viewfullnames', $context),
                     $seperatenamecolumns);
             $useridentity = array_merge($namecolumns, $useridentity);
@@ -127,10 +128,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             ];
             $table->colclasses['fullnameuser'] = 'fullnameuser';
         }
-
-
+        
         foreach ($useridentity as $cur) {
-            //if ($this->starts_with($cur))
             $sortable[] = $cur;
             $text = ($cur == 'phone1') ? get_string('phone') : get_string($cur);
             $sortlink = $this->get_sortlink($cur, $text, $PAGE->url);
@@ -698,7 +697,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $links = [];
         foreach ($usednamefields as $name) {
             if (isset($sortablearray)) {
-            $links[] = $this->get_sortlink($name, get_string($name), $PAGE->url);
+                $links[] = $this->get_sortlink($name, get_string($name), $PAGE->url);
                 $sortablearray[] = $name;
             } else {
                 $links[] = $name;
