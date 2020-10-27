@@ -113,7 +113,6 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $namecolumns = $this->get_name_header(has_capability('moodle/site:viewfullnames', $context),
                     $seperatenamecolumns);
             $useridentity = array_merge($namecolumns, $useridentity);
-
         } else {
             $tableheaders['fullnameuser'] = new html_table_cell($this->get_name_header(has_capability('moodle/site:viewfullnames',
                     $context), $sortable));
@@ -128,7 +127,6 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             ];
             $table->colclasses['fullnameuser'] = 'fullnameuser';
         }
-        
         foreach ($useridentity as $cur) {
             $sortable[] = $cur;
             $text = ($cur == 'phone1') ? get_string('phone') : get_string($cur);
