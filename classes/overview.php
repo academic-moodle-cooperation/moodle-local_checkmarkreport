@@ -898,8 +898,19 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         // Header.
         $txt .= get_string('pluginname', 'local_checkmarkreport') . ': ' . $course->fullname . "\n";
         // Title.
-        if (!$this->column_is_hidden('fullnameuser')) {
+        if (!$seperatenamecolumns && !$this->column_is_hidden('fullnameuser')) {
             $txt .= get_string('fullname');
+        } else if ($seperatenamecolumns) {
+            $sort = null;
+            $names = $this->get_name_header($sort, has_capability('moodle/site:viewfullnames', $context),
+                    $seperatenamecolumns);
+            $nameheader = [];
+            foreach ($names as $index => $name) {
+                if (!$this->column_is_hidden($name)) {
+                    $nameheader[] = get_string($name);
+                }
+            }
+            $txt .= implode("\t", $nameheader);
         }
         $useridentity = get_extra_user_fields($context);
         foreach ($useridentity as $cur) {
@@ -984,6 +995,18 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         foreach ($data as $row) {
             if (!$seperatenamecolumns && !$this->column_is_hidden('fullnameuser')) {
                 $txt .= fullname($row, has_capability('moodle/site:viewfullnames', $context));
+            } else if ($seperatenamecolumns) {
+                // Get name header fields and look them up in the $row object.
+                $sort = null;
+                $names = $this->get_name_header($sort, has_capability('moodle/site:viewfullnames', $context),
+                        $seperatenamecolumns);
+                $namefields = [];
+                foreach ($names as $name) {
+                    if (!$this->column_is_hidden($name) && isset($row->{$name})) {
+                        $namefields[] = $row->{$name};
+                    }
+                }
+                $txt .= implode("\t", $namefields);
             }
             foreach ($row->userdata as $key => $cur) {
                 if (!$this->column_is_hidden($key)) {
