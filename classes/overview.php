@@ -743,8 +743,19 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!$this->column_is_hidden('id')) {
                 $user->setAttribute('id', $userid);
             }
-            if (!$this->column_is_hidden('fullnameuser')) {
+            if (!$seperatenamecolumns && !$this->column_is_hidden('fullnameuser')) {
                 $user->setAttribute('fullname', fullname($row, has_capability('moodle/site:viewfullnames', $context)));
+            } else if ($seperatenamecolumns) {
+                // Get name header fields and look them um in the $row object.
+                $sort = null;
+                $names = $this->get_name_header($sort, has_capability('moodle/site:viewfullnames', $context),
+                        $seperatenamecolumns);
+                foreach ($names as $name) {
+                    if (!$this->column_is_hidden($name) && isset($row->{$name})) {
+                        $a = $row->{$name};
+                        $user->setAttribute($name, $row->{$name});
+                    }
+                }
             }
             foreach ($row->userdata as $key => $cur) {
                 if (!$this->column_is_hidden($key)) {
@@ -971,7 +982,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         // Data.
         foreach ($data as $row) {
-            if (!$this->column_is_hidden('fullnameuser')) {
+            if (!$seperatenamecolumns && !$this->column_is_hidden('fullnameuser')) {
                 $txt .= fullname($row, has_capability('moodle/site:viewfullnames', $context));
             }
             foreach ($row->userdata as $key => $cur) {
