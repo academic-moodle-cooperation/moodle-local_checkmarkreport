@@ -4,7 +4,8 @@ CHANGELOG
 3.10.0 (2020-07-22)
 ------------------
 * [FEATURE] #6765 Use alternativefullnameformat for users with viewfullnames capability
-
+* [FEATURE] #6764 Add the option to export every name fragment (e.g. firstname, lastname)
+                  in a dedicated column. This is controlled by a checkbox to additional settings
 
 3.9.1 (2020-07-22)
 ------------------
