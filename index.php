@@ -86,6 +86,7 @@ if ($tab == 'overview' || $tab == 'useroverview') {
         set_user_preference('checkmarkreport_showpresentationgrades', $data->showpresentationgrades);
         set_user_preference('checkmarkreport_showpresentationcount', $data->showpresentationsgraded);
         set_user_preference('checkmarkreport_signature', $data->signature);
+        set_user_preference('checkmarkreport_seperatenamecolumns', $data->seperatenamecolumns);
         $groupings = empty($data->groupings) ? [0] : $data->groupings;
         if (!is_array($groupings)) {
             $groupings = [$groupings];

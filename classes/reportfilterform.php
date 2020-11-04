@@ -261,6 +261,13 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $mform->setDefault('showpoints', get_user_preferences('checkmarkreport_showpoints'));
         $mform->setDefault('signature', get_user_preferences('checkmarkreport_signature'));
 
+        $sepcolumnshelp = new help_icon('seperatenamecolumns', 'local_checkmarkreport');
+        $formelement =& $mform->createElement('advcheckbox', 'seperatenamecolumns', '',
+                get_string('seperatenamecolumns', 'local_checkmarkreport'));
+        $formelement->_helpbutton = $OUTPUT->render($sepcolumnshelp);
+        $addsettings[] = $formelement;
+        $mform->setDefault('seperatenamecolumns', get_user_preferences('checkmarkreport_seperatenamecolumns'));
+
         $mform->addGroup($addsettings, 'additionalsettings', get_string('additional_settings', 'local_checkmarkreport'), $break,
                 false);
 
