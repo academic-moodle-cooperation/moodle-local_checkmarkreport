@@ -522,7 +522,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      */
     public static function add_cell_tooltip(html_table_cell $cell, int $item=null, string $user=null, int $datetime=null,
             string $grader=null) {
-        //Necessary workaround to avoid $OUTPUT in renderer classes.
+        // Necessary workaround to avoid $OUTPUT in renderer classes.
         $renderer = new self();
 
         if (!key_exists('class', $cell->attributes) || empty($cell->attributes['class'])) {
