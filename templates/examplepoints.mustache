@@ -31,11 +31,11 @@
 
     Example context (json):
     {
-        "checkid": 276432
+        "checkid": 276432,
         "is_checked": true,
         "is_forced": { "checked": false, "unchecked": true }
     }
 }}
-<span {{#checkid}}data-checkid="{{.}}"{{/checkid}}class="local_checkmarkreport_examplepoints fa-stack {{#is_forced}} text-error font-weight-bold{{/is_forced}}" {{#is_forced}}title="{{get_forcedstring}}"{{/is_forced}}>
+<span {{#checkid}}data-checkid="{{.}}"{{/checkid}} class="local_checkmarkreport_examplepoints fa-stack {{#is_forced}} text-error font-weight-bold{{/is_forced}}" {{#is_forced}}title="{{get_forcedstring}}"{{/is_forced}}>
   {{get_points_if_checked}}
 </span>

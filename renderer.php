@@ -176,9 +176,9 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      * @throws coding_exception
      */
     private function get_reset_table_preferences_link($report) {
-        global $PAGE;
+
         if (!empty($report) && !$report->check_all_columns_visible()) {
-            return html_writer::tag('div', html_writer::link(new moodle_url($PAGE->url,
+            return html_writer::tag('div', html_writer::link(new moodle_url($this->page->url,
                     ['tshow' => local_checkmarkreport_base::SHOW_ALL_COLUMNS]), get_string('resettable')));
         }
         return '';
@@ -480,16 +480,15 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      * @return string HTML snippet
      */
     protected function get_toggle_links($column = '', $columnstring = '', local_checkmarkreport_base $report = null) {
-        global $PAGE, $OUTPUT;
         $html = '';
         if (empty($report)) {
             return '';
         }
-        $showicon = $OUTPUT->pix_icon('t/switch_plus', get_string('show'));
-        $hideicon = $OUTPUT->pix_icon('t/switch_minus', get_string('hide'));
+        $showicon = $this->output->pix_icon('t/switch_plus', get_string('show'));
+        $hideicon = $this->output->pix_icon('t/switch_minus', get_string('hide'));
         if ($report->column_is_hidden($column)) {
             // Show link!
-            $html = html_writer::link(new moodle_url($PAGE->url, ['tshow' => $column]),
+            $html = html_writer::link(new moodle_url($this->page->url, ['tshow' => $column]),
                     $showicon,
                     [
                             'class' => $column . ' showcol',
@@ -498,7 +497,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                     ]);
         } else {
             // Hide link!
-            $html = html_writer::link(new moodle_url($PAGE->url, ['thide' => $column]),
+            $html = html_writer::link(new moodle_url($this->page->url, ['thide' => $column]),
                     $hideicon,
                     [
                             'class' => $column . ' hidecol',
@@ -521,9 +520,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      * @return void
      * @throws moodle_exception
      */
-    public static function add_cell_tooltip(html_table_cell &$cell, int $item=null, string $user=null, int $datetime=null,
-                                            string $grader=null) {
-        global $OUTPUT;
+    public static function add_cell_tooltip(html_table_cell $cell, int $item=null, string $user=null, int $datetime=null,
+            string $grader=null) {
+        // Necessary workaround to avoid $OUTPUT in renderer classes.
+        $renderer = new self();
 
         if (!key_exists('class', $cell->attributes) || empty($cell->attributes['class'])) {
             $cell->attributes['class'] = '';
@@ -539,7 +539,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         $cell->attributes['data-toggle'] = "tooltip";
         $cell->attributes['data-html'] = "true";
 
-        $cell->attributes['data-content'] = $OUTPUT->render_from_template('local_checkmarkreport/overridetooltip', (object)[
+        $cell->attributes['data-content'] = $renderer->render_from_template('local_checkmarkreport/overridetooltip', (object)[
             'id'         => 'tooltip_'.$cell->id,
             'describes'  => $cell->id,
             'item'       => $item,
