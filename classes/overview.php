@@ -397,7 +397,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $row['grade']->attributes['id'] = 'u' . $curuser->id . 'i0';
                 if ($curuser->overridden) {
                     // Highlight if overwritten/other than due to checked checkmarks!
-                    local_checkmarkreport_renderer::add_cell_tooltip($row['grade']);
+                    local_checkmarkreport_base::add_cell_tooltip($row['grade']);
                 }
             }
             // Coursesum of course examples.
@@ -414,7 +414,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
                 $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2) . '% (' . $percgrade . ' %)');
                 if ($curuser->overridden) {
-                    local_checkmarkreport_renderer::add_cell_tooltip($row['percentex']);
+                    local_checkmarkreport_base::add_cell_tooltip($row['percentex']);
                 }
             }
 
@@ -427,7 +427,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
                 $row['attendances'] = new html_table_cell($attendances . '/' . $curuser->maxattendances);
                 if ($curuser->atoverridden) {
-                    local_checkmarkreport_renderer::add_cell_tooltip($row['attendances']);
+                    local_checkmarkreport_base::add_cell_tooltip($row['attendances']);
                 }
             }
 
@@ -435,7 +435,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $row['presentationgrade'] = new html_table_cell($this->display_grade($curuser->coursepressum,
                         $curuser->presentationgrademax));
                 if ($curuser->presoverridden) {
-                    local_checkmarkreport_renderer::add_cell_tooltip($row['presentationgrade']);
+                    local_checkmarkreport_base::add_cell_tooltip($row['presentationgrade']);
                 }
             }
 
@@ -443,7 +443,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $row['presentationsgraded'] = new html_table_cell($this->display_grade($curuser->presentationsgraded,
                         $curuser->presentationsgradedmax));
                 if ($curuser->presoverridden) {
-                    local_checkmarkreport_renderer::add_cell_tooltip($row['presentationsgraded']);
+                    local_checkmarkreport_base::add_cell_tooltip($row['presentationsgraded']);
                 }
             }
 
@@ -486,7 +486,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $row['grade' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_a";
                         $dategraded = $curuser->instancedata[$instance->id]->finalgrade->dategraded;
                         $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                        local_checkmarkreport_renderer::add_cell_tooltip($row['grade' . $instance->id], $instance->id,
+                        local_checkmarkreport_base::add_cell_tooltip($row['grade' . $instance->id], $instance->id,
                                 $users[$curuser->id], $dategraded, $users[$usermodified]);
                     }
                 }
@@ -541,7 +541,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $row['percentex' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_r";
                         $dategraded = $curuser->instancedata[$instance->id]->finalgrade->dategraded;
                         $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                        local_checkmarkreport_renderer::add_cell_tooltip($row['percentex' . $instance->id], $instance->id,
+                        local_checkmarkreport_base::add_cell_tooltip($row['percentex' . $instance->id], $instance->id,
                                 $users[$curuser->id], $dategraded, $users[$usermodified]);
                     }
                 }
@@ -573,7 +573,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $row['attendance' . $instance->id] = new html_table_cell($text);
                     if ($tracksattendance->attendancegradebook && ($overridden || $locked)) {
                         $dategraded = $curuser->instancedata[$instance->id]->finalatgrade->dategraded;
-                        local_checkmarkreport_renderer::add_cell_tooltip($row['attendance' . $instance->id], $instance->id,
+                        local_checkmarkreport_base::add_cell_tooltip($row['attendance' . $instance->id], $instance->id,
                                 $users[$curuser->id], $dategraded, $users[$usermodified]);
                     }
                     // We have to get the raw value also out there, so we can display it in spreadsheets!
@@ -620,7 +620,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                             $row['presentationgrade' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_a";
                             $dategraded = $finalgrade->dategraded;
                             $usermodified = $finalgrade->usermodified;
-                            local_checkmarkreport_renderer::add_cell_tooltip($row['presentationgrade' . $instance->id],
+                            local_checkmarkreport_base::add_cell_tooltip($row['presentationgrade' . $instance->id],
                                     $instance->id, $users[$curuser->id], $dategraded, $users[$usermodified]);
                         }
                     }
