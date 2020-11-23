@@ -508,44 +508,4 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
 
         return $html;
     }
-
-    /**
-     * A function that adds a tooltip to a cell
-     *
-     * @param html_table_cell $cell an html_table_cell instance
-     * @param int|null $item itam that should be rendered
-     * @param string $user current users
-     * @param int|null $datetime current time
-     * @param string $grader grader string
-     * @return void
-     * @throws moodle_exception
-     */
-    public static function add_cell_tooltip(html_table_cell $cell, int $item=null, string $user=null, int $datetime=null,
-            string $grader=null) {
-        // Necessary workaround to avoid $OUTPUT in renderer classes.
-        $renderer = new self();
-
-        if (!key_exists('class', $cell->attributes) || empty($cell->attributes['class'])) {
-            $cell->attributes['class'] = '';
-        }
-        $cell->attributes['class'] .= 'current';
-
-        if (empty($cell->id)) {
-            $id = html_writer::random_id();
-        } else {
-            $id = $cell->id;
-        }
-        $cell->id = $id;
-        $cell->attributes['data-toggle'] = "tooltip";
-        $cell->attributes['data-html'] = "true";
-
-        $cell->attributes['data-content'] = $renderer->render_from_template('local_checkmarkreport/overridetooltip', (object)[
-            'id'         => 'tooltip_'.$cell->id,
-            'describes'  => $cell->id,
-            'item'       => $item,
-            'user'       => (object)['fullname' => $user],
-            'dategraded' => $datetime,
-            'grader'     => empty($grader) ? false : (object)['fullname' => $grader],
-        ]);
-    }
 }
