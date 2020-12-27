@@ -115,7 +115,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $useridentity = array_merge($namecolumns, $useridentity);
         } else {
             $tableheaders['fullnameuser'] = new html_table_cell($this->get_name_header(has_capability('moodle/site:viewfullnames',
-                    $context), $sortable));
+                    $context), false, $sortable));
 
             $tableheaders['fullnameuser']->header = true;
             $tableheaders['fullnameuser']->rowspan = 2;
