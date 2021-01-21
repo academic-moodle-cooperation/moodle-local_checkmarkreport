@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+3.10.1 (2021-01-12)
+------------------
+* [FIXED] #6805 Fixed a bug preventing sorting and correct langstrings when using
+                single column for names
+
 3.10.0 (2020-11-02)
 ------------------
 * [FEATURE] #6765 Use alternativefullnameformat for users with viewfullnames capability
