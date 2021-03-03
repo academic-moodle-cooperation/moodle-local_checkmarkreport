@@ -184,16 +184,50 @@ Background:
       Then I should not see "Grouping"
       And I should not see "Group"
 
-    @javascript @currentdev
-    Scenario: Teacher filters overview by checkmark (3.6)
+    @javascript
+    Scenario: Teacher filters overview by checkmark (2.6)
       Given I log in as "teacher1"
       And I am on "Course 1" course homepage
       And I follow "Checkmark report"
       When I set the field "Checkmarks" to "Checkmark 1"
       And I press "Update"
-      Then the following should exist in the "overview" table:
-      |Checkmark 1|
-      |Grade      |
-      |Student 1  |
-      And the following should not exist in the "overview" table:
-      |Checkmark 2| Checkmark 3|
+      Then I should see "1" occurrences of "Checkmark 1" in the "overview" "table"c
+      Then I should not see "Checkmark 2" in the "overview" "table"
+      Then I should not see "Checkmark 3" in the "overview" "table"
+      When I set the field "Checkmarks" to "Checkmark 2"
+      And I press "Update"
+      Then I should see "1" occurrences of "Checkmark 2" in the "overview" "table"
+      Then I should not see "Checkmark 1" in the "overview" "table"
+      Then I should not see "Checkmark 3" in the "overview" "table"
+
+    @javascript @currentdev
+    Scenario: Teacher changes the visible checkmarks and should only see the updated sums (2.8)
+      Given the following "mod_checkmark > submissions" exist:
+        | checkmark   | user      | example1 | example2 | example3 | example4 | example5 | example6 | example7 | example8 | example9 | example10 |
+        | Checkmark 1 | student1  | 1        | 1        | 1        | 1        | 1        | 1        | 0        | 0        | 0        | 0         |
+        | Checkmark 2 | student1  | 1        | 1        | 1        | 0        | 0        | 0        | 0        | 0        | 0        | 0         |
+      When I log in as "teacher1"
+      And I am on "Course 1" course homepage
+      And I follow "Checkmark report"
+      And I set the following fields to these values:
+        | Show x/y examples | 1 |
+        | Show % of examples/grades | 1 |
+      And I press "Update"
+      Then I should see "1" occurrences of "9 / 30" in the "overview" "table"
+      And I should see "1" occurrences of "6 / 10" in the "overview" "table"
+      And I should see "1" occurrences of "3 / 10" in the "overview" "table"
+      And I should see "7" occurrences of "0 / 30" in the "overview" "table"
+      And I should see "22" occurrences of "0 / 10" in the "overview" "table"
+      Then I should see "1" occurrences of "30% (0 %)" in the "overview" "table"
+      And I should see "1" occurrences of "60% (-)" in the "overview" "table"
+      And I should see "1" occurrences of "30% (-)" in the "overview" "table"
+      And I should see "8" occurrences of "0% (0 %)" in the "overview" "table"
+      And I should see "24" occurrences of "0% (-)" in the "overview" "table"
+      When I set the field "Checkmarks" to "Checkmark 1"
+      And I press "Update"
+      Then I should see "2" occurrences of "6 / 10" in the "overview" "table"
+      And I should see "14" occurrences of "0 / 10" in the "overview" "table"
+      Then I should see "1" occurrences of "60% (0 %)" in the "overview" "table"
+      And I should see "1" occurrences of "60% (-)" in the "overview" "table"
+      And I should see "8" occurrences of "0% (0 %)" in the "overview" "table"
+      And I should see "8" occurrences of "0% (-)" in the "overview" "table"
