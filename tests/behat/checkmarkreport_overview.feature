@@ -57,10 +57,10 @@ Background:
     | student7 | G3 |
     | student7 | G4 |
   And the following "activities" exist:
-    | activity  | course | idnumber | name        | intro         | timeavailable | timedue |
-    | checkmark | C1     | CM1      | Checkmark 1 | Description 1 | 0             | 0       |
-    | checkmark | C1     | CM2      | Checkmark 2 | Description 2 | 0             | 0       |
-    | checkmark | C1     | CM3      | Checkmark 3 | Description 3 | 0             | 0       |
+    | activity  | course | idnumber | name        | intro         | timeavailable | timedue | visible   |
+    | checkmark | C1     | CM1      | Checkmark 1 | Description 1 | 0             | 0       | 1         |
+    | checkmark | C1     | CM2      | Checkmark 2 | Description 2 | 0             | 0       | 1         |
+    | checkmark | C1     | CM3      | Checkmark 3 | Description 3 | 0             | 0       | 0         |
   And the following config values are set as admin:
     | showuseridentity | idnumber,email |
 
@@ -200,7 +200,7 @@ Background:
       Then I should not see "Checkmark 1" in the "overview" "table"
       Then I should not see "Checkmark 3" in the "overview" "table"
 
-    @javascript @currentdev
+    @javascript
     Scenario: Teacher changes the visible checkmarks and should only see the updated sums (2.8)
       Given the following "mod_checkmark > submissions" exist:
         | checkmark   | user      | example1 | example2 | example3 | example4 | example5 | example6 | example7 | example8 | example9 | example10 |
@@ -231,3 +231,35 @@ Background:
       And I should see "1" occurrences of "60% (-)" in the "overview" "table"
       And I should see "8" occurrences of "0% (0 %)" in the "overview" "table"
       And I should see "8" occurrences of "0% (-)" in the "overview" "table"
+
+    @javascript
+    Scenario: 'Show attendances' check is only displayed if at least one checkmark is tracking attendances (2.17)
+      When I log in as "teacher1"
+      And I am on "Course 1" course homepage
+      And I follow "Checkmark report"
+      Then I should not see "Show attendances"
+      And I log out
+      Given the following "activities" exist:
+        | activity  | course | idnumber | name        | intro         | timeavailable | timedue | visible   | trackattendance |
+        | checkmark | C1     | CM4      | Checkmark 4 | Description 4 | 0             | 0       | 0         | 1               |
+      When I log in as "teacher1"
+      And I am on "Course 1" course homepage
+      And I follow "Checkmark report"
+      Then I should see "Show attendances"
+      And I log out
+
+  @javascript @currentdev
+  Scenario: 'Show presentation grade' check is only displayed if at least one checkmark is tracking presentation grades (2.17)
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    Then I should not see "Show presentation grade"
+    And I log out
+    Given the following "activities" exist:
+      | activity  | course | idnumber | name        | intro         | timeavailable | timedue | visible   | presentationgrading | presentationgrade |
+      | checkmark | C1     | CM4      | Checkmark 4 | Description 4 | 0             | 0       | 0         | 1                   | 1                 |
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    Then I should see "Show presentation grade"
+    And I log out
