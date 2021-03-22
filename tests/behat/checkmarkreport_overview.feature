@@ -248,8 +248,8 @@ Background:
       Then I should see "Show attendances"
       And I log out
 
-  @javascript @currentdev
-  Scenario: 'Show presentation grade' check is only displayed if at least one checkmark is tracking presentation grades (2.17)
+  @javascript
+  Scenario: 'Show presentation grade' and 'Show number of graded presentations' checks are only displayed if at least one checkmark is tracking presentation grades (2.17)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Checkmark report"
@@ -262,4 +262,75 @@ Background:
     And I am on "Course 1" course homepage
     And I follow "Checkmark report"
     Then I should see "Show presentation grade"
+    And I should see "Show number of graded presentations"
     And I log out
+
+  @javascript @currentdev
+  Scenario: The sums of grade, attendance and presentationgrade are calculated correctly also when single checkmarks are hidden (2.9; 2.10; 2.11)
+    Given the following "activities" exist:
+      | activity  | course | idnumber | name        | intro         | timeavailable | timedue | visible   | trackattendance | presentationgrading | presentationgrade |
+      | checkmark | C1     | CM4      | Checkmark 4 | Description 4 | 0             | 0       | 1         | 1               | 1                   | 100               |
+      | checkmark | C1     | CM5      | Checkmark 5 | Description 5 | 0             | 0       | 1         | 1               | 1                   | 100               |
+      | checkmark | C1     | CM6      | Checkmark 6 | Description 6 | 0             | 0       | 1         | 1               | 1                   | 100               |
+    Given the following "mod_checkmark > submissions" exist:
+      | checkmark   | user      | example1 | example2 | example3 | example4 | example5 | example6 | example7 | example8 | example9 | example10 |
+      | Checkmark 4 | student1  | 1        | 1        | 1        | 1        | 1        | 1        | 0        | 0        | 0        | 0         |
+      | Checkmark 4 | student2  | 1        | 1        | 1        | 0        | 0        | 0        | 0        | 0        | 0        | 0         |
+      | Checkmark 5 | student1  | 1        | 1        | 1        | 1        | 1        | 1        | 0        | 0        | 0        | 0         |
+      | Checkmark 5 | student2  | 1        | 1        | 1        | 0        | 0        | 0        | 0        | 0        | 0        | 0         |
+      | Checkmark 6 | student1  | 1        | 1        | 1        | 1        | 1        | 1        | 0        | 0        | 0        | 0         |
+      | Checkmark 6 | student2  | 1        | 1        | 1        | 0        | 0        | 0        | 0        | 0        | 0        | 0         |
+    And the following "mod_checkmark > feedbacks" exist:
+      | checkmark   | user      | attendance  | feedback              | grade | presentationgrade | presentationfeedback          |
+      | Checkmark 4 | student1  | Attendant   | Lel so bad            | 81    | 100               | OMG that was so good!         |
+      | Checkmark 4 | student2  | Absent      | Laurin did it better  | 11    |  10               | This was better than Laurin's |
+      | Checkmark 5 | student1  | Absent      | Some feedback         | 80    |  50               | Some presenationfeedback      |
+      | Checkmark 5 | student2  | Attendant   | Some feedback         | 10    |  10               | Some presenationfeedback      |
+      | Checkmark 6 | student1  | Attendant   | Some feedback         | 20    |  50               | Some presenationfeedback      |
+      | Checkmark 6 | student2  | Unknown     | Some feedback         | 10    |  10               | Some presenationfeedback      |
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    And I set the following fields to these values:
+      | Show examples                       | 0 |
+      | Show grade                          | 1 |
+      | Show attendances                    | 1 |
+      | Show presentation grade             | 1 |
+      | Show number of graded presentations | 1 |
+    And I press "Update"
+    # Sum Grades
+    Then I should see "1" occurrences of "181/600" in the "overview" "table"
+    And I should see "1" occurrences of "31/600" in the "overview" "table"
+    And I should see "6" occurrences of "0/600" in the "overview" "table"
+    # Sum Attendances + Count presentation grades
+    Then I should see "2" occurrences of "3/3" in the "overview" "table"
+    And I should see "1" occurrences of "2/3" in the "overview" "table"
+    And I should see "1" occurrences of "1/3" in the "overview" "table"
+    And I should see "20" occurrences of "0/3" in the "overview" "table"
+    # Sum presentation grades
+    Then I should see "1" occurrences of "200/300" in the "overview" "table"
+    And I should see "1" occurrences of "30/300" in the "overview" "table"
+    And I should see "8" occurrences of "0/300" in the "overview" "table"
+    # Single grades + presentation grades
+    Then I should see "1" occurrences of "81/100" in the "overview" "table"
+    And I should see "1" occurrences of "11/100" in the "overview" "table"
+    And I should see "1" occurrences of "80/100" in the "overview" "table"
+    And I should see "5" occurrences of "10/100" in the "overview" "table"
+    And I should see "2" occurrences of "50/100" in the "overview" "table"
+    And I should see "1" occurrences of "100/100" in the "overview" "table"
+    # Dashes in the remaining cells
+    And I should see "60" occurrences of "-" in the "overview" "table"
+    When I set the field "Checkmarks" to "Checkmark 4"
+    And I press "Update"
+    # Sum Grades + single grades
+    Then I should see "2" occurrences of "81/100" in the "overview" "table"
+    And I should see "2" occurrences of "11/100" in the "overview" "table"
+    And I should see "16" occurrences of "0/100" in the "overview" "table"
+    # Sum Attendances + Count presentation grades
+    Then I should see "7" occurrences of "1/1" in the "overview" "table"
+    And I should see "29" occurrences of "0/1" in the "overview" "table"
+    # Presentation grades
+    Then I should see "2" occurrences of "100/100" in the "overview" "table"
+    And I should see "2" occurrences of "10/100" in the "overview" "table"
+    # Dashes in the remaining cells
+    And I should see "12" occurrences of "-" in the "overview" "table"
