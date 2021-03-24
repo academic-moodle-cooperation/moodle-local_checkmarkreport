@@ -201,7 +201,7 @@ Background:
       Then I should not see "Checkmark 3" in the "overview" "table"
 
     @javascript
-    Scenario: Teacher changes the visible checkmarks and should only see the updated sums (2.8)
+    Scenario: Teacher changes the visible checkmarks and should only see the updated sums (2.8, 2.15, 2.16)
       Given the following "mod_checkmark > submissions" exist:
         | checkmark   | user      | example1 | example2 | example3 | example4 | example5 | example6 | example7 | example8 | example9 | example10 |
         | Checkmark 1 | student1  | 1        | 1        | 1        | 1        | 1        | 1        | 0        | 0        | 0        | 0         |
@@ -209,6 +209,9 @@ Background:
       When I log in as "teacher1"
       And I am on "Course 1" course homepage
       And I follow "Checkmark report"
+      Then the following fields match these values:
+        | Show x/y examples | 0 |
+        | Show % of examples/grades | 0 |
       And I set the following fields to these values:
         | Show x/y examples | 1 |
         | Show % of examples/grades | 1 |
@@ -265,8 +268,8 @@ Background:
     And I should see "Show number of graded presentations"
     And I log out
 
-  @javascript @currentdev
-  Scenario: The sums of grade, attendance and presentationgrade are calculated correctly also when single checkmarks are hidden (2.9; 2.10; 2.11)
+  @javascript
+  Scenario: The sums of grade, attendance and presentationgrade are calculated correctly also when single checkmarks are hidden (2.9; 2.10; 2.11: 2.12)
     Given the following "activities" exist:
       | activity  | course | idnumber | name        | intro         | timeavailable | timedue | visible   | trackattendance | presentationgrading | presentationgrade |
       | checkmark | C1     | CM4      | Checkmark 4 | Description 4 | 0             | 0       | 1         | 1               | 1                   | 100               |
@@ -334,3 +337,201 @@ Background:
     And I should see "2" occurrences of "10/100" in the "overview" "table"
     # Dashes in the remaining cells
     And I should see "12" occurrences of "-" in the "overview" "table"
+
+  @javascript
+  Scenario: Show examples should be enabled by default and should display all checks in all checkmarks if checked (2.13),
+            Show points should be disabled by default and should show points for each example instead of checks when enabled (2.17)
+    Given the following "mod_checkmark > submissions" exist:
+      | checkmark   | user      | example1 | example2 | example3 | example4 | example5 | example6 | example7 | example8 | example9 | example10 |
+      | Checkmark 1 | student1  | 1        | 1        | 1        | 1        | 1        | 1        | 0        | 0        | 0        | 0         |
+      | Checkmark 2 | student1  | 1        | 1        | 1        | 0        | 0        | 0        | 0        | 0        | 0        | 0         |
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    Then the following fields match these values:
+      | Show examples | 1 |
+      | Show points   | 0 |
+    And I should see "30" occurrences of "10" in the "overview" "table"
+    And I should see "3" occurrences of "1 (10P)" in the "overview" "table"
+    And I should see "3" occurrences of "10 (10P)" in the "overview" "table"
+    When I set the following fields to these values:
+      | Show points   | 1 |
+    And I press "Update"
+    Then I should see "39" occurrences of "10" in the "overview" "table"
+    And I should see "3" occurrences of "1 (10P)" in the "overview" "table"
+    And I should see "3" occurrences of "10 (10P)" in the "overview" "table"
+    When I set the following fields to these values:
+      | Show examples   | 0 |
+    And I press "Update"
+    Then I should not see "10" in the "overview" "table"
+
+  @javascript
+  Scenario: Show signature columns is disabled by default. When enabled an additional signature column is displayed in the overview (2.18)
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    Then the following fields match these values:
+      | include signature fields in XLSX and ODS files | 0 |
+    And I should not see "Signature" in the "overview" "table"
+    When I set the following fields to these values:
+      | include signature fields in XLSX and ODS files | 1 |
+    And I press "Update"
+    Then I should see "1" occurrences of "Signature" in the "overview" "table"
+
+  @javascript
+  Scenario: When no check is set, only the id columns should be displayed (2.18)
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    Then I should see "3" occurrences of "1 (10P)" in the "overview" "table"
+    And I should see "3" occurrences of "10 (10P)" in the "overview" "table"
+    When I set the following fields to these values:
+      | Show examples | 0 |
+    And I press "Update"
+    Then I should not see "1 (10P)" in the "overview" "table"
+    And I should not see "10 (10P)" in the "overview" "table"
+    And the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 2             | 2         | student2@example.com  |
+      | Student 3             | 3         | student3@example.com  |
+      | Student 4             | 4         | student4@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 6             | 6         | student6@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+      | Student 8             | 8         | student8@example.com  |
+
+    @javascript
+    Scenario: The overview table should only be refreshed when "Update" is pressed (2.20)
+      When I log in as "teacher1"
+      And I am on "Course 1" course homepage
+      And I follow "Checkmark report"
+      Then I should see "3" occurrences of "1 (10P)" in the "overview" "table"
+      And I should see "3" occurrences of "10 (10P)" in the "overview" "table"
+      When I set the following fields to these values:
+        | Show examples | 0 |
+      And I wait "5" seconds
+      Then I should see "3" occurrences of "1 (10P)" in the "overview" "table"
+      And I should see "3" occurrences of "10 (10P)" in the "overview" "table"
+
+  @javascript
+  Scenario: Single columns can be collapsed and expanded using the buttons in the table headers (2.21)
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 2             | 2         | student2@example.com  |
+      | Student 3             | 3         | student3@example.com  |
+      | Student 4             | 4         | student4@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 6             | 6         | student6@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+      | Student 8             | 8         | student8@example.com  |
+    When I follow "Hide First name / Surname"
+    Then the following should exist in the "overview" table:
+      | ID number | Email address         |
+      | 1         | student1@example.com  |
+      | 2         | student2@example.com  |
+      | 3         | student3@example.com  |
+      | 4         | student4@example.com  |
+      | 5         | student5@example.com  |
+      | 6         | student6@example.com  |
+      | 7         | student7@example.com  |
+      | 8         | student8@example.com  |
+    And I should not see "First name / Surname" in the "overview" "table"
+    When I follow "Hide ID number"
+    Then I should not see "First name / Surname" in the "overview" "table"
+    And I should not see "ID number" in the "overview" "table"
+    When I follow "Show First name / Surname"
+    Then I should see "First name / Surname" in the "overview" "table"
+    And I should not see "ID number" in the "overview" "table"
+    When I follow "Show ID number"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 2             | 2         | student2@example.com  |
+      | Student 3             | 3         | student3@example.com  |
+      | Student 4             | 4         | student4@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 6             | 6         | student6@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+      | Student 8             | 8         | student8@example.com  |
+
+  @javascript @currentdev
+  Scenario: Table can be sorted by firstname and lastname separately (2.23)
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    And I follow "First name"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 2             | 2         | student2@example.com  |
+      | Student 3             | 3         | student3@example.com  |
+      | Student 4             | 4         | student4@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 6             | 6         | student6@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+      | Student 8             | 8         | student8@example.com  |
+    When I follow "First name"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 2             | 2         | student2@example.com  |
+      | Student 3             | 3         | student3@example.com  |
+      | Student 4             | 4         | student4@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 6             | 6         | student6@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+      | Student 8             | 8         | student8@example.com  |
+    When I follow "Surname"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 2             | 2         | student2@example.com  |
+      | Student 3             | 3         | student3@example.com  |
+      | Student 4             | 4         | student4@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 6             | 6         | student6@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+      | Student 8             | 8         | student8@example.com  |
+    When I follow "Surname"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 8             | 8         | student8@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+      | Student 6             | 6         | student6@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 4             | 4         | student4@example.com  |
+      | Student 3             | 3         | student3@example.com  |
+      | Student 2             | 2         | student2@example.com  |
+      | Student 1             | 1         | student1@example.com  |
+
+
+  @javascript
+  Scenario: Checkmark names should link to the activity pages of the respective checkmarks (2.29)
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    And I follow "Checkmark 1"
+    Then I should see "No attempts have been made on this checkmark"
+    And I should see "Checkmark 1"
+    When I press the "back" button in the browser
+    And I follow "Checkmark 2"
+    Then I should see "No attempts have been made on this checkmark"
+    And I should see "Checkmark 2"
+
+  @javascript
+  Scenario: Student names should link to the profiles of the respective students (2.29)
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    And I follow "Student 1"
+    Then I should see "User details"
+    And I should see "Student 1"
+    When I press the "back" button in the browser
+    And I follow "Student 2"
+    Then I should see "User details"
+    And I should see "Student 2"
