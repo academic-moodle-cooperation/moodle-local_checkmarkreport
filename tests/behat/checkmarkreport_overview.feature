@@ -537,7 +537,6 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I should see "Teacher 1"
     And I should see "## today ##%d %B %Y##"
 
-
   @javascript
   Scenario: Checkmark names should link to the activity pages of the respective checkmarks (2.28)
     When I log in as "teacher1"
@@ -575,3 +574,4 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I follow ".XML"
     # checking for size does not work unfortunately
     And I follow ".TXT"
+    
