@@ -459,7 +459,7 @@ Background:
       | Student 7             | 7         | student7@example.com  |
       | Student 8             | 8         | student8@example.com  |
 
-  @javascript @currentdev
+  @javascript
   Scenario: Table can be sorted by firstname and lastname separately (2.23)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
@@ -509,9 +509,37 @@ Background:
       | Student 2             | 2         | student2@example.com  |
       | Student 1             | 1         | student1@example.com  |
 
+  @javascript
+    Scenario: No html should be printed to the table (2.24)
+      When I log in as "teacher1"
+      And I am on "Course 1" course homepage
+      And I follow "Checkmark report"
+      Then I should not see "<" in the "overview" "table"
+      And I should not see ">" in the "overview" "table"
+
+  @javascript @currentdev
+  Scenario: Manual gradings via the grades tab should contain a tooltip and be highlighted in yellow (not checked yet) (2.25)
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I navigate to "View > Grader report" in the course gradebook
+    And I turn editing mode on
+    And I give the grade "50" to the user "Student 1" for the grade item "Checkmark 1"
+    And I press "Save changes"
+    When I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    When I set the following fields to these values:
+      | Show grade   | 1 |
+    And I press "Update"
+    When I hover "50/300" "text"
+    Then I should see "Overwritten"
+    When I hover "50/100" "text"
+    Then I should see "Overwritten"
+    And I should see "Teacher 1"
+    And I should see "## today ##%d %B %Y##"
+
 
   @javascript
-  Scenario: Checkmark names should link to the activity pages of the respective checkmarks (2.29)
+  Scenario: Checkmark names should link to the activity pages of the respective checkmarks (2.28)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Checkmark report"
