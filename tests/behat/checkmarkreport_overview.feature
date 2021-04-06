@@ -551,7 +551,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I should see "Checkmark 2"
 
   @javascript
-  Scenario: Student names should link to the profiles of the respective students (2.29)
+  Scenario: Student names should link to the profiles of the respective students (2.28)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Checkmark report"
@@ -563,7 +563,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     Then I should see "User details"
     And I should see "Student 2"
 
-  @javascript
+  @javascript @currentdev
   Scenario: The report can be exported as .xlsx, .ods, .xml, and .txt (2.29)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
@@ -574,4 +574,3 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I follow ".XML"
     # checking for size does not work unfortunately
     And I follow ".TXT"
-    
