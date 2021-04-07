@@ -12,6 +12,7 @@ variables:
     # Wait until database is ready
     - timeout 3m bash -c 'echo -e "DB...\c"; until </dev/tcp/127.0.0.1/5432; do echo -e ".\c"; sleep 1; done; echo "ok";' 2> /dev/null
     - cd ../..
+    - moodle-plugin-ci add-plugin --clone https://gitlab-ci-token:${CI_JOB_TOKEN}@${ADD_PLUGIN_CHECKMARK}
     - moodle-plugin-ci install --moodle="moodle-upstream-core" --db-user=moodleci --db-pass=moodleing --db-host=127.0.0.1
   services:
     - postgres:11
