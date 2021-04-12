@@ -574,4 +574,54 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I follow ".XML"
     # checking for size does not work unfortunately
     And I follow ".TXT"
-    
+
+  @javascript @currentdev
+  Scenario: Collapsing/expanding a column should not reset present filters
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Checkmark report"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 2             | 2         | student2@example.com  |
+      | Student 3             | 3         | student3@example.com  |
+      | Student 4             | 4         | student4@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 6             | 6         | student6@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+      | Student 8             | 8         | student8@example.com  |
+    When I set the field "Groups" to "Group 1"
+    And I set the field "Groupings" to "Grouping 1"
+    And I set the field "Checkmarks" to "Checkmark 1"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+    And the following fields match these values:
+      | Groups      | Group 1       |
+      | Groupings   | Grouping 1    |
+      | Checkmarks  | Checkmark 1   |
+    When I follow "Hide First name / Surname"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+    And the following fields match these values:
+      | Groups      | Group 1       |
+      | Groupings   | Grouping 1    |
+      | Checkmarks  | Checkmark 1   |
+    When I follow "Show First name / Surname"
+    Then the following should exist in the "overview" table:
+      | First name / Surname  | ID number | Email address         |
+      | Student 1             | 1         | student1@example.com  |
+      | Student 5             | 5         | student5@example.com  |
+      | Student 7             | 7         | student7@example.com  |
+    And the following fields match these values:
+      | Groups      | Group 1       |
+      | Groupings   | Grouping 1    |
+      | Checkmarks  | Checkmark 1   |
+
+
+
