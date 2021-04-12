@@ -136,7 +136,7 @@ if ($tab == 'overview' || $tab == 'useroverview') {
         $arrays = http_build_query([
                 'groupings' => $groupings,
                 'groups' => $groups,
-                'checkmarks' => $instances
+                'instances' => $instances
         ]);
     } else {
         $arrays = http_build_query([
