@@ -622,6 +622,3 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
       | Groups      | Group 1       |
       | Groupings   | Grouping 1    |
       | Checkmarks  | Checkmark 1   |
-
-
-
