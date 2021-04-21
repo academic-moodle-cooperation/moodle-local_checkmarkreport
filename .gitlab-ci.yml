@@ -7,7 +7,7 @@ variables:
   MUSTACHE_IGNORE_NAMES: "email_html_body.mustache, email_html.mustache, email_text.mustache"
   COMPOSER_HOME: "$CI_PROJECT_DIR/.composer/cache"
   DOCKER_HOST: tcp://localhost:2375
-    DOCKER_TLS_CERTDIR: ""
+  DOCKER_TLS_CERTDIR: ""
 
 .postgres:
   before_script:
