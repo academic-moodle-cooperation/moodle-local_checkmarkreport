@@ -191,7 +191,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I follow "Checkmark report"
     When I set the field "Checkmarks" to "Checkmark 1"
     And I press "Update"
-    Then I should see "1" occurrences of "Checkmark 1" in the "overview" "table"c
+    Then I should see "1" occurrences of "Checkmark 1" in the "overview" "table"
     Then I should not see "Checkmark 2" in the "overview" "table"
     Then I should not see "Checkmark 3" in the "overview" "table"
     When I set the field "Checkmarks" to "Checkmark 2"
@@ -543,11 +543,11 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I am on "Course 1" course homepage
     And I follow "Checkmark report"
     And I follow "Checkmark 1"
-    Then I should see "No attempts have been made on this checkmark"
+    Then I should see "Grading summary"
     And I should see "Checkmark 1"
     When I press the "back" button in the browser
     And I follow "Checkmark 2"
-    Then I should see "No attempts have been made on this checkmark"
+    Then I should see "Grading summary"
     And I should see "Checkmark 2"
 
   @javascript
@@ -593,6 +593,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     When I set the field "Groups" to "Group 1"
     And I set the field "Groupings" to "Grouping 1"
     And I set the field "Checkmarks" to "Checkmark 1"
+    And I press "Update"
     Then the following should exist in the "overview" table:
       | First name / Surname  | ID number | Email address         |
       | Student 1             | 1         | student1@example.com  |
@@ -604,10 +605,10 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
       | Checkmarks  | Checkmark 1   |
     When I follow "Hide First name / Surname"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
-      | Student 1             | 1         | student1@example.com  |
-      | Student 5             | 5         | student5@example.com  |
-      | Student 7             | 7         | student7@example.com  |
+      | ID number | Email address         |
+      | 1         | student1@example.com  |
+      | 5         | student5@example.com  |
+      | 7         | student7@example.com  |
     And the following fields match these values:
       | Groups      | Group 1       |
       | Groupings   | Grouping 1    |
