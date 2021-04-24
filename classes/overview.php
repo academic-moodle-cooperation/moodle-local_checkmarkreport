@@ -376,283 +376,287 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $table->head[1] = new html_table_row();
         $table->head[1]->cells = $tableheaders2;
 
-        foreach ($data as $userid => $curuser) {
-            $row = [];
-            $userurl = new moodle_url('/user/view.php', [
-                    'id' => $userid,
-                    'course' => $this->courseid
-            ]);
-            if (!$seperatenamecolumns) {
-                $userlink = html_writer::link($userurl, fullname($curuser, has_capability('moodle/site:viewfullnames', $context)));
-                $row['fullnameuser'] = new html_table_cell($userlink);
-            }
-            foreach ($useridentity as $cur) {
-                $row[$cur] = new html_table_cell($curuser->$cur);
-            }
+        if (isset($data)) {
+            foreach ($data as $userid => $curuser) {
+                $row = [];
+                $userurl = new moodle_url('/user/view.php', [
+                        'id' => $userid,
+                        'course' => $this->courseid
+                ]);
+                if (!$seperatenamecolumns) {
+                    $userlink =
+                            html_writer::link($userurl, fullname($curuser, has_capability('moodle/site:viewfullnames', $context)));
+                    $row['fullnameuser'] = new html_table_cell($userlink);
+                }
+                foreach ($useridentity as $cur) {
+                    $row[$cur] = new html_table_cell($curuser->$cur);
+                }
 
-            // Coursesum of course grade.
-            if (!empty($showgrade)) {
-                $text = $this->display_grade($curuser->coursesum, $curuser->maxgrade);
-                $row['grade'] = new html_table_cell($text);
-                $row['grade']->attributes['id'] = 'u' . $curuser->id . 'i0';
-                if ($curuser->overridden) {
-                    // Highlight if overwritten/other than due to checked checkmarks!
-                    local_checkmarkreport_base::add_cell_tooltip($row['grade']);
-                }
-            }
-            // Coursesum of course examples.
-            if (!empty($showabs)) {
-                $row['examples'] = new html_table_cell($curuser->checks . ' / ' . $curuser->maxchecks);
-            }
-            // Percent of course examples.
-            if (!empty($showrel)) {
-                // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
-                if ($curuser->coursesum >= 0) {
-                    $percgrade = round(empty($curuser->coursesum) ? 0 : 100 * $curuser->coursesum / $curuser->maxgrade, 2);
-                } else {
-                    $percgrade = '-';
-                }
-                $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2) . '% (' . $percgrade . ' %)');
-                if ($curuser->overridden) {
-                    local_checkmarkreport_base::add_cell_tooltip($row['percentex']);
-                }
-            }
-
-            if (!empty($showattendances) && $this->attendancestracked()) {
-                // Amount of attendances.
-                if ($curuser->atoverridden) {
-                    $attendances = $curuser->courseatsum;
-                } else {
-                    $attendances = $curuser->attendances;
-                }
-                $row['attendances'] = new html_table_cell($attendances . '/' . $curuser->maxattendances);
-                if ($curuser->atoverridden) {
-                    local_checkmarkreport_base::add_cell_tooltip($row['attendances']);
-                }
-            }
-
-            if (!empty($showpresgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
-                $row['presentationgrade'] = new html_table_cell($this->display_grade($curuser->coursepressum,
-                        $curuser->presentationgrademax));
-                if ($curuser->presoverridden) {
-                    local_checkmarkreport_base::add_cell_tooltip($row['presentationgrade']);
-                }
-            }
-
-            if (!empty($showprescount) && $this->presentationsgraded() && $this->countgradingpresentations()) {
-                $row['presentationsgraded'] = new html_table_cell($this->display_grade($curuser->presentationsgraded,
-                        $curuser->presentationsgradedmax));
-                if ($curuser->presoverridden) {
-                    local_checkmarkreport_base::add_cell_tooltip($row['presentationsgraded']);
-                }
-            }
-
-            $instances = $this->get_courseinstances();
-            foreach ($instances as $instance) {
                 // Coursesum of course grade.
-                if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
-                    $conditions = ['id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified];
-                    $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
-                    $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                    $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
-                }
-                if (empty($users[$curuser->id])) {
-                    $conditions = ['id' => $curuser->id];
-                    $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
-                    $userid = $curuser->id;
-                    $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
-                }
                 if (!empty($showgrade)) {
-                    $grade = $curuser->instancedata[$instance->id]->grade;
-                    $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
-                    $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
-                    if (($curuser->instancedata[$instance->id]->finalgrade->overridden
-                                    || $locked || ($grade != $finalgrade))
-                            && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
-                        $grade = $this->display_grade($curuser->instancedata[$instance->id]->finalgrade->grade,
-                                $curuser->instancedata[$instance->id]->maxgrade);
-                    } else {
-                        $grade = $this->display_grade($curuser->instancedata[$instance->id]->grade,
-                                $curuser->instancedata[$instance->id]->maxgrade);
-                    }
-                    $row['grade' . $instance->id] = new html_table_cell($grade);
-                    // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
-                    $grade = $curuser->instancedata[$instance->id]->grade;
-                    $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
-                    $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
-                    if (($curuser->instancedata[$instance->id]->finalgrade->overridden
-                                    || $locked || ($grade != $finalgrade))
-                            && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
-                        $row['grade' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_a";
-                        $dategraded = $curuser->instancedata[$instance->id]->finalgrade->dategraded;
-                        $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                        local_checkmarkreport_base::add_cell_tooltip($row['grade' . $instance->id], $instance->id,
-                                $users[$curuser->id], $dategraded, $users[$usermodified]);
+                    $text = $this->display_grade($curuser->coursesum, $curuser->maxgrade);
+                    $row['grade'] = new html_table_cell($text);
+                    $row['grade']->attributes['id'] = 'u' . $curuser->id . 'i0';
+                    if ($curuser->overridden) {
+                        // Highlight if overwritten/other than due to checked checkmarks!
+                        local_checkmarkreport_base::add_cell_tooltip($row['grade']);
                     }
                 }
                 // Coursesum of course examples.
                 if (!empty($showabs)) {
-                    $coursesumtext = $curuser->instancedata[$instance->id]->checked . ' / ' .
-                            $curuser->instancedata[$instance->id]->maxchecked;
-                    $row['examples' . $instance->id] = new html_table_cell($coursesumtext);
+                    $row['examples'] = new html_table_cell($curuser->checks . ' / ' . $curuser->maxchecks);
                 }
                 // Percent of course examples.
                 if (!empty($showrel)) {
-                    $grade = $curuser->instancedata[$instance->id]->grade;
-                    $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
-                    $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
-                    if (empty($curuser->instancedata[$instance->id]->percentchecked)) {
-                        $perccheck = 0;
-                    } else {
-                        $perccheck = $curuser->instancedata[$instance->id]->percentchecked;
-                    }
-                    if (($curuser->instancedata[$instance->id]->finalgrade->overridden
-                                    || $locked || ($grade != $finalgrade))
-                            && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
-                        $grade = $curuser->instancedata[$instance->id]->finalgrade->grade;
-                        $maxgrade = $curuser->instancedata[$instance->id]->maxgrade;
-                        if ($maxgrade > 0) {
-                            $rel = $grade / $maxgrade;
-                            $percgrade = round(100 * $rel, 2);
-                        } else {
-                            $percgrade = '-';
-                            $rel = '-';
-                        }
-                    } else {
-                        if (empty($curuser->instancedata[$instance->id]->grade)) {
-                            $percgrade = round(0, 2);
-                        } else if ($curuser->instancedata[$instance->id]->grade > 0) {
-                            $percgrade = round($curuser->instancedata[$instance->id]->percentgrade, 2);
-                        } else {
-                            $percgrade = '-';
-                        }
-                    }
-                    if (is_numeric($percgrade)) {
-                        $percgrade = round($percgrade, 2) . '%';
-                    }
-                    $row['percentex' . $instance->id] = new html_table_cell(round($perccheck, 2) . '% (' . $percgrade . ')');
                     // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
-                    $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
-                    $grade = $curuser->instancedata[$instance->id]->grade;
-                    $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
-                    if (($curuser->instancedata[$instance->id]->finalgrade->overridden
-                                    || $locked || ($grade != $finalgrade))
-                            && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
-                        $row['percentex' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_r";
-                        $dategraded = $curuser->instancedata[$instance->id]->finalgrade->dategraded;
-                        $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
-                        local_checkmarkreport_base::add_cell_tooltip($row['percentex' . $instance->id], $instance->id,
-                                $users[$curuser->id], $dategraded, $users[$usermodified]);
-                    }
-                }
-
-                if (!empty($showattendances) && $this->attendancestracked()
-                        && $tracksattendance = $this->tracksattendance($instance->id)) {
-                    if ($tracksattendance->attendancegradebook) {
-                        // We can't use already formatted grade here, because we have to parse the float value!
-                        $attendance = $curuser->instancedata[$instance->id]->finalatgrade->grade;
-                        $finalgrade = $curuser->instancedata[$instance->id]->finalatgrade;
-                        $overridden = $curuser->instancedata[$instance->id]->finalatgrade->overridden;
-                        $locked = $curuser->instancedata[$instance->id]->finalatgrade->locked;
-                        $userid = $curuser->id;
-                        if (empty($users[$userid])) {
-                            $userobj = $DB->get_record('user', ['id' => $userid],
-                                    'id, ' . implode(', ', get_all_user_name_fields()));
-                            $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
-                        }
-                        $usermodified = $curuser->instancedata[$instance->id]->finalatgrade->usermodified;
-                        if (empty($users[$usermodified])) {
-                            $userobj = $DB->get_record('user', ['id' => $usermodified],
-                                    'id, ' . implode(', ', get_all_user_name_fields()));
-                            $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
-                        }
+                    if ($curuser->coursesum >= 0) {
+                        $percgrade = round(empty($curuser->coursesum) ? 0 : 100 * $curuser->coursesum / $curuser->maxgrade, 2);
                     } else {
-                        $attendance = $curuser->instancedata[$instance->id]->attendance;
+                        $percgrade = '-';
                     }
-                    $text = checkmark_get_attendance_symbol($attendance);
-                    $row['attendance' . $instance->id] = new html_table_cell($text);
-                    if ($tracksattendance->attendancegradebook && ($overridden || $locked)) {
-                        $dategraded = $curuser->instancedata[$instance->id]->finalatgrade->dategraded;
-                        local_checkmarkreport_base::add_cell_tooltip($row['attendance' . $instance->id], $instance->id,
-                                $users[$curuser->id], $dategraded, $users[$usermodified]);
+                    $row['percentex'] = new html_table_cell(round($curuser->percentchecked, 2) . '% (' . $percgrade . ' %)');
+                    if ($curuser->overridden) {
+                        local_checkmarkreport_base::add_cell_tooltip($row['percentex']);
                     }
-                    // We have to get the raw value also out there, so we can display it in spreadsheets!
-                    $att = $attendance;
-                    $attendance = '?';
-                    if ($att == 1) {
-                        $attendance = '✓';
-                    } else if (($att == 0) && ($att !== null)) {
-                        $attendance = '✗';
-                    }
-                    $row['attendance' . $instance->id]->character = $attendance;
                 }
 
-                $gradepresentation = $this->gradepresentations($instance->id);
-                if ($gradepresentation && !$gradepresentation->presentationgrade) {
-                    // Prevent comment only presentationgrades to mess with table!
-                    $gradepresentation = false;
-                } else if ($gradepresentation && $gradepresentation->presentationgradebook) {
-                    if (empty($users[$curuser->instancedata[$instance->id]->finalpresgrade->usermodified])) {
-                        $conditions = ['id' => $curuser->instancedata[$instance->id]->finalpresgrade->usermodified];
+                if (!empty($showattendances) && $this->attendancestracked()) {
+                    // Amount of attendances.
+                    if ($curuser->atoverridden) {
+                        $attendances = $curuser->courseatsum;
+                    } else {
+                        $attendances = $curuser->attendances;
+                    }
+                    $row['attendances'] = new html_table_cell($attendances . '/' . $curuser->maxattendances);
+                    if ($curuser->atoverridden) {
+                        local_checkmarkreport_base::add_cell_tooltip($row['attendances']);
+                    }
+                }
+
+                if (!empty($showpresgrades) && $this->presentationsgraded() && $this->pointsforpresentations()) {
+                    $row['presentationgrade'] = new html_table_cell($this->display_grade($curuser->coursepressum,
+                            $curuser->presentationgrademax));
+                    if ($curuser->presoverridden) {
+                        local_checkmarkreport_base::add_cell_tooltip($row['presentationgrade']);
+                    }
+                }
+
+                if (!empty($showprescount) && $this->presentationsgraded() && $this->countgradingpresentations()) {
+                    $row['presentationsgraded'] = new html_table_cell($this->display_grade($curuser->presentationsgraded,
+                            $curuser->presentationsgradedmax));
+                    if ($curuser->presoverridden) {
+                        local_checkmarkreport_base::add_cell_tooltip($row['presentationsgraded']);
+                    }
+                }
+
+                $instances = $this->get_courseinstances();
+                foreach ($instances as $instance) {
+                    // Coursesum of course grade.
+                    if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
+                        $conditions = ['id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified];
                         $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
-                        $usermodified = $curuser->instancedata[$instance->id]->finalpresgrade->usermodified;
+                        $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
                         $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                     }
-                }
-                if (!empty($showpresgrades) && $this->presentationsgraded() && $gradepresentation
-                        && $gradepresentation->presentationgrade) {
-                    if ($gradepresentation->presentationgradebook) {
-                        $presentationgrade = $curuser->instancedata[$instance->id]->formattedpresgrade;
-                        $finalgrade = $curuser->instancedata[$instance->id]->finalpresgrade;
-                        $overridden = $curuser->instancedata[$instance->id]->finalpresgrade->overridden;
-                        $locked = $curuser->instancedata[$instance->id]->finalpresgrade->locked;
-                    } else {
-                        // Returns '-' or presentationgrade/maxpresentationgrade or scale item!
-                        $presentationgrade = $this->display_grade($curuser->instancedata[$instance->id]->presentationgrade,
-                                $gradepresentation->presentationgrade);
+                    if (empty($users[$curuser->id])) {
+                        $conditions = ['id' => $curuser->id];
+                        $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
+                        $userid = $curuser->id;
+                        $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                     }
-
-                    $row['presentationgrade' . $instance->id] = new html_table_cell($presentationgrade);
-
-                    // Highlight if overwritten or locked!
-                    if ($gradepresentation->presentationgradebook) {
-                        if ($overridden || $locked) {
-                            $row['presentationgrade' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_a";
-                            $dategraded = $finalgrade->dategraded;
-                            $usermodified = $finalgrade->usermodified;
-                            local_checkmarkreport_base::add_cell_tooltip($row['presentationgrade' . $instance->id],
-                                    $instance->id, $users[$curuser->id], $dategraded, $users[$usermodified]);
+                    if (!empty($showgrade)) {
+                        $grade = $curuser->instancedata[$instance->id]->grade;
+                        $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                        $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
+                        if (($curuser->instancedata[$instance->id]->finalgrade->overridden
+                                        || $locked || ($grade != $finalgrade))
+                                && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                            $grade = $this->display_grade($curuser->instancedata[$instance->id]->finalgrade->grade,
+                                    $curuser->instancedata[$instance->id]->maxgrade);
+                        } else {
+                            $grade = $this->display_grade($curuser->instancedata[$instance->id]->grade,
+                                    $curuser->instancedata[$instance->id]->maxgrade);
+                        }
+                        $row['grade' . $instance->id] = new html_table_cell($grade);
+                        // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
+                        $grade = $curuser->instancedata[$instance->id]->grade;
+                        $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                        $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
+                        if (($curuser->instancedata[$instance->id]->finalgrade->overridden
+                                        || $locked || ($grade != $finalgrade))
+                                && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                            $row['grade' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_a";
+                            $dategraded = $curuser->instancedata[$instance->id]->finalgrade->dategraded;
+                            $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
+                            local_checkmarkreport_base::add_cell_tooltip($row['grade' . $instance->id], $instance->id,
+                                    $users[$curuser->id], $dategraded, $users[$usermodified]);
                         }
                     }
-                }
-
-                if (!empty($showexamples)) {
-                    // Dynamically add examples!
-                    foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
-                        if (empty($showpoints)) {
-                            if ($forexport) {
-                                $row['example' . $key] = new html_table_cell($example->get_examplestate_for_export_with_colors());
+                    // Coursesum of course examples.
+                    if (!empty($showabs)) {
+                        $coursesumtext = $curuser->instancedata[$instance->id]->checked . ' / ' .
+                                $curuser->instancedata[$instance->id]->maxchecked;
+                        $row['examples' . $instance->id] = new html_table_cell($coursesumtext);
+                    }
+                    // Percent of course examples.
+                    if (!empty($showrel)) {
+                        $grade = $curuser->instancedata[$instance->id]->grade;
+                        $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                        $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
+                        if (empty($curuser->instancedata[$instance->id]->percentchecked)) {
+                            $perccheck = 0;
+                        } else {
+                            $perccheck = $curuser->instancedata[$instance->id]->percentchecked;
+                        }
+                        if (($curuser->instancedata[$instance->id]->finalgrade->overridden
+                                        || $locked || ($grade != $finalgrade))
+                                && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                            $grade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                            $maxgrade = $curuser->instancedata[$instance->id]->maxgrade;
+                            if ($maxgrade > 0) {
+                                $rel = $grade / $maxgrade;
+                                $percgrade = round(100 * $rel, 2);
                             } else {
-                                $row['example' . $key] = new html_table_cell($example->print_examplestate());
+                                $percgrade = '-';
+                                $rel = '-';
                             }
                         } else {
-                            if ($forexport) {
-                                $row['example' . $key] = new html_table_cell($example->get_points_for_export_with_colors());
+                            if (empty($curuser->instancedata[$instance->id]->grade)) {
+                                $percgrade = round(0, 2);
+                            } else if ($curuser->instancedata[$instance->id]->grade > 0) {
+                                $percgrade = round($curuser->instancedata[$instance->id]->percentgrade, 2);
                             } else {
-                                $row['example' . $key] = new html_table_cell($example->print_pointsstring());
+                                $percgrade = '-';
                             }
+                        }
+                        if (is_numeric($percgrade)) {
+                            $percgrade = round($percgrade, 2) . '%';
+                        }
+                        $row['percentex' . $instance->id] = new html_table_cell(round($perccheck, 2) . '% (' . $percgrade . ')');
+                        // Highlight if overwritten/other than due to checked checkmarks in university-clean theme!
+                        $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                        $grade = $curuser->instancedata[$instance->id]->grade;
+                        $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
+                        if (($curuser->instancedata[$instance->id]->finalgrade->overridden
+                                        || $locked || ($grade != $finalgrade))
+                                && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)) {
+                            $row['percentex' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_r";
+                            $dategraded = $curuser->instancedata[$instance->id]->finalgrade->dategraded;
+                            $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
+                            local_checkmarkreport_base::add_cell_tooltip($row['percentex' . $instance->id], $instance->id,
+                                    $users[$curuser->id], $dategraded, $users[$usermodified]);
+                        }
+                    }
 
+                    if (!empty($showattendances) && $this->attendancestracked()
+                            && $tracksattendance = $this->tracksattendance($instance->id)) {
+                        if ($tracksattendance->attendancegradebook) {
+                            // We can't use already formatted grade here, because we have to parse the float value!
+                            $attendance = $curuser->instancedata[$instance->id]->finalatgrade->grade;
+                            $finalgrade = $curuser->instancedata[$instance->id]->finalatgrade;
+                            $overridden = $curuser->instancedata[$instance->id]->finalatgrade->overridden;
+                            $locked = $curuser->instancedata[$instance->id]->finalatgrade->locked;
+                            $userid = $curuser->id;
+                            if (empty($users[$userid])) {
+                                $userobj = $DB->get_record('user', ['id' => $userid],
+                                        'id, ' . implode(', ', get_all_user_name_fields()));
+                                $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
+                            }
+                            $usermodified = $curuser->instancedata[$instance->id]->finalatgrade->usermodified;
+                            if (empty($users[$usermodified])) {
+                                $userobj = $DB->get_record('user', ['id' => $usermodified],
+                                        'id, ' . implode(', ', get_all_user_name_fields()));
+                                $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
+                            }
+                        } else {
+                            $attendance = $curuser->instancedata[$instance->id]->attendance;
+                        }
+                        $text = checkmark_get_attendance_symbol($attendance);
+                        $row['attendance' . $instance->id] = new html_table_cell($text);
+                        if ($tracksattendance->attendancegradebook && ($overridden || $locked)) {
+                            $dategraded = $curuser->instancedata[$instance->id]->finalatgrade->dategraded;
+                            local_checkmarkreport_base::add_cell_tooltip($row['attendance' . $instance->id], $instance->id,
+                                    $users[$curuser->id], $dategraded, $users[$usermodified]);
+                        }
+                        // We have to get the raw value also out there, so we can display it in spreadsheets!
+                        $att = $attendance;
+                        $attendance = '?';
+                        if ($att == 1) {
+                            $attendance = '✓';
+                        } else if (($att == 0) && ($att !== null)) {
+                            $attendance = '✗';
+                        }
+                        $row['attendance' . $instance->id]->character = $attendance;
+                    }
+
+                    $gradepresentation = $this->gradepresentations($instance->id);
+                    if ($gradepresentation && !$gradepresentation->presentationgrade) {
+                        // Prevent comment only presentationgrades to mess with table!
+                        $gradepresentation = false;
+                    } else if ($gradepresentation && $gradepresentation->presentationgradebook) {
+                        if (empty($users[$curuser->instancedata[$instance->id]->finalpresgrade->usermodified])) {
+                            $conditions = ['id' => $curuser->instancedata[$instance->id]->finalpresgrade->usermodified];
+                            $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
+                            $usermodified = $curuser->instancedata[$instance->id]->finalpresgrade->usermodified;
+                            $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
+                        }
+                    }
+                    if (!empty($showpresgrades) && $this->presentationsgraded() && $gradepresentation
+                            && $gradepresentation->presentationgrade) {
+                        if ($gradepresentation->presentationgradebook) {
+                            $presentationgrade = $curuser->instancedata[$instance->id]->formattedpresgrade;
+                            $finalgrade = $curuser->instancedata[$instance->id]->finalpresgrade;
+                            $overridden = $curuser->instancedata[$instance->id]->finalpresgrade->overridden;
+                            $locked = $curuser->instancedata[$instance->id]->finalpresgrade->locked;
+                        } else {
+                            // Returns '-' or presentationgrade/maxpresentationgrade or scale item!
+                            $presentationgrade = $this->display_grade($curuser->instancedata[$instance->id]->presentationgrade,
+                                    $gradepresentation->presentationgrade);
+                        }
+
+                        $row['presentationgrade' . $instance->id] = new html_table_cell($presentationgrade);
+
+                        // Highlight if overwritten or locked!
+                        if ($gradepresentation->presentationgradebook) {
+                            if ($overridden || $locked) {
+                                $row['presentationgrade' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_a";
+                                $dategraded = $finalgrade->dategraded;
+                                $usermodified = $finalgrade->usermodified;
+                                local_checkmarkreport_base::add_cell_tooltip($row['presentationgrade' . $instance->id],
+                                        $instance->id, $users[$curuser->id], $dategraded, $users[$usermodified]);
+                            }
+                        }
+                    }
+
+                    if (!empty($showexamples)) {
+                        // Dynamically add examples!
+                        foreach ($curuser->instancedata[$instance->id]->examples as $key => $example) {
+                            if (empty($showpoints)) {
+                                if ($forexport) {
+                                    $row['example' . $key] =
+                                            new html_table_cell($example->get_examplestate_for_export_with_colors());
+                                } else {
+                                    $row['example' . $key] = new html_table_cell($example->print_examplestate());
+                                }
+                            } else {
+                                if ($forexport) {
+                                    $row['example' . $key] = new html_table_cell($example->get_points_for_export_with_colors());
+                                } else {
+                                    $row['example' . $key] = new html_table_cell($example->print_pointsstring());
+                                }
+
+                            }
                         }
                     }
                 }
-            }
 
-            if ($signature) {
-                $row['sig'] = new html_table_cell('');
-            }
+                if ($signature) {
+                    $row['sig'] = new html_table_cell('');
+                }
 
-            $table->data[$userid] = new html_table_row();
-            $table->data[$userid]->cells = $row;
+                $table->data[$userid] = new html_table_row();
+                $table->data[$userid]->cells = $row;
+            }
         }
         $performance->table_built = microtime(true);
 
@@ -661,6 +665,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         return $table;
     }
+
 
     /**
      * Returns the header for the column user name based on the display settings for fullname
