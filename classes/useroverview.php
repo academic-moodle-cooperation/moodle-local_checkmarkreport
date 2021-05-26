@@ -201,18 +201,19 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $absentstr = strtolower(get_string('absent', 'checkmark'));
         $unknownstr = strtolower(get_string('unknown', 'checkmark'));
 
+        $namefields = \core_user\fields::for_name()->get_required_fields();
         foreach ($userdata->instancedata as $key => $instancedata) {
             $instance = $instances[$key];
             $idx = 0;
             if (empty($users[$instancedata->finalgrade->usermodified])) {
                 $conditions = ['id' => $instancedata->finalgrade->usermodified];
-                $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
+                $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', $namefields));
                 $usermodified = $instancedata->finalgrade->usermodified;
                 $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
             }
             if (empty($users[$userdata->id])) {
                 $conditions = ['id' => $userdata->id];
-                $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
+                $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', $namefields));
                 $userid = $userdata->id;
                 $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
             }
@@ -226,7 +227,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             } else if ($gradepresentation && $gradepresentation->presentationgradebook) {
                 if (empty($users[$instancedata->finalpresgrade->usermodified])) {
                     $conditions = ['id' => $instancedata->finalpresgrade->usermodified];
-                    $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
+                    $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', $namefields));
                     $usermodified = $instancedata->finalpresgrade->usermodified;
                     $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                 }
@@ -400,13 +401,13 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         $userid = $userdata->id;
                         if (empty($users[$userid])) {
                             $userobj = $DB->get_record('user', ['id' => $userid],
-                                    'id, ' . implode(', ', get_all_user_name_fields()));
+                                    'id, ' . implode(', ', $namefields));
                             $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                         }
                         $usermodified = $userdata->instancedata[$instance->id]->finalgrade->usermodified;
                         if (empty($users[$usermodified])) {
                             $userobj = $DB->get_record('user', ['id' => $usermodified],
-                                    'id, ' . implode(', ', get_all_user_name_fields()));
+                                    'id, ' . implode(', ', $namefields));
                             $users[$usermodified] = fullname($userobj,
                                     has_capability('moodle/site:viewfullnames', $context));
                         }
@@ -467,14 +468,14 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                 $userid = $userdata->id;
                                 if (empty($users[$userid])) {
                                     $userobj = $DB->get_record('user', ['id' => $userid],
-                                            'id, ' . implode(', ', get_all_user_name_fields()));
+                                            'id, ' . implode(', ', $namefields));
                                     $users[$userid] = fullname($userobj,
                                             has_capability('moodle/site:viewfullnames', $context));
                                 }
                                 $usermodified = $userdata->instancedata[$instance->id]->finalatgrade->usermodified;
                                 if (empty($users[$usermodified])) {
                                     $userobj = $DB->get_record('user', ['id' => $usermodified],
-                                            'id, ' . implode(', ', get_all_user_name_fields()));
+                                            'id, ' . implode(', ', $namefields));
                                     $users[$usermodified] = fullname($userobj,
                                             has_capability('moodle/site:viewfullnames', $context));
                                 }
@@ -513,14 +514,14 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                 $userid = $userdata->id;
                                 if (empty($users[$userid])) {
                                     $userobj = $DB->get_record('user', ['id' => $userid],
-                                            'id, ' . implode(', ', get_all_user_name_fields()));
+                                            'id, ' . implode(', ', $namefields));
                                     $users[$userid] = fullname($userobj,
                                             has_capability('moodle/site:viewfullnames', $context));
                                 }
                                 $usermodified = $userdata->instancedata[$instance->id]->finalpresgrade->usermodified;
                                 if (empty($users[$usermodified])) {
                                     $userobj = $DB->get_record('user', ['id' => $usermodified],
-                                            'id, ' . implode(', ', get_all_user_name_fields()));
+                                            'id, ' . implode(', ', $namefields));
                                     $users[$usermodified] = fullname($userobj,
                                             has_capability('moodle/site:viewfullnames', $context));
                                 }
@@ -878,7 +879,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 } else {
                     $grade = empty($row->checkgrade) ? 0 : $row->checkgrade;
                 }
-                $txt .= "Σ ".get_string('grade')."\t".$grade.'/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
+                $txt .= "Σ ".get_string('grade', 'grades')."\t".$grade.'/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
             }
             if (!$this->column_is_hidden('checked') && $showabs) {
                 $txt .= "Σ ".get_string('examples', 'local_checkmarkreport')."\t".$row->checks.'/'.$row->maxchecks."\n";
@@ -1021,7 +1022,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
     public function fill_workbook($workbook) {
         // Initialise everything!
         $context = context_course::instance($this->courseid);
-        $textonlycolumns = get_extra_user_fields($context);
+        $textonlycolumns = \core_user\fields::for_identity($context)->get_required_fields();
         array_push($textonlycolumns, 'fullname');
         $worksheets = [];
         $data = $this->get_coursedata();

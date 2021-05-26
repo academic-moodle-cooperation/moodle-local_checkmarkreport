@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+3.11.0 (2021-01-12)
+------------------
+* [FEATURE] #8644 Introduce behat tests to checkmarkreport and implement several test cases for overview
+* [FIXED] #8643 Fixed a bug causing the checkmark filter in overview to be reset when
+                columns are collapsed or expanded
+
 3.10.1 (2021-01-12)
 ------------------
 * [FIXED] #6805 Fixed a bug preventing sorting and correct langstrings when using

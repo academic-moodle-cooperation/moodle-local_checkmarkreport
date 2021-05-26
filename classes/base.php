@@ -490,7 +490,7 @@ class local_checkmarkreport_base {
         // Construct the SQL!
         $params = [];
 
-        $ufields = user_picture::fields('u');
+        $ufields = \core_user\fields::for_userpic()->get_sql('u', false, '', '', false)->selects;
 
         if ($course == null) {
             $course = $COURSE;
@@ -500,7 +500,7 @@ class local_checkmarkreport_base {
         $courseid = $course->id;
 
         $context = context_course::instance($courseid);
-        $useridentity = get_extra_user_fields($context);
+        $useridentity = \core_user\fields::for_identity($context)->get_required_fields();
 
         if ($userids == 0) {
             $userids = get_enrolled_users($context, '', 0, 'u.*', 'lastname ASC');
@@ -532,7 +532,7 @@ class local_checkmarkreport_base {
             list($sqlcheckmarkbids, $checkmarkbparams) = $DB->get_in_or_equal($checkmarkids, SQL_PARAMS_NAMED, 'checkmarkb');
             $params = array_merge_recursive($params, $checkmarkbparams);
 
-            $useridentityfields = get_extra_user_fields_sql($context, 'u');
+            $useridentityfields = \core_user\fields::for_identity($context)->get_sql('u')->selects;
             // TODO: this can be done in a single SQL query!
             $grades = $DB->get_records_sql_menu('
                             SELECT 0 id, SUM(gex.grade) AS grade
@@ -567,7 +567,7 @@ class local_checkmarkreport_base {
                     'percentgrade',
                     'checkgrade'
             ];
-            $sortable = array_merge($sortable, get_extra_user_fields($context));
+            $sortable = array_merge($sortable, \core_user\fields::for_identity($context)->get_required_fields());
 
             $sortarr = $SESSION->checkmarkreport->{$courseid}->sort;
             $sort = '';

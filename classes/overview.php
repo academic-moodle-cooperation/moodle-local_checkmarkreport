@@ -103,7 +103,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $tablecolumns = [];
         $table->colgroups = [];
         $sortable = [];
-        $useridentity = get_extra_user_fields($context);
+        $useridentity = \core_user\fields::for_identity($context)->get_required_fields();
         // Firstname sortlink.
         $firstname = $this->get_sortlink('firstname', get_string('firstname'), $PAGE->url);
         // Lastname sortlink.
@@ -145,7 +145,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         // Coursesum of course grade.
         if (!empty($showgrade)) {
-            $sortlink = $this->get_sortlink('gradedgrade', 'Σ ' . get_string('grade'), $PAGE->url);
+            $sortlink = $this->get_sortlink('gradedgrade', 'Σ ' . get_string('grade', 'grades'), $PAGE->url);
             $sortable[] = 'grade';
             $tableheaders['grade'] = new html_table_cell($sortlink);
             $tableheaders['grade']->header = true;
@@ -184,7 +184,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                                     'local_checkmarkreport'),
                             $PAGE->url) .
                     ' (' .
-                    $this->get_sortlink('percentgrade', get_string('grade'),
+                    $this->get_sortlink('percentgrade', get_string('grade', 'grades'),
                             $PAGE->url) . ')';
             $sortable[] = 'percentex';
             $tableheaders['percentex'] = new html_table_cell($text);
@@ -268,7 +268,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             // Coursesum of course grade.
             if (!empty($showgrade)) {
                 $span++;
-                $text = get_string('grade');
+                $text = get_string('grade', 'grades');
                 $sortable[] = 'grade' . $instance->id;
                 $sortlink = $this->get_sortlink('grade' . $instance->id, $text, $PAGE->url);
                 $tableheaders2['grade' . $instance->id] = new html_table_cell($sortlink);
@@ -295,7 +295,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $title = '% ' .
                         $this->get_sortlink('percentchecked' . $instance->id, get_string('examples', 'local_checkmarkreport'),
                                 $PAGE->url) .
-                        ' (' . $this->get_sortlink('percentgrade' . $instance->id, get_string('grade'), $PAGE->url) . ')';
+                        ' (' . $this->get_sortlink('percentgrade' . $instance->id, get_string('grade', 'grades'), $PAGE->url) . ')';
                 $sortable[] = 'percentex' . $instance->id;
                 $tableheaders2['percentex' . $instance->id] = new html_table_cell($title);
                 $tableheaders2['percentex' . $instance->id]->header = true;
@@ -450,17 +450,18 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
 
                 $instances = $this->get_courseinstances();
+                $namefields = \core_user\fields::for_name()->get_required_fields();
                 foreach ($instances as $instance) {
                     // Coursesum of course grade.
                     if (empty($users[$curuser->instancedata[$instance->id]->finalgrade->usermodified])) {
                         $conditions = ['id' => $curuser->instancedata[$instance->id]->finalgrade->usermodified];
-                        $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
+                        $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', $namefields));
                         $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
                         $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                     }
                     if (empty($users[$curuser->id])) {
                         $conditions = ['id' => $curuser->id];
-                        $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
+                        $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', $namefields));
                         $userid = $curuser->id;
                         $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                     }
@@ -688,7 +689,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         if ($nameformat == 'language') {
             $nameformat = get_string('fullnamedisplay');
         }
-        $allnamefields = get_all_user_name_fields();
+        $allnamefields = \core_user\fields::for_name()->get_required_fields();
         $usednamefields = [];
         foreach ($allnamefields as $name) {
             if (($position = strpos($nameformat, $name)) !== false) {
@@ -911,21 +912,21 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             $txt .= implode("\t", $nameheader);
         }
-        $useridentity = get_extra_user_fields($context);
+        $useridentity = \core_user\fields::for_identity($context)->get_required_fields();
         foreach ($useridentity as $cur) {
             if (!$this->column_is_hidden($cur)) {
                 $txt .= "\t" . (($cur == 'phone1') ? get_string('phone') : get_string($cur));
             }
         }
         if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
-            $txt .= "\tΣ " . get_string('grade');
+            $txt .= "\tΣ " . get_string('grade', 'grades');
         }
         if (!$this->column_is_hidden('examples') && !empty($showabs)) {
             $txt .= "\tΣ " . get_string('examples', 'local_checkmarkreport');
         }
         if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
             $txt .= "\t";
-            $txt .= 'Σ % ' . get_string('examples', 'local_checkmarkreport') . ' (Σ % ' . get_string('grade') . ')';
+            $txt .= 'Σ % ' . get_string('examples', 'local_checkmarkreport') . ' (Σ % ' . get_string('grade', 'grades') . ')';
         }
         if (!empty($showattendances) && $this->attendancestracked()) {
             $txt .= "\tΣ " . get_string('attendance', 'checkmark');
@@ -958,7 +959,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $gradepresentation = false;
             }
             if (!$this->column_is_hidden('grade' . $instance->id) && !empty($showgrade)) {
-                $txt .= "\t" . $instance->name . ' ' . get_string('grade');
+                $txt .= "\t" . $instance->name . ' ' . get_string('grade', 'grades');
             }
             if (!$this->column_is_hidden('examples' . $instance->id) && !empty($showabs)) {
                 $txt .= "\t" . $instance->name . ' ' . get_string('examples', 'local_checkmarkreport');
@@ -966,7 +967,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
                 $txt .= "\t";
                 $txt .= $instance->name . ' Σ % ' . get_string('examples', 'local_checkmarkreport') . ' (Σ % ' .
-                        get_string('grade') . ')';
+                        get_string('grade', 'grades') . ')';
             }
             if (!$this->column_is_hidden('attendance' . $instance->id) && !empty($showattendances) && $this->attendancestracked()
                     && $this->tracksattendance($instance->id)) {
@@ -1137,7 +1138,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     public function fill_workbook($workbook) {
         $x = $y = 0;
         $context = context_course::instance($this->courseid);
-        $textonlycolumns = get_extra_user_fields($context);
+        $textonlycolumns = \core_user\fields::for_identity($context)->get_required_fields();
         array_push($textonlycolumns, 'fullname');
         // We start with the html_table-Object.
         $table = $this->get_table(true);
