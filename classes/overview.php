@@ -560,13 +560,15 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                             $userid = $curuser->id;
                             if (empty($users[$userid])) {
                                 $userobj = $DB->get_record('user', ['id' => $userid],
-                                        'id, ' . implode(', ', get_all_user_name_fields()));
+                                        'id, ' .
+                                        implode(', ', \core_user\fields::for_name()->get_required_fields()));
                                 $users[$userid] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                             }
                             $usermodified = $curuser->instancedata[$instance->id]->finalatgrade->usermodified;
                             if (empty($users[$usermodified])) {
                                 $userobj = $DB->get_record('user', ['id' => $usermodified],
-                                        'id, ' . implode(', ', get_all_user_name_fields()));
+                                        'id, ' .
+                                        implode(', ', \core_user\fields::for_name()->get_required_fields()));
                                 $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                             }
                         } else {
@@ -597,7 +599,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     } else if ($gradepresentation && $gradepresentation->presentationgradebook) {
                         if (empty($users[$curuser->instancedata[$instance->id]->finalpresgrade->usermodified])) {
                             $conditions = ['id' => $curuser->instancedata[$instance->id]->finalpresgrade->usermodified];
-                            $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ', get_all_user_name_fields()));
+                            $userobj = $DB->get_record('user', $conditions, 'id, ' . implode(', ',
+                                            \core_user\fields::for_name()->get_required_fields()));
                             $usermodified = $curuser->instancedata[$instance->id]->finalpresgrade->usermodified;
                             $users[$usermodified] = fullname($userobj, has_capability('moodle/site:viewfullnames', $context));
                         }
