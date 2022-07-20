@@ -38,9 +38,14 @@ defined('MOODLE_INTERNAL') || die();
  * @return void
  */
 function local_checkmarkreport_extend_navigation(global_navigation $nav) {
+    return;
+}
+
+function local_checkmarkreport_extend_navigation_course(navigation_node $parentnode,
+                                                        stdClass $course, context_course $context) {
+    // Find appropriate key where our link should come. Probably won't work, but at least try.
     global $PAGE, $USER;
 
-    // Only add this settings item on non-site course pages.
     if (!$PAGE->course or $PAGE->course->id == SITEID) {
         return;
     }
@@ -56,40 +61,40 @@ function local_checkmarkreport_extend_navigation(global_navigation $nav) {
         return;
     }
 
-    if ($nav->find('checkmarkreport' . $PAGE->course->id, navigation_node::TYPE_CUSTOM)) {
-        // Already added!
-        return;
+    $keys = [
+        'downloadcenter' => navigation_node::TYPE_SETTING,
+        'competencies' => navigation_node::TYPE_CONTAINER,
+        'unenrolself' => navigation_node::TYPE_SETTING,
+        'fitlermanagement' => navigation_node::TYPE_SETTING
+    ];
+    $beforekey = null;
+    foreach ($keys as $key => $type) {
+        $list = $parentnode->children;
+        if ($foundnode = $parentnode->find($key, $type)) {
+            $beforekey = $key;
+            break;
+        }
     }
 
     // Prepare our node!
     $url = new moodle_url('/local/checkmarkreport/index.php', ['id' => $PAGE->course->id]);
     $icon = new pix_icon('i/report', get_string('pluginname', 'local_checkmarkreport'));
     $node = navigation_node::create(get_string('pluginname', 'local_checkmarkreport'),
-            $url,
-            navigation_node::TYPE_CUSTOM,
-            get_string('pluginname', 'local_checkmarkreport'),
-            'checkmarkreport' . $PAGE->course->id,
-            $icon);
+        $url,
+        navigation_node::TYPE_CUSTOM,
+        get_string('pluginname', 'local_checkmarkreport'),
+        'checkmarkreport' . $PAGE->course->id,
+        $icon);
 
-    $coursenode = $nav->find($PAGE->course->id, global_navigation::TYPE_UNKNOWN);
-    if ($grade = $coursenode->find('grades', navigation_node::TYPE_UNKNOWN)) {
-        $keys = $grade->parent->get_children_key_list();
-        foreach ($keys as $i => $key) {
-            if ($key == 'grades') {
-                $i++;
-                break;
-            }
-        }
-        if (key_exists($i, $keys)) {
-            $grade->parent->add_node($node, $keys[$i]);
-        } else {
-            $grade->parent->add_node($node);
-        }
+    if ($childnode = $parentnode->find('coursereports', \navigation_node::TYPE_CONTAINER)) {
+        $node = $childnode->add_node($node);
     } else {
-        $coursenode->add_node($node);
+        $node = $parentnode->add_node($node, $beforekey);
     }
+    $node->nodetype = navigation_node::TYPE_SETTING;
+    $node->collapse = true;
+    $node->add_class('checkmarkreportlink');
 
-    return;
 }
 
 /**
