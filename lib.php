@@ -41,8 +41,18 @@ function local_checkmarkreport_extend_navigation(global_navigation $nav) {
     return;
 }
 
+/**
+ * Funcction generates checkmarkreport entry in the main course navigation
+ *
+ * @param navigation_node $parentnode Global navigation object
+ * @param stdClass $course Course object
+ * @param context_course $context Course context
+ * @return void
+ * @throws coding_exception
+ * @throws moodle_exception
+ */
 function local_checkmarkreport_extend_navigation_course(navigation_node $parentnode,
-                                                        stdClass $course, context_course $context) {
+                                                        stdClass        $course, context_course $context) {
     // Find appropriate key where our link should come. Probably won't work, but at least try.
     global $PAGE, $USER;
 
