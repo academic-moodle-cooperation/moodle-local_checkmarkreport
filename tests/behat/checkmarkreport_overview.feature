@@ -1,4 +1,4 @@
-@local @local_checkmarkreport @amc @currentdev
+@local @local_checkmarkreport @amc
 Feature: The overview tab of checkmarkreport gives the teacher an overview over the happenings in all checkmark activities in a given course
   Background:
     Given the following "courses" exist:
@@ -64,7 +64,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And the following config values are set as admin:
       | showuseridentity | idnumber,email |
 
-  @javascript @currentdev
+  @javascript
   Scenario: Open checkmarkreport and display all students and their check in a tabular manner (2.1)
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage

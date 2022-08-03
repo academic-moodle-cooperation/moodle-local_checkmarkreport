@@ -27,6 +27,7 @@ test:
   before_script:
     - cd ../..
     - echo $DB_HOST $DB_PORT
+    - moodle-plugin-ci add-plugin --clone https://gitlab-ci-token:${CI_JOB_TOKEN}@${ADD_PLUGIN_CHECKMARK}
     - moodle-plugin-ci install --moodle="moodle-upstream-core" --db-host=$DB_HOST --db-port=$DB_PORT
   script:
     - moodle-plugin-ci phplint
