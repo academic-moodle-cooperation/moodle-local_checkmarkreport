@@ -575,7 +575,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     # checking for size does not work unfortunately
     And I follow ".TXT"
 
-  @javascript @currentdev
+  @javascript
   Scenario: Collapsing/expanding a column should not reset present filters
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
