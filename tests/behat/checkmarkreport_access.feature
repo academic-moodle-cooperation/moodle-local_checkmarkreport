@@ -15,6 +15,7 @@ Feature: The block checkmarkreport should be visible and accessable if there is 
       | teacher1 | C1     | editingteacher |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     Then I should not see "Checkmark report"
 
   @javascript
@@ -28,10 +29,14 @@ Feature: The block checkmarkreport should be visible and accessable if there is 
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | C1     | editingteacher |
-    And the following "activities" exist:
-      | activity  | course | idnumber | name        | intro         |
-      | checkmark | C1     | CM1      | Checkmark 1 | Description 1 |
+    And the following "activity" exists:
+      | activity | checkmark               |
+      | course   | C1                      |
+      | name     | Test visible assignment |
+      | idnumber | CM1                     |
+      | intro    | Description 1           |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then I should see "Overview"
