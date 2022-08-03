@@ -520,6 +520,7 @@ class local_checkmarkreport_base {
         }
 
         if (!empty($userids) && !empty($checkmarkids)) {
+            $useridentityfields = \core_user\fields::for_identity($context)->get_sql('u', true);
             // Get gradebook grades!
             // Get course grade!
             $gbgrades = grade_get_course_grades($courseid, $userids);
@@ -531,8 +532,8 @@ class local_checkmarkreport_base {
             $params = array_merge_recursive($params, $checkmarkparams);
             list($sqlcheckmarkbids, $checkmarkbparams) = $DB->get_in_or_equal($checkmarkids, SQL_PARAMS_NAMED, 'checkmarkb');
             $params = array_merge_recursive($params, $checkmarkbparams);
+            $params = array_merge_recursive($params, $useridentityfields->params);
 
-            $useridentityfields = \core_user\fields::for_identity($context)->get_sql('u')->selects;
             // TODO: this can be done in a single SQL query!
             $grades = $DB->get_records_sql_menu('
                             SELECT 0 id, SUM(gex.grade) AS grade
@@ -582,12 +583,12 @@ class local_checkmarkreport_base {
             if (!empty($sort)) {
                 $sort = ' ORDER BY ' . $sort;
             }
-            $sql = 'SELECT ' . $ufields . ' ' . $useridentityfields . ',
+            $sql = 'SELECT ' . $ufields . ' ' . $useridentityfields->selects . ',
                            100 * COUNT( DISTINCT cchks.id) / :maxchecks AS percentchecked,
                            COUNT( DISTINCT cchks.id ) AS checks,
                            100 * SUM( cex.grade ) / :maxgrade AS percentgrade,
                            SUM( cex.grade ) AS checkgrade
-                      FROM {user} u
+                      FROM {user} u' . $useridentityfields->joins . '
                  LEFT JOIN {checkmark_submissions} s ON u.id = s.userid AND s.checkmarkid ' . $sqlcheckmarkids . '
                  LEFT JOIN {checkmark_feedbacks} f ON u.id = f.userid AND f.checkmarkid ' . $sqlcheckmarkbids . '
                  LEFT JOIN {checkmark_checks} cchks ON cchks.submissionid = s.id
@@ -595,7 +596,7 @@ class local_checkmarkreport_base {
                      OR cchks.state = '. \mod_checkmark\example::UNCHECKED_OVERWRITTEN .')
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
                      WHERE u.id ' . $sqluserids . '
-                  GROUP BY u.id' .
+                  GROUP BY ' . $ufields . ', ' . implode(',', $useridentityfields->mappings) .
                     $sort;
 
             $attendances = "SELECT u.id, SUM( f.attendance ) AS attendances

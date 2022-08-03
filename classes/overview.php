@@ -129,7 +129,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         }
         foreach ($useridentity as $cur) {
             $sortable[] = $cur;
-            $text = ($cur == 'phone1') ? get_string('phone') : get_string($cur);
+            $text = \core_user\fields::get_display_name($cur);
             $sortlink = $this->get_sortlink($cur, $text, $PAGE->url);
             $tableheaders[$cur] = new html_table_cell($sortlink);
             $tableheaders[$cur]->header = true;
@@ -918,7 +918,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $useridentity = \core_user\fields::for_identity($context)->get_required_fields();
         foreach ($useridentity as $cur) {
             if (!$this->column_is_hidden($cur)) {
-                $txt .= "\t" . (($cur == 'phone1') ? get_string('phone') : get_string($cur));
+                $txt .= "\t" . (\core_user\fields::get_display_name($cur));
             }
         }
         if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
