@@ -1,4 +1,4 @@
-@local @local_checkmarkreport @amc @currentdev
+@local @local_checkmarkreport @amc
 Feature: The block checkmarkreport should be visible and accessable if there is at least one checkmark activity present in the course.
   If this is not the case, the block is not visible.
 

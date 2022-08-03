@@ -1,4 +1,4 @@
-@local @local_checkmarkreport @amc
+@local @local_checkmarkreport @amc @currentdev
 Feature: The overview tab of checkmarkreport gives the teacher an overview over the happenings in all checkmark activities in a given course
   Background:
     Given the following "courses" exist:
@@ -64,10 +64,11 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And the following config values are set as admin:
       | showuseridentity | idnumber,email |
 
-  @javascript
+  @javascript @currentdev
   Scenario: Open checkmarkreport and display all students and their check in a tabular manner (2.1)
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following should exist in the "overview" table:
       | First name / Surname  | ID number | Email address         |
@@ -84,6 +85,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: Teacher filters overview by group (2.2,2.5)
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following should exist in the "overview" table:
       | First name / Surname  | ID number | Email address         |
@@ -126,6 +128,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: Teacher filters overview by grouping (2.2,2.4)
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following should exist in the "overview" table:
       | First name / Surname  | ID number | Email address         |
@@ -180,6 +183,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
       | checkmark | C2     | CM4      | Checkmark 4 | Description 4 | 0             | 0       |
     And I log in as "teacher1"
     And I am on "Course 2" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then I should not see "Grouping"
     And I should not see "Group"
@@ -188,6 +192,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: Teacher filters overview by checkmark (2.6)
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     When I set the field "Checkmarks" to "Checkmark 1"
     And I press "Update"
@@ -208,6 +213,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
       | Checkmark 2 | student1  | 1        | 1        | 1        | 0        | 0        | 0        | 0        | 0        | 0        | 0         |
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following fields match these values:
       | Show x/y examples | 0 |
@@ -239,6 +245,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: 'Show attendances' check is only displayed if at least one checkmark is tracking attendances (2.17)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then I should not see "Show attendances"
     And I log out
@@ -247,6 +254,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
       | checkmark | C1     | CM4      | Checkmark 4 | Description 4 | 0             | 0       | 0         | 1               |
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then I should see "Show attendances"
     And I log out
@@ -255,6 +263,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: 'Show presentation grade' and 'Show number of graded presentations' checks are only displayed if at least one checkmark is tracking presentation grades (2.17)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then I should not see "Show presentation grade"
     And I log out
@@ -263,6 +272,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
       | checkmark | C1     | CM4      | Checkmark 4 | Description 4 | 0             | 0       | 0         | 1                   | 1                 |
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then I should see "Show presentation grade"
     And I should see "Show number of graded presentations"
@@ -293,6 +303,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
       | Checkmark 6 | student2  | Unknown     | Some feedback         | 10    |  10               | Some presenationfeedback      |
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     And I set the following fields to these values:
       | Show examples                       | 0 |
@@ -347,6 +358,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
       | Checkmark 2 | student1  | 1        | 1        | 1        | 0        | 0        | 0        | 0        | 0        | 0        | 0         |
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following fields match these values:
       | Show examples | 1 |
@@ -369,6 +381,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: Show signature columns is disabled by default. When enabled an additional signature column is displayed in the overview (2.18)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following fields match these values:
       | include signature fields in XLSX and ODS files | 0 |
@@ -382,6 +395,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: When no check is set, only the id columns should be displayed (2.18)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then I should see "3" occurrences of "1 (10P)" in the "overview" "table"
     And I should see "3" occurrences of "10 (10P)" in the "overview" "table"
@@ -405,6 +419,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: The overview table should only be refreshed when "Update" is pressed (2.20)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then I should see "3" occurrences of "1 (10P)" in the "overview" "table"
     And I should see "3" occurrences of "10 (10P)" in the "overview" "table"
@@ -418,6 +433,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: Single columns can be collapsed and expanded using the buttons in the table headers (2.21)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following should exist in the "overview" table:
       | First name / Surname  | ID number | Email address         |
@@ -463,6 +479,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: Table can be sorted by firstname and lastname separately (2.23)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     And I follow "First name"
     Then the following should exist in the "overview" table:
@@ -513,6 +530,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: No html should be printed to the table (2.24)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then I should not see "<" in the "overview" "table"
     And I should not see ">" in the "overview" "table"
@@ -526,6 +544,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I give the grade "50" to the user "Student 1" for the grade item "Checkmark 1"
     And I press "Save changes"
     When I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     When I set the following fields to these values:
       | Show grade   | 1 |
@@ -541,7 +560,9 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: Checkmark names should link to the activity pages of the respective checkmarks (2.28)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
+    And I am on "Course 1" course homepage
     And I follow "Checkmark 1"
     Then I should see "Grading summary"
     And I should see "Checkmark 1"
@@ -554,6 +575,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: Student names should link to the profiles of the respective students (2.28)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     And I follow "Student 1"
     Then I should see "User details"
@@ -567,6 +589,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: The report can be exported as .xlsx, .ods, .xml, and .txt (2.29)
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then following ".XLSX" should download between "4096" and "10240" bytes
     And following ".ODS" should download between "4096" and "10240" bytes
@@ -579,6 +602,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
   Scenario: Collapsing/expanding a column should not reset present filters
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following should exist in the "overview" table:
       | First name / Surname  | ID number | Email address         |
