@@ -30,4 +30,4 @@ $plugin->requires  = 2022041900;
 $plugin->component = 'local_checkmarkreport';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = 'v4.0.0';
-$plugin->dependencies = ['mod_checkmark' => 2021051900];
+$plugin->dependencies = ['mod_checkmark' => 2022081000];
