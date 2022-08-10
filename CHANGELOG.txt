@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+4.0.0 (2022-08-10)
+------------------
+* [FEATURE] #7172 New positioning of the checkmarkreporttab. For teachers it is now located under "Reports"
+* [FIXED] #7239 Enable proper functionality while using custom identity fields
+
 3.11.0 (2021-01-12)
 ------------------
 * [FEATURE] #6844 Introduce behat tests to checkmarkreport and implement several test cases for overview
