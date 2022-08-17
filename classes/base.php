@@ -595,9 +595,15 @@ class local_checkmarkreport_base {
                      AND (cchks.state = '. \mod_checkmark\example::CHECKED .'
                      OR cchks.state = '. \mod_checkmark\example::UNCHECKED_OVERWRITTEN .')
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
-                     WHERE u.id ' . $sqluserids . '
-                  GROUP BY ' . $ufields . ', ' . implode(',', $useridentityfields->mappings) .
+                     WHERE u.id ' . $sqluserids;
+
+            $groupby = ' GROUP BY ' . $ufields . ', ' . implode(',', $useridentityfields->mappings) .
                     $sort;
+            $groupby = trim($groupby);
+            if (substr($groupby, strlen($groupby) - 1) == ',') {
+                $groupby = substr($groupby, 0, strlen($groupby) - 1);
+            }
+            $sql .= $groupby;
 
             $attendances = "SELECT u.id, SUM( f.attendance ) AS attendances
                               FROM {user} u
