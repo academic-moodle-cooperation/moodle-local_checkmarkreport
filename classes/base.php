@@ -600,7 +600,7 @@ class local_checkmarkreport_base {
             $groupby = ' GROUP BY ' . $ufields . ', ' . implode(',', $useridentityfields->mappings) .
                     $sort;
             $groupby = trim($groupby);
-            if (substr($groupby,strlen($groupby) - 1) == ',') {
+            if (substr($groupby, strlen($groupby) - 1) == ',') {
                 $groupby = substr($groupby, 0, strlen($groupby) - 1);
             }
             $sql .= $groupby;
