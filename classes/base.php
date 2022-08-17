@@ -597,13 +597,13 @@ class local_checkmarkreport_base {
                  LEFT JOIN {checkmark_examples} cex ON cchks.exampleid = cex.id
                      WHERE u.id ' . $sqluserids;
 
-            $group_by = ' GROUP BY ' . $ufields . ', ' . implode(',', $useridentityfields->mappings) .
+            $groupby = ' GROUP BY ' . $ufields . ', ' . implode(',', $useridentityfields->mappings) .
                     $sort;
-            $group_by = trim($group_by);
-            if (substr($group_by,strlen($group_by) - 1) == ',') {
-                $group_by = substr($group_by, 0, strlen($group_by) - 1);
+            $groupby = trim($groupby);
+            if (substr($groupby,strlen($groupby) - 1) == ',') {
+                $groupby = substr($groupby, 0, strlen($groupby) - 1);
             }
-            $sql .= $group_by;
+            $sql .= $groupby;
 
             $attendances = "SELECT u.id, SUM( f.attendance ) AS attendances
                               FROM {user} u
