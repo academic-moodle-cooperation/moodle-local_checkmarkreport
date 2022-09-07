@@ -841,6 +841,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
 
         $filename = get_string('pluginname', 'local_checkmarkreport') . '_' .
                 $course->shortname . '_' . userdate(time());
+        $filename = $this->replace_quote_chars($filename);
         $this->output_xml_with_headers($xml, $filename);
     }
 
@@ -1010,6 +1011,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         }
         $filename = get_string('pluginname', 'local_checkmarkreport') . '_' .
                 $course->shortname . '_' . userdate(time());
+        $filename = $this->replace_quote_chars($filename);
         $this->output_text_with_headers($txt, $filename);
     }
 

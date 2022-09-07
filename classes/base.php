@@ -1252,6 +1252,7 @@ class local_checkmarkreport_base {
         $course = $DB->get_record('course', ['id' => $this->courseid]);
 
         $filename = get_string('pluginname', 'local_checkmarkreport') . '_' . $course->shortname;
+        $filename = $this->replace_quote_chars($filename);
         $workbook->send($filename . '.ods');
         $workbook->close();
     }
@@ -1273,6 +1274,7 @@ class local_checkmarkreport_base {
         $course = $DB->get_record('course', ['id' => $this->courseid]);
 
         $filename = get_string('pluginname', 'local_checkmarkreport') . '_' . $course->shortname;
+        $filename = $this->replace_quote_chars($filename);
         $workbook->send($filename);
         $workbook->close();
     }
@@ -1475,6 +1477,17 @@ class local_checkmarkreport_base {
         }
         return $cell;
     }
+
+    /**
+     * Replaces all illegal chars for filenames with _
+     *
+     * @param string $filename String that should have its illegal chars replaced
+     * @return string Clean filename
+     */
+    public function replace_quote_chars($filename) {
+        return str_replace('"', '_', $filename);
+    }
+
     /**
      * A function that adds a tooltip to a cell
      *
