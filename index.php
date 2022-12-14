@@ -23,6 +23,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\report_helper;
+
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->dirroot . '/local/checkmarkreport/lib.php');
 
@@ -52,8 +54,8 @@ $PAGE->set_url('/local/checkmarkreport/index.php', ['id' => $id, 'tab' => $tab])
 $output = $PAGE->get_renderer('local_checkmarkreport');
 
 echo $output->header();
-
-echo $output->heading(get_string('pluginname', 'local_checkmarkreport'), 2);
+$pluginname = get_string('pluginname', 'local_checkmarkreport');
+report_helper::print_report_selector($pluginname);
 
 if (count($tabs) > 1) {
     echo print_tabs([$tabs], $tab, $tab, [], true);
