@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+4.1.0 (2022-12-23)
+------------------
+* [UPDATE] #7403 Changelog is now shipped in the .md format
+* [FIXED] #7365 Added the dropdown for switching between reports in the teacher's view
+
 4.0.0 (2022-08-10)
 ------------------
 * [FEATURE] #7172 New positioning of the checkmarkreporttab. For teachers it is now located under "Reports"
