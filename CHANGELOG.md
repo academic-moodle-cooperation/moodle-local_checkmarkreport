@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+4.2.0 (2023-07-26)
+------------------
+* [UPDATE] #7502 Moodle 4.2.0 compatible version
+
 4.1.0 (2022-12-23)
 ------------------
 * [UPDATE] #7403 Changelog is now shipped in the .md format
