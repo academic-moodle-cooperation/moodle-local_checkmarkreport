@@ -79,24 +79,6 @@ abstract class exported_base extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return [
-                $this->courseid,
-                $this->objecttable,
-                'export',
-                "download.php?id=" . $this->contextinstanceid . "&tab=" . $this->data['other']['tab'] .
-                "&format=" . $this->data['other']['format'],
-                get_string($this->data['other']['tab'],
-                        'local_checkmarkreport') . ' ' . $this->data['other']['format_readable'],
-                $this->contextinstanceid
-        ];
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception

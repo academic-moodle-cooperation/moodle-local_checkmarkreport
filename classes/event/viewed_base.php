@@ -77,23 +77,6 @@ abstract class viewed_base extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return [
-                $this->courseid,
-                'local_checkmarkreport',
-                'view',
-                'view.php?id=' . $this->contextinstanceid,
-                'view checkmarkreport for courseid \'' . $this->contextinstanceid . '\'' .
-                ' tab \'' . $this->data['other']['tab'] . '\'',
-                $this->contextinstanceid
-        ];
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception
