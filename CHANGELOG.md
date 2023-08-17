@@ -4,6 +4,7 @@ CHANGELOG
 4.2.0 (2023-07-26)
 ------------------
 * [UPDATE] #7502 Moodle 4.2.0 compatible version
+* [UPDATE] #7651 Update behat tests to ensure with new navigation structure
 
 4.1.0 (2022-12-23)
 ------------------
