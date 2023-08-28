@@ -429,7 +429,6 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     Then I should see "3" occurrences of "1 (10P)" in the "overview" "table"
     And I should see "3" occurrences of "10 (10P)" in the "overview" "table"
 
-  
   @javascript
   Scenario: Table can be sorted by firstname and lastname separately (2.23)
     When I log in as "teacher1"
