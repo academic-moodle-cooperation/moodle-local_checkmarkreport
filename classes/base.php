@@ -603,7 +603,7 @@ class local_checkmarkreport_base {
             if (substr($groupby, strlen($groupby) - 1) == ',') {
                 $groupby = substr($groupby, 0, strlen($groupby) - 1);
             }
-            $sql .= $groupby;
+            $sql .= ' ' . $groupby;
 
             $attendances = "SELECT u.id, SUM( f.attendance ) AS attendances
                               FROM {user} u
