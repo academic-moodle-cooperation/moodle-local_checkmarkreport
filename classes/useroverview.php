@@ -1011,7 +1011,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
                 $txt .= "\n";
             }
-     
+
             if (!empty($showattendances) && $this->attendancestracked()) {
                 // Amount of attendances.
                 if ($row->atoverridden) {
