@@ -270,7 +270,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         if (!empty($showattendances) && $this->attendancestracked()) {
                             if ($this->tracksattendance($instance->id)) {
                                 $attendance = $userdata->instancedata[$instance->id]->attendance;
-                                $tracksattendance = $this->tracksattendance($instance->id);                                
+                                $tracksattendance = $this->tracksattendance($instance->id);
                                 if ($tracksattendance->attendancegradebook) {
                                     // We can't use already formatted grade here, because we have to parse the float value!
                                     $attendance = $userdata->instancedata[$instance->id]->finalatgrade->grade;
@@ -288,7 +288,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                     $attendancestr = $attendantstr;
                                     $character = '✓';
                                 }
-                                
+
                                 $attendance = checkmark_get_attendance_symbol($attendance) .
                                 $attendancestr;
                             } else {
@@ -987,7 +987,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         $attendance = '✓';
                     } else if (($att == 0) && ($att !== null)) {
                         $attendance = '✗';
-                    } 
+                    }
                     $txt .= "\t" . get_string('attendance', 'checkmark') . ': ' . $attendance . "\n";
                 }
                 $gradepresentation = $this->gradepresentations($instance->id);
@@ -1011,10 +1011,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
                 $txt .= "\n";
             }
-            
-            
-            
-            
+     
             if (!empty($showattendances) && $this->attendancestracked()) {
                 // Amount of attendances.
                 if ($row->atoverridden) {
@@ -1024,10 +1021,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
 
             }
-            
-            //print_object($row);
-            
-            
+
             if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
                 $txt .= 'Σ ' . get_string('attendance', 'checkmark') . ': ' .
                     $attendances . '/' . $row->maxattendances . "\n";
