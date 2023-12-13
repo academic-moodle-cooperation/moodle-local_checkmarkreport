@@ -772,7 +772,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $user->setAttribute('overridden', true);
                     $user->setAttribute('grade', empty($row->coursesum) ? 0 : round($row->coursesum, 2));
                 }
-                $user->setAttribute('checkedgrade', empty($row->checkgrade) ? 0 : $row->checkgrade);
+                $user->setAttribute('checkedgrade',empty($row->coursesum) ? 0 : round($row->coursesum, 2));
                 $user->setAttribute('maxgrade', empty($row->maxgrade) ? 0 : $row->maxgrade);
             }
             if (!$this->column_is_hidden('examples') && !empty($showabs)) {
@@ -1017,13 +1017,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
             }
             if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
-                if ($row->overridden) {
                     $txt .= "\t" . (empty($row->coursesum) ? 0 : $row->coursesum) . "/" .
                             (empty($row->maxgrade) ? 0 : $row->maxgrade);
-                } else {
-                    $txt .= "\t" . (empty($row->checkgrade) ? 0 : $row->checkgrade) . "/" .
-                            (empty($row->maxgrade) ? 0 : $row->maxgrade);
-                }
             }
             if (!$this->column_is_hidden('examples') && !empty($showabs)) {
                 $txt .= "\t" . $row->checks . "/" . $row->maxchecks;

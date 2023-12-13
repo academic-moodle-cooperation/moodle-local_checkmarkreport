@@ -743,7 +743,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $user->setAttribute($key, $cur);
             }
             if (!$this->column_is_hidden('points') && !empty($showgrade)) {
-                $user->setAttribute('checkedgrade', empty($row->checkgrade) ? 0 : $row->checkgrade);
+                $user->setAttribute('checkedgrade',  empty($row->coursesum) ? 0 : $row->coursesum);
                 if ($row->overridden) {
                     $user->setAttribute('overridden', true);
                     $user->setAttribute('grade', empty($row->coursesum) ? 0 : $row->coursesum);
@@ -884,11 +884,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $txt .= get_string('fullname') . ': ' . fullname($row,
                             has_capability('moodle/site:viewfullnames', $context)) . "\n";
             if (!$this->column_is_hidden('points') && $showgrade) {
-                if ($row->overridden) {
                     $grade = empty($row->coursesum) ? 0 : $row->coursesum;
-                } else {
-                    $grade = empty($row->checkgrade) ? 0 : $row->checkgrade;
-                }
                 $txt .= "Σ ".get_string('grade', 'grades')."\t".$grade.'/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
             }
             if (!$this->column_is_hidden('checked') && $showabs) {
