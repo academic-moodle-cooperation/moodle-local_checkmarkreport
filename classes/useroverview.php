@@ -270,18 +270,27 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         if (!empty($showattendances) && $this->attendancestracked()) {
                             if ($this->tracksattendance($instance->id)) {
                                 $attendance = $userdata->instancedata[$instance->id]->attendance;
-                                if ($attendance == 1) {
+                                $tracksattendance = $this->tracksattendance($instance->id);
+                                if ($tracksattendance->attendancegradebook) {
+                                    // We can't use already formatted grade here, because we have to parse the float value!
+                                    $attendance = $userdata->instancedata[$instance->id]->finalatgrade->grade;
+                                } else {
+                                    $attendance = $userdata->instancedata[$instance->id]->attendance;
+                                }
+                                // We have to get the raw value also out there, so we can display it in spreadsheets!
+                                $att = $attendance;
+                                $attendancestr = $unknownstr;
+                                $character = '?';
+                                if ($att == 1) {
                                     $attendancestr = $attendantstr;
                                     $character = '✓';
-                                } else if (($attendance == 0) && ($attendance != null)) {
-                                    $attendancestr = $absentstr;
-                                    $character = '✗';
-                                } else {
-                                    $attendancestr = $unknownstr;
-                                    $character = '?';
+                                } else if (($att == 0) && ($att !== null)) {
+                                    $attendancestr = $attendantstr;
+                                    $character = '✓';
                                 }
-                                $attendance = checkmark_get_attendance_symbol($userdata->instancedata[$instance->id]->attendance) .
-                                        $attendancestr;
+
+                                $attendance = checkmark_get_attendance_symbol($attendance) .
+                                $attendancestr;
                             } else {
                                 $attendance = '';
                                 $character = '';
@@ -734,7 +743,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $user->setAttribute($key, $cur);
             }
             if (!$this->column_is_hidden('points') && !empty($showgrade)) {
-                $user->setAttribute('checkedgrade', empty($row->checkgrade) ? 0 : $row->checkgrade);
+                $user->setAttribute('checkedgrade',  empty($row->coursesum) ? 0 : $row->coursesum);
                 if ($row->overridden) {
                     $user->setAttribute('overridden', true);
                     $user->setAttribute('grade', empty($row->coursesum) ? 0 : $row->coursesum);
@@ -875,11 +884,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $txt .= get_string('fullname') . ': ' . fullname($row,
                             has_capability('moodle/site:viewfullnames', $context)) . "\n";
             if (!$this->column_is_hidden('points') && $showgrade) {
-                if ($row->overridden) {
                     $grade = empty($row->coursesum) ? 0 : $row->coursesum;
-                } else {
-                    $grade = empty($row->checkgrade) ? 0 : $row->checkgrade;
-                }
                 $txt .= "Σ ".get_string('grade', 'grades')."\t".$grade.'/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
             }
             if (!$this->column_is_hidden('checked') && $showabs) {
@@ -965,10 +970,18 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
                 if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()
                         && $this->tracksattendance($instance->id)) {
+                    $att = $instancedata->attendance;
+                    $tracksattendance = $this->tracksattendance($instance->id);
+                    if ($tracksattendance->attendancegradebook) {
+                        // We can't use already formatted grade here, because we have to parse the float value!
+                        $att = $instancedata->finalatgrade->grade;
+                    } else {
+                        $att = $instancedata->attendance;
+                    }
                     $attendance = '?';
-                    if ($instancedata->attendance == 1) {
+                    if ($att == 1) {
                         $attendance = '✓';
-                    } else if (($instancedata->attendance == 0) && ($instancedata->attendance !== null)) {
+                    } else if (($att == 0) && ($att !== null)) {
                         $attendance = '✗';
                     }
                     $txt .= "\t" . get_string('attendance', 'checkmark') . ': ' . $attendance . "\n";
@@ -994,9 +1007,20 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
                 $txt .= "\n";
             }
+
+            if (!empty($showattendances) && $this->attendancestracked()) {
+                // Amount of attendances.
+                if ($row->atoverridden) {
+                    $attendances = $row->courseatsum;
+                } else {
+                    $attendances = $row->attendances;
+                }
+
+            }
+
             if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
                 $txt .= 'Σ ' . get_string('attendance', 'checkmark') . ': ' .
-                        $row->attendances . '/' . $row->maxattendances . "\n";
+                    $attendances . '/' . $row->maxattendances . "\n";
             }
             if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded() &&
                     !empty($this->pointsforpresentations())) {

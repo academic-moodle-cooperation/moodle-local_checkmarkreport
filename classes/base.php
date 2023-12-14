@@ -646,7 +646,6 @@ class local_checkmarkreport_base {
                     array_merge(['presentationgrademax' => $presentationgrademax],
                             $checkmarkparams,
                             $userparams));
-
             $data = $DB->get_records_sql($sql, $params);
             foreach ($data as $key => $cur) {
                 $data[$key]->maxgrade = $grades[0];

@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+4.2.1 (2023-12-13)
+------------------
+* [FIXED] #7723 Overridden values not displayed correctly
+* [FIXED] #7724 Wrong grade value for .txt and .xml export
+
 4.2.0 (2023-07-26)
 ------------------
 * [UPDATE] #7502 Moodle 4.2.0 compatible version
