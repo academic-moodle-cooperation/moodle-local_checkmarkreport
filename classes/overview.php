@@ -772,7 +772,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $user->setAttribute('overridden', true);
                     $user->setAttribute('grade', empty($row->coursesum) ? 0 : round($row->coursesum, 2));
                 }
-                $user->setAttribute('checkedgrade',empty($row->coursesum) ? 0 : round($row->coursesum, 2));
+                $user->setAttribute('checkedgrade', empty($row->coursesum) ? 0 : round($row->coursesum, 2));
                 $user->setAttribute('maxgrade', empty($row->maxgrade) ? 0 : $row->maxgrade);
             }
             if (!$this->column_is_hidden('examples') && !empty($showabs)) {
