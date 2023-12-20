@@ -322,11 +322,10 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                     $usermodified = $finalgrade->usermodified;
                                     $row['presentationgrade']->id = "u" . $userdata->id . "i" . $instance->id . "_a";
                                     $row['presentationgrade']->attributes['data-user'] = $userdata->id;
-                                    $row['presentationgrade']->attributes['data-username'] = fullname($users[$userdata->id],
-                                            has_capability('moodle/site:viewfullnames', $context));
-                                    $row['presentationgrade']->attributes['data-item'] = $instance->id;
+                                    $row['presentationgrade']->attributes['data-username'] = $users[$userdata->id];
                                     $row['presentationgrade']->attributes['data-dategraded'] = userdate($dategraded);
                                     $row['presentationgrade']->attributes['data-grader'] = $users[$usermodified];
+                                    $row['presentationgrade']->attributes['data-item'] = $instance->id;
                                 }
                             }
                         }
