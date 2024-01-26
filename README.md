@@ -5,7 +5,7 @@ This file is part of the local_checkmarkreport plugin for Moodle - <http://moodl
 
 *Author:*    Philipp Hager, Daniel Binder
 
-*Copyright:* 2020 [Academic Moodle Cooperation](http://www.academic-moodle-cooperation.org)
+*Copyright:* [Academic Moodle Cooperation](http://www.academic-moodle-cooperation.org)
 
 *License:*   [GNU GPL v3 or later](http://www.gnu.org/copyleft/gpl.html)
 
@@ -13,26 +13,22 @@ This file is part of the local_checkmarkreport plugin for Moodle - <http://moodl
 Description
 -----------
 
-The Checkmark Report is an extension to the [checkmark
-module](http://www.academic-moodle-cooperation.org/en/modules/checkmark/) and shows the marks and
-grades for one or more checkmarks in a tabular form. The overview displays the amount of marks, the
-grades and the percentual allocation. The checkmark report consists of 3 different views. The
-overview gives a complete chart. In the student overview individual students can be inspected. With
-the overview teachers and students have an immediate feedback of their status. The application
-optimizes the learning process because of its improved overview for all enrolled users.
+The checkmark report provides teachers and students with an overview of the details of all checkmark activites in a course. In this way, ticks, grades, feedback and other key figures can be displayed in a compact form and exported in various formats.
 
 
-Example
+Usage
 -------
 
-The checkmark report is ideal when numerous checkmarks are used in a course. Thereby students and
-teachers have a complete overview of marks and have an upto date status and do not lose track.
+A possible teaching scenario could look like this: In a weekly recurring exercise, each unit is accompanied by practical examples. For this purpose, the teachers provide a checkmark activity for each unit in advance and after the unit the checkmark is graded.
+Teachers can use the checkmark report to obtain a simple overview of the assessment of students of individual/several/all existing checkmark exercises in the form of an overall table. The display includes the number of ticks, the ratings or the percentage distribution. The report has different views. It can also be downloaded at any time.
+In this way, students can also check their personal status using the table, e.g. how many ticks they have made so far (absolute/percentage).
 
 
 Requirements
 ------------
 
-The plugin is available for Moodle 2.7+.
+
+The module [mod_checkmark](https://moodle.org/plugins/mod_checkmark) must be installed to run this plugin.
 
 
 Installation
@@ -46,11 +42,15 @@ Installation
   automatically.
 
 
+Privacy API
+-------------
+
+The plugin fully implements the Moodle Privacy API.
+
 Documentation
 -------------
 
-You can find a cheat sheet for the plugin on the [AMC website](
-http://www.academic-moodle-cooperation.org/en/modules/checkmark-report/).
+You can find a documentation for the plugin on the [AMC website](https://academic-moodle-cooperation.org/local_checkmarkreport/).
 
 
 Bug Reports / Support
