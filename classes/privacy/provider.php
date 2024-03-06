@@ -27,13 +27,13 @@ namespace local_checkmarkreport\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
-use \core_privacy\local\metadata\provider as metadataprovider;
-use \core_privacy\local\request\user_preference_provider as preference_provider;
-use \core_privacy\local\metadata\collection;
-use \core_privacy\local\request\writer;
-use \core_privacy\local\request\transform;
-use \coding_exception;
-use \dml_exception;
+use core_privacy\local\metadata\provider as metadataprovider;
+use core_privacy\local\request\user_preference_provider as preference_provider;
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\writer;
+use core_privacy\local\request\transform;
+use coding_exception;
+use dml_exception;
 
 
 /**
@@ -55,56 +55,55 @@ class provider implements metadataprovider, preference_provider {
         return [
             'checkmarkreport_showexamples' => [
                 'string' => 'privacy:metadata:showexamples',
-                'bool' => true
+                'bool' => true,
             ],
             'checkmarkreport_showgrade' => [
                 'string' => 'privacy:metadata:showgrade',
-                'bool' => true
+                'bool' => true,
             ],
             'checkmarkreport_sumabs' => [
                 'string' => 'privacy:metadata:sumabs',
-                'bool' => true
+                'bool' => true,
             ],
             'checkmarkreport_sumrel' => [
                 'string' => 'privacy:metadata:sumrel',
-                'bool' => true
+                'bool' => true,
             ],
             'checkmarkreport_showpoints' => [
                 'string' => 'privacy:metadata:showpoints',
-                'bool' => true
+                'bool' => true,
             ],
             'checkmarkreport_showattendances' => [
                 'string' => 'privacy:metadata:showattendances',
-                'bool' => true
+                'bool' => true,
             ],
             'checkmarkreport_showpresentationgrades' => [
                 'string' => 'privacy:metadata:showpresentationgrades',
-                'bool' => true
+                'bool' => true,
             ],
             'checkmarkreport_showpresentationcounts' => [
                 'string' => 'privacy:metadata:showpresentationcounts',
-                'bool' => true
+                'bool' => true,
             ],
             'checkmarkreport_signature' => [
                 'string' => 'privacy:metadata:signature',
-                'bool' => true
-            ]
+                'bool' => true,
+            ],
         ];
     }
 
     /**
      * Provides meta data that is stored about a user with local_checkmarkreport
      *
-     * @param  collection $collection A collection of meta data items to be added to.
-     * @return  collection Returns the collection of metadata.
+     * @param collection $collection A collection of meta data items to be added to.
+     * @return collection Returns the collection of metadata.
      */
-    public static function get_metadata(collection $collection) : collection {
+    public static function get_metadata(collection $collection): collection {
 
         $prefs = static::get_preferences();
         foreach ($prefs as $key => $pref) {
             $collection->add_user_preference($key, $pref['string']);
         }
-
         return $collection;
     }
 

@@ -158,7 +158,7 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         if (empty($this->_customdata['hideinstances'])) {
             $checkmarkselects = [
                     get_string('all') . ' ' .
-                    get_string('modulenameplural', 'checkmark')
+                    get_string('modulenameplural', 'checkmark'),
             ];
             if ($checkmarks = get_all_instances_in_course('checkmark', $COURSE)) {
                 foreach ($checkmarks as $checkmark) {
