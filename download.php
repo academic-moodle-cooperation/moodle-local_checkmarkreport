@@ -50,7 +50,7 @@ $PAGE->set_pagelayout('popup');
 $arrays = http_build_query([
         'groups' => $groups,
         'users' => $users,
-        'instances' => $instances
+        'instances' => $instances,
 ]);
 $PAGE->set_url('/local/checkmarkreport/download.php?' . $arrays, [
         'id' => $id,
@@ -58,7 +58,7 @@ $PAGE->set_url('/local/checkmarkreport/download.php?' . $arrays, [
         'showabs' => $showabs,
         'showrel' => $showrel,
         'showpoints' => $showpoints,
-        'format' => $format
+        'format' => $format,
 ]);
 
 // Get Tabs according to capabilities!
