@@ -566,7 +566,7 @@ class local_checkmarkreport_base {
                     'percentchecked',
                     'checks',
                     'percentgrade',
-                    'checkgrade'
+                    'checkgrade',
             ];
             $sortable = array_merge($sortable, \core_user\fields::for_identity($context)->get_required_fields());
 
@@ -1008,7 +1008,7 @@ class local_checkmarkreport_base {
               ORDER BY ex.id ASC';
         $params = [
                 'checkmarkid' => $checkmarkid,
-                'userid' => $userid
+                'userid' => $userid,
         ];
         $examples = $DB->get_records_sql_menu($sql, $params);
         $objexamples = array();
@@ -1456,7 +1456,7 @@ class local_checkmarkreport_base {
      * @param string $startstring String $string's beginning schould be checked for
      * @return bool True if $string starts with $startString, False if not
      */
-    public function starts_with ($string, $startstring) {
+    public function starts_with($string, $startstring) {
         $len = strlen($startstring);
         return (substr($string, 0, $len) === $startstring);
     }
