@@ -56,7 +56,7 @@ $capabilities = [
                         'editingteacher' => CAP_ALLOW,
                         'teacher' => CAP_ALLOW,
                         'manager' => CAP_ALLOW,
-                ]
+                ],
         ],
 
         'local/checkmarkreport:view_courseoverview' => [
@@ -66,7 +66,7 @@ $capabilities = [
                         'editingteacher' => CAP_ALLOW,
                         'teacher' => CAP_ALLOW,
                         'manager' => CAP_ALLOW,
-                ]
+                ],
         ],
 
         'local/checkmarkreport:view_students_overview' => [
@@ -76,7 +76,7 @@ $capabilities = [
                         'editingteacher' => CAP_ALLOW,
                         'teacher' => CAP_ALLOW,
                         'manager' => CAP_ALLOW,
-                ]
+                ],
         ],
 
         'local/checkmarkreport:view_own_overview' => [
@@ -84,7 +84,7 @@ $capabilities = [
                 'contextlevel' => CONTEXT_COURSE,
                 'legacy' => [
                         'student' => CAP_ALLOW,
-                ]
+                ],
         ],
 ];
 
