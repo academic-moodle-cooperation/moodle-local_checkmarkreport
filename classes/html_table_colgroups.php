@@ -25,7 +25,7 @@
 
 namespace local_checkmarkreport;
 
-use \html_table as html_table;
+use html_table as html_table;
 
 defined('MOODLE_INTERNAL') || die();
 

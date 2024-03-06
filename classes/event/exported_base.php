@@ -74,7 +74,7 @@ abstract class exported_base extends \core\event\base {
         return new \moodle_url("/local/checkmarkreport/download.php", [
                 'id' => $this->contextinstanceid,
                 'tab' => $this->data['other']['tab'],
-                'format' => $this->data['other']['format']
+                'format' => $this->data['other']['format'],
         ]);
     }
 

@@ -50,7 +50,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                 'showrel' => false,
                 'showpoints' => false,
                 'sesskey' => sesskey(),
-                'format' => local_checkmarkreport_base::FORMAT_XLSX
+                'format' => local_checkmarkreport_base::FORMAT_XLSX,
         ];
         $groups = $report->get_groups();
         $checkmarks = $report->get_instances();
@@ -83,7 +83,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                 'id' => $report->get_courseid(),
                 'tab' => optional_param('tab', null, PARAM_ALPHANUM),
                 'sesskey' => sesskey(),
-                'format' => local_checkmarkreport_base::FORMAT_XLSX
+                'format' => local_checkmarkreport_base::FORMAT_XLSX,
         ];
         $groups = $report->get_groups();
         $users = $report->get_user();
@@ -91,7 +91,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
         if (!empty($data) && !empty($users)) {
             $tabletoolbar = html_writer::tag('div', $this->get_downloadlinks([
                     'groups' => $groups,
-                    'users' => $users
+                    'users' => $users,
             ], $linkdata), ['class' => 'download']);
             $tabletoolbar .= html_writer::tag('div', $this->get_reset_table_preferences_link($report));
             $out = html_writer::tag('div', $tabletoolbar, ['class' => 'tabletoolbar']);
@@ -106,7 +106,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                 $table = $report->get_table($userdata);
                 $url = new moodle_url('/user/view.php', [
                         'id' => $userdata->id,
-                        'course' => $report->get_courseid()
+                        'course' => $report->get_courseid(),
                 ]);
                 $userlink = html_writer::link($url, fullname($userdata, has_capability('moodle/site:viewfullnames', $context)));
                 $headingtext = get_string('overview', 'local_checkmarkreport') . ' - ' . $userlink;
@@ -260,7 +260,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                 'width' => $table->width,
                 'summary' => $table->summary,
                 'cellpadding' => $table->cellpadding,
-                'cellspacing' => $table->cellspacing
+                'cellspacing' => $table->cellspacing,
         ]);
         $output = html_writer::start_tag('table', $attributes) . "\n";
 
@@ -323,7 +323,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                             'style' => $heading->style,
                             'scope' => $heading->scope,
                             'colspan' => $heading->colspan,
-                            'rowspan' => $heading->rowspan
+                            'rowspan' => $heading->rowspan,
                     ]);
 
                     $tagtype = 'td';
@@ -396,7 +396,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                     $output .= html_writer::start_tag('tr', [
                                     'class' => trim($row->attributes['class']),
                                     'style' => $row->style,
-                                    'id' => $row->id
+                                    'id' => $row->id,
                             ]) . "\n";
                     $keys2 = array_keys($row->cells);
                     $lastkey = end($keys2);
@@ -443,7 +443,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                                 'rowspan' => $cell->rowspan,
                                 'id' => $cell->id,
                                 'abbr' => $cell->abbr,
-                                'scope' => $cell->scope
+                                'scope' => $cell->scope,
                         ]);
                         $tagtype = 'td';
                         if ($cell->header === true) {
@@ -493,7 +493,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                     [
                             'class' => $column . ' showcol',
                             'title' => get_string('show') .
-                                    ' ' . clean_param($columnstring, PARAM_NOTAGS)
+                                    ' ' . clean_param($columnstring, PARAM_NOTAGS),
                     ]);
         } else {
             // Hide link!
@@ -502,7 +502,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
                     [
                             'class' => $column . ' hidecol',
                             'title' => get_string('hide') .
-                                    ' ' . clean_param($columnstring, PARAM_NOTAGS)
+                                    ' ' . clean_param($columnstring, PARAM_NOTAGS),
                     ]);
         }
 
