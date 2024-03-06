@@ -67,13 +67,13 @@ if (!$checkmarks = get_all_instances_in_course('checkmark', $course)) {
 if ($tab == 'overview') {
     $customdata = [
             'courseid' => $id,
-            'hideusers' => true
+            'hideusers' => true,
     ];
 } else if ($tab == 'useroverview') {
     $customdata = [
             'courseid' => $id,
             'hideinstances' => true,
-            'header' => get_string('additional_information', 'local_checkmarkreport')
+            'header' => get_string('additional_information', 'local_checkmarkreport'),
     ];
 }
 if ($tab == 'overview' || $tab == 'useroverview') {
@@ -123,14 +123,14 @@ if ($tab == 'overview' || $tab == 'useroverview') {
             $instances = optional_param_array('instances', [0], PARAM_INT);
             $mform->set_data([
                     'groupings' => $groupings,
-                    'instances' => $instances
+                    'instances' => $instances,
             ]);
         } else {
             $users = optional_param_array('users', [0], PARAM_INT);
             $mform->set_data([
                     'groupings' => $groupings,
                     'groups' => $groups,
-                    'users' => $users
+                    'users' => $users,
             ]);
         }
     }
@@ -138,13 +138,13 @@ if ($tab == 'overview' || $tab == 'useroverview') {
         $arrays = http_build_query([
                 'groupings' => $groupings,
                 'groups' => $groups,
-                'instances' => $instances
+                'instances' => $instances,
         ]);
     } else {
         $arrays = http_build_query([
                 'groupings' => $groupings,
                 'groups' => $groups,
-                'users' => $users
+                'users' => $users,
         ]);
     }
     $PAGE->set_url($PAGE->url.'&'.$arrays);

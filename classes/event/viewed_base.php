@@ -72,7 +72,7 @@ abstract class viewed_base extends \core\event\base {
     public function get_url() {
         return new \moodle_url("/local/checkmarkreport/index.php", [
                 'id' => $this->contextinstanceid,
-                'tab' => $this->data['other']['tab']
+                'tab' => $this->data['other']['tab'],
         ]);
     }
 
