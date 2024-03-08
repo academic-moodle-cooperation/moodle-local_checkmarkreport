@@ -114,7 +114,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $tablecolumns[] = 'checkmark';
         $table->colgroups[] = [
                 'span' => '1',
-                'class' => 'checkmark'
+                'class' => 'checkmark',
         ];
         $table->colclasses['checkmark'] = 'checkmark';
 
@@ -125,7 +125,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $tablecolumns[] = 'examples';
             $table->colgroups[] = [
                     'span' => '1',
-                    'class' => 'examples'
+                    'class' => 'examples',
             ];
             $table->colclasses['examples'] = 'examples';
         }
@@ -137,7 +137,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $tablecolumns[] = 'checked';
             $table->colgroups[] = [
                     'span' => '1',
-                    'class' => 'checked'
+                    'class' => 'checked',
             ];
             $table->colclasses['checked'] = 'checked';
         }
@@ -150,7 +150,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $tablecolumns[] = 'points';
             $table->colgroups[] = [
                     'span' => '1',
-                    'class' => 'points'
+                    'class' => 'points',
             ];
             $table->colclasses['points'] = 'points';
         }
@@ -162,7 +162,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $tablecolumns[] = 'attendance';
             $table->colgroups[] = [
                     'span' => '1',
-                    'class' => 'attendance'
+                    'class' => 'attendance',
             ];
             $table->colclasses['attendance'] = 'attendance';
         }
@@ -174,7 +174,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $tablecolumns[] = 'presentationgrade';
             $table->colgroups[] = [
                     'span' => '1',
-                    'class' => 'presentationgrade'
+                    'class' => 'presentationgrade',
             ];
             $table->colclasses['presentationgrade'] = 'presentationgrade';
         }
@@ -185,7 +185,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $tablecolumns[] = 'presentationsgraded';
             $table->colgroups[] = [
                     'span' => '1',
-                    'class' => 'presentationsgraded'
+                    'class' => 'presentationsgraded',
             ];
             $table->colclasses['presentationsgraded'] = 'presentationsgraded';
         }
@@ -322,11 +322,10 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                     $usermodified = $finalgrade->usermodified;
                                     $row['presentationgrade']->id = "u" . $userdata->id . "i" . $instance->id . "_a";
                                     $row['presentationgrade']->attributes['data-user'] = $userdata->id;
-                                    $row['presentationgrade']->attributes['data-username'] = fullname($users[$userdata->id],
-                                            has_capability('moodle/site:viewfullnames', $context));
-                                    $row['presentationgrade']->attributes['data-item'] = $instance->id;
+                                    $row['presentationgrade']->attributes['data-username'] = $users[$userdata->id];
                                     $row['presentationgrade']->attributes['data-dategraded'] = userdate($dategraded);
                                     $row['presentationgrade']->attributes['data-grader'] = $users[$usermodified];
+                                    $row['presentationgrade']->attributes['data-item'] = $instance->id;
                                 }
                             }
                         }
@@ -692,7 +691,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $table->data[$i] = new html_table_row();
             $table->data[$i]->cells = [
                     'checkmark' => new html_table_cell(get_string('signature', 'local_checkmarkreport')),
-                    'examples' => new html_table_cell('')
+                    'examples' => new html_table_cell(''),
             ];
             $table->data[$i]->cells['checkmark']->header = true;
             $table->data[$i]->cells['checkmark']->style = ' text-align: left; ';

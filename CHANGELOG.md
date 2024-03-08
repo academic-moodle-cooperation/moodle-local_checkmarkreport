@@ -1,5 +1,8 @@
 CHANGELOG
 =========
+4.2.2 (2024-03-05)
+------------------
+* [FIXED] #7836 Overridden attendance values not displayed correctly in .txt
 
 4.2.1 (2023-12-13)
 ------------------

@@ -56,7 +56,7 @@ function local_checkmarkreport_extend_navigation_course(navigation_node $parentn
     // Find appropriate key where our link should come. Probably won't work, but at least try.
     global $PAGE, $USER;
 
-    if (!$PAGE->course or $PAGE->course->id == SITEID) {
+    if (!$PAGE->course || $PAGE->course->id == SITEID) {
         return;
     }
 
@@ -75,7 +75,7 @@ function local_checkmarkreport_extend_navigation_course(navigation_node $parentn
         'downloadcenter' => navigation_node::TYPE_SETTING,
         'competencies' => navigation_node::TYPE_CONTAINER,
         'unenrolself' => navigation_node::TYPE_SETTING,
-        'fitlermanagement' => navigation_node::TYPE_SETTING
+        'fitlermanagement' => navigation_node::TYPE_SETTING,
     ];
     $beforekey = null;
     foreach ($keys as $key => $type) {
