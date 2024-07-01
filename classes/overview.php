@@ -794,7 +794,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $instancesnode->setAttribute('attendance_max', $row->maxattendances);
             }
             if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded()) {
-                $instancesnode->setAttribute('presentationgrade', empty($row->presentationgrade) ? 0 : $row->presentationgrade);
+                $instancesnode->setAttribute('presentationgrade', empty($row->presentationgrade) ? 0 : $row->coursepressum);
                 if (!empty($row->presentationgrademax)) {
                     $instancesnode->setAttribute('presentationgrademax', $row->presentationgrademax);
                 } else {
@@ -1044,11 +1044,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded() &&
                     !empty($this->pointsforpresentations())) {
                 $txt .= "\t";
-                if ($row->presoverridden) {
+                // if ($row->presoverridden) {
                     $presgrade = $row->coursepressum;
-                } else {
-                    $presgrade = $row->presentationgrade;
-                }
+                // } else {
+                //     $presgrade = $row->presentationgrade;
+                // }
                 $txt .= $this->display_grade($presgrade, $row->presentationgrademax);
             }
             if (!$this->column_is_hidden('presentationsgraded', 'checkmark') && !empty($showprescount)
