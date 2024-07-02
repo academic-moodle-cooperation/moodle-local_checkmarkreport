@@ -1492,9 +1492,9 @@ class local_checkmarkreport_base {
      *
      * @param html_table_cell $cell an html_table_cell instance
      * @param int|null $item itam that should be rendered
-     * @param string $user current users
+     * @param string|null $user current users
      * @param int|null $datetime current time
-     * @param string $grader grader string
+     * @param string|null $grader grader string
      * @return void
      * @throws moodle_exception
      */
