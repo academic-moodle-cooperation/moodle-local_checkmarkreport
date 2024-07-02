@@ -24,7 +24,6 @@
  */
 
 namespace local_checkmarkreport\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Event class for exported useroverview reports

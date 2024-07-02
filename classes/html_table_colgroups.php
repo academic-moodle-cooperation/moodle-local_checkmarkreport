@@ -27,8 +27,6 @@ namespace local_checkmarkreport;
 
 use html_table as html_table;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Enhance Moodle's html_table with colgroups!
  *

@@ -172,7 +172,6 @@ switch ($tab) {
         echo $output->box($notification, 'generalbox centered');
         echo $output->footer();
         die;
-        break;
     default:
         $notification = $output->notification(get_string('incorrect_tab', 'local_checkmarkreport'),
                 'notifyproblem');
