@@ -1044,11 +1044,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded() &&
                     !empty($this->pointsforpresentations())) {
                 $txt .= "\t";
-                // if ($row->presoverridden) {
-                    $presgrade = $row->coursepressum;
-                // } else {
-                //     $presgrade = $row->presentationgrade;
-                // }
+                $presgrade = $row->coursepressum;
                 $txt .= $this->display_grade($presgrade, $row->presentationgrademax);
             }
             if (!$this->column_is_hidden('presentationsgraded', 'checkmark') && !empty($showprescount)
