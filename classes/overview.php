@@ -589,7 +589,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         } else if (($att == 0) && ($att !== null)) {
                             $attendance = '✗';
                         }
-                        $row['attendance' . $instance->id]->character = $attendance;
+                        // Changed this from dynamic properties to an attribute used for outputting the correct charater.
+                        // Dynamic properties are deprecated since PHP 8.2.
+                        $row['attendance' . $instance->id]->attributes['output-character'] = $attendance;
                     }
 
                     $gradepresentation = $this->gradepresentations($instance->id);
@@ -1253,8 +1255,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     // We need this, to overwrite the images for attendance with simple characters!
                     /* If text to be written is numeric, it will be written in number format
                      so it can be used in calculations without further conversion. */
-                    if (!empty($cell->character)) {
-                        $worksheet->write_string($y, $x, strip_tags($cell->character), $format);
+                    if (!empty($cell->attributes['output-character'])) {
+                        $worksheet->write_string($y, $x, strip_tags($cell->attributes['output-character']), $format);
                     } else if (is_numeric($cell->text) && (!in_array($key, $textonlycolumns))) {
                         $worksheet->write_number($y, $x, $cell->text, $format);
                     } else {
