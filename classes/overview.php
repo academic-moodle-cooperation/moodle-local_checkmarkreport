@@ -22,7 +22,6 @@
  * @copyright 2020 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * local_checkmarkreport_overview class, handles checkmarkreport overview content and export
@@ -145,7 +144,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         // Coursesum of course grade.
         if (!empty($showgrade)) {
-            $sortlink = $this->get_sortlink('gradedgrade', 'Σ ' . get_string('grade', 'grades'), $PAGE->url);
+            $sortlink = $this->get_sortlink('gradedgrade', 'Σ ' . get_string('modgrade', 'grades'), $PAGE->url);
             $sortable[] = 'grade';
             $tableheaders['grade'] = new html_table_cell($sortlink);
             $tableheaders['grade']->header = true;
@@ -184,7 +183,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                                     'local_checkmarkreport'),
                             $PAGE->url) .
                     ' (' .
-                    $this->get_sortlink('percentgrade', get_string('grade', 'grades'),
+                    $this->get_sortlink('percentgrade', get_string('modgrade', 'grades'),
                             $PAGE->url) . ')';
             $sortable[] = 'percentex';
             $tableheaders['percentex'] = new html_table_cell($text);
@@ -268,7 +267,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             // Coursesum of course grade.
             if (!empty($showgrade)) {
                 $span++;
-                $text = get_string('grade', 'grades');
+                $text = get_string('modgrade', 'grades');
                 $sortable[] = 'grade' . $instance->id;
                 $sortlink = $this->get_sortlink('grade' . $instance->id, $text, $PAGE->url);
                 $tableheaders2['grade' . $instance->id] = new html_table_cell($sortlink);
@@ -295,7 +294,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $title = '% ' .
                         $this->get_sortlink('percentchecked' . $instance->id, get_string('examples', 'local_checkmarkreport'),
                                 $PAGE->url) .
-                        ' (' . $this->get_sortlink('percentgrade' . $instance->id, get_string('grade', 'grades'), $PAGE->url) . ')';
+                        ' (' .
+                        $this->get_sortlink('percentgrade' . $instance->id, get_string('modgrade', 'grades'), $PAGE->url) . ')';
                 $sortable[] = 'percentex' . $instance->id;
                 $tableheaders2['percentex' . $instance->id] = new html_table_cell($title);
                 $tableheaders2['percentex' . $instance->id]->header = true;
@@ -589,7 +589,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         } else if (($att == 0) && ($att !== null)) {
                             $attendance = '✗';
                         }
-                        $row['attendance' . $instance->id]->character = $attendance;
+                        // Changed this from dynamic properties to an attribute used for outputting the correct charater.
+                        // Dynamic properties are deprecated since PHP 8.2.
+                        $row['attendance' . $instance->id]->attributes['output-character'] = $attendance;
                     }
 
                     $gradepresentation = $this->gradepresentations($instance->id);
@@ -923,23 +925,23 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
         }
         if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
-            $txt .= "\tΣ " . get_string('grade', 'grades');
+            $txt .= "\tΣ " . get_string('modgrade', 'grades');
         }
         if (!$this->column_is_hidden('examples') && !empty($showabs)) {
             $txt .= "\tΣ " . get_string('examples', 'local_checkmarkreport');
         }
         if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
             $txt .= "\t";
-            $txt .= 'Σ % ' . get_string('examples', 'local_checkmarkreport') . ' (Σ % ' . get_string('grade', 'grades') . ')';
+            $txt .= 'Σ % ' . get_string('examples', 'local_checkmarkreport') . ' (Σ % ' . get_string('modgrade', 'grades') . ')';
         }
         if (!empty($showattendances) && $this->attendancestracked()) {
             $txt .= "\tΣ " . get_string('attendance', 'checkmark');
         }
-        if (!$this->column_is_hidden('presentationgrade', 'checkmark') && !empty($showpresgrades)
+        if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades)
                 && $this->presentationsgraded()) {
             $txt .= "\tΣ " . get_string('presentationgrade', 'checkmark');
         }
-        if (!$this->column_is_hidden('presentationsgraded', 'checkmark') && !empty($showprescount)
+        if (!$this->column_is_hidden('presentationsgraded') && !empty($showprescount)
                 && $this->presentationsgraded()) {
             $txt .= "\t# " . get_string('presentationgrade', 'checkmark');
         }
@@ -963,7 +965,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $gradepresentation = false;
             }
             if (!$this->column_is_hidden('grade' . $instance->id) && !empty($showgrade)) {
-                $txt .= "\t" . $instance->name . ' ' . get_string('grade', 'grades');
+                $txt .= "\t" . $instance->name . ' ' . get_string('modgrade', 'grades');
             }
             if (!$this->column_is_hidden('examples' . $instance->id) && !empty($showabs)) {
                 $txt .= "\t" . $instance->name . ' ' . get_string('examples', 'local_checkmarkreport');
@@ -971,7 +973,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
                 $txt .= "\t";
                 $txt .= $instance->name . ' Σ % ' . get_string('examples', 'local_checkmarkreport') . ' (Σ % ' .
-                        get_string('grade', 'grades') . ')';
+                        get_string('modgrade', 'grades') . ')';
             }
             if (!$this->column_is_hidden('attendance' . $instance->id) && !empty($showattendances) && $this->attendancestracked()
                     && $this->tracksattendance($instance->id)) {
@@ -1047,7 +1049,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $presgrade = $row->coursepressum;
                 $txt .= $this->display_grade($presgrade, $row->presentationgrademax);
             }
-            if (!$this->column_is_hidden('presentationsgraded', 'checkmark') && !empty($showprescount)
+            if (!$this->column_is_hidden('presentationsgraded') && !empty($showprescount)
                     && $this->presentationsgraded()) {
                 $txt .= "\t" . $this->display_grade($row->presentationsgraded, $row->presentationsgradedmax);
             }
@@ -1249,8 +1251,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     // We need this, to overwrite the images for attendance with simple characters!
                     /* If text to be written is numeric, it will be written in number format
                      so it can be used in calculations without further conversion. */
-                    if (!empty($cell->character)) {
-                        $worksheet->write_string($y, $x, strip_tags($cell->character), $format);
+                    if (!empty($cell->attributes['output-character'])) {
+                        $worksheet->write_string($y, $x, strip_tags($cell->attributes['output-character']), $format);
                     } else if (is_numeric($cell->text) && (!in_array($key, $textonlycolumns))) {
                         $worksheet->write_number($y, $x, $cell->text, $format);
                     } else {

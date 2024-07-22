@@ -916,7 +916,7 @@ class local_checkmarkreport_base {
                                     // Overridden scales don't count for course sum, so we mark it only here!
                                     $returndata[$key]->presoverridden = true;
                                 }
-                                // Should we check, if the grade item was changed in gradebook only? (For the course sum's calc?)
+                                // Should we check, if the grade item was changed in gradebook only? (For the course sum's calc?).
                             } else if ($presgrade >= 0) {
                                 if ($this->pointsforpresentations($chkmkid)) {
                                     $returndata[$key]->coursepressum += $presgrade;
@@ -1011,7 +1011,7 @@ class local_checkmarkreport_base {
                 'userid' => $userid,
         ];
         $examples = $DB->get_records_sql_menu($sql, $params);
-        $objexamples = array();
+        $objexamples = [];
         foreach ($examples as $key => $example) {
             $objexamples[$key] = \local_checkmarkreport\example::from_id($key, $userid);
         }
@@ -1022,7 +1022,7 @@ class local_checkmarkreport_base {
     /**
      * Get all checkmark instances in course indexed by checkmark id
      *
-     * @return object[] associative array of checkmark instances indexed by checkmark ids
+     * @return object[]|null associative array of checkmark instances indexed by checkmark ids
      */
     public function get_courseinstances() {
         global $DB;
@@ -1492,14 +1492,14 @@ class local_checkmarkreport_base {
      *
      * @param html_table_cell $cell an html_table_cell instance
      * @param int|null $item itam that should be rendered
-     * @param string $user current users
+     * @param string|null $user current users
      * @param int|null $datetime current time
-     * @param string $grader grader string
+     * @param string|null $grader grader string
      * @return void
      * @throws moodle_exception
      */
-    public static function add_cell_tooltip(html_table_cell &$cell, int $item=null, string $user=null, int $datetime=null,
-            string $grader=null) {
+    public static function add_cell_tooltip(html_table_cell &$cell, int|null $item=null, string|null $user=null,
+        int|null $datetime=null, string|null $grader=null) {
         global $OUTPUT;
 
         if (!key_exists('class', $cell->attributes) || empty($cell->attributes['class'])) {

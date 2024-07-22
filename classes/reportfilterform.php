@@ -40,13 +40,13 @@ class local_checkmarkreport_reportfilterform extends moodleform {
      * constructor method
      *
      * local_checkmarkreport_reportfilterform constructor.
-     * @param null $action
-     * @param null $customdata
+     * @param mixed|null $action
+     * @param mixed|null $customdata
      * @param string $method
      * @param string $target
-     * @param null $attributes
+     * @param mixed|null $attributes
      * @param bool $editable
-     * @param null $ajaxformdata
+     * @param array|null $ajaxformdata
      */
     public function __construct($action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true,
                                 $ajaxformdata=null) {

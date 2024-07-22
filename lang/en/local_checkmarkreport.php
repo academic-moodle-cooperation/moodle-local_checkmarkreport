@@ -24,30 +24,15 @@
  */
 defined('MOODLE_INTERNAL') || die;
 
-$string['checkmarkreport:view'] = 'View checkmark report';
-$string['checkmarkreport:view_courseoverview'] = 'View checkmark coursereport';
-$string['checkmarkreport:view_students_overview'] = 'View checkmark userreport';
-$string['checkmarkreport:view_own_overview'] = 'View my checkmark report';
-
-$string['pluginname'] = 'Checkmark report';
-$string['pluginname_help'] = 'Checkmark reports extend the functionality of mod_checkmark by making convenient course-overview reports for all checkmarks available.';
-$string['pluginnameplural'] = 'Checkmark reports';
-
-$string['privacy:metadata:showexamples'] = 'Persistently saved setting whether or not to show examples.';
-$string['privacy:metadata:showgrade'] = 'Persistently saved setting whether or not to show grades.';
-$string['privacy:metadata:sumabs'] = 'Persistently saved setting whether or not to show absolute values.';
-$string['privacy:metadata:sumrel'] = 'Persistently saved setting whether or not to show percentage values.';
-$string['privacy:metadata:showpoints'] = 'Persistently saved setting whether to show icons/symbols or points for checked examples.';
-$string['privacy:metadata:showattendances'] = 'Persistently saved setting whether or not to show attendance infos.';
-$string['privacy:metadata:showpresentationgrades'] = 'Persistently saved setting whether or not to show presentation grades.';
-$string['privacy:metadata:showpresentationcounts'] = 'Persistently saved setting whether or not to show amount of graded presentations.';
-$string['privacy:metadata:signature'] = 'Persistently saved setting whether or not to include a signature field.';
-
-$string['additional_information'] = 'Additional information';
 $string['additional_columns'] = 'Additional columns';
+$string['additional_information'] = 'Additional information';
 $string['additional_settings'] = 'Additional settings';
 $string['attendances'] = 'Attendances';
 $string['by'] = 'by';
+$string['checkmarkreport:view'] = 'View checkmark report';
+$string['checkmarkreport:view_courseoverview'] = 'View checkmark coursereport';
+$string['checkmarkreport:view_own_overview'] = 'View my checkmark report';
+$string['checkmarkreport:view_students_overview'] = 'View checkmark userreport';
 $string['error_retriefing_members'] = 'Error getting groupmembers';
 $string['eventexported'] = 'Checkmarkreport exported';
 $string['eventoverviewexported'] = 'Checkmarkreport overview exported';
@@ -57,22 +42,35 @@ $string['eventuseroverviewviewed'] = 'Checkmarkreport useroverview viewed';
 $string['eventuserviewexported'] = 'Checkmarkreport userview exported';
 $string['eventuserviewviewed'] = 'Checkmarkreport userview viewed';
 $string['eventviewed'] = 'Checkmarkreport viewed';
-$string['examples'] = 'Examples';
 $string['example'] = 'Example';
+$string['examples'] = 'Examples';
 $string['exportas'] = 'Export as';
 $string['filter'] = 'Filter';
 $string['grade'] = 'Grade';
 $string['grade_help'] = 'Shows grade, summed up grade for shown checkmarks as well as theoretical points for checking the examples.';
 $string['grade_useroverview'] = 'Grade';
 $string['grade_useroverview_help'] = 'The grade shows the current grade given by the teacher for each checkmark.<br />The values in line with the examples show the theoretical amount of points earnable for checked examples.<br />The grade of the checkmark and the course sum of the shown checkmark grades can differ from the sum of example points due to teachers giving different grades (for example when students checked or unchecked examples at the beginning of the lesson, or if the checked examples have not been correctly solved).<br />The sum for a single checkmark (in the line "Σ checkmarks") shows the teacher\'s grade. A "-" equals no currently present grade.<br />The sum of all checkmarks (line "Σ total") sums up all shown teacher\'s grades.<br />Please mind these values are updating itself according to the current grading status.';
+$string['groupings'] = 'Groupings';
 $string['groups'] = 'Groups';
 $string['groups_help'] = 'Use this to select the groups to be displayed. Empty groups are disabled and only members of selected groups are displayed in the users selection (after update).';
-$string['groupings'] = 'Groupings';
+$string['incorrect_tab'] = 'Incorrect tab';
 $string['loading'] = 'Loading...';
 $string['noaccess'] = 'You have no access to this module. You\'re missing the required capabilities to view this content.';
 $string['overview'] = 'Overview';
 $string['overview_alt'] = 'View checkmark coursereport';
 $string['overwritten'] = 'Overwritten';
+$string['pluginname'] = 'Checkmark report';
+$string['pluginname_help'] = 'Checkmark reports extend the functionality of mod_checkmark by making convenient course-overview reports for all checkmarks available.';
+$string['pluginnameplural'] = 'Checkmark reports';
+$string['privacy:metadata:showattendances'] = 'Persistently saved setting whether or not to show attendance infos.';
+$string['privacy:metadata:showexamples'] = 'Persistently saved setting whether or not to show examples.';
+$string['privacy:metadata:showgrade'] = 'Persistently saved setting whether or not to show grades.';
+$string['privacy:metadata:showpoints'] = 'Persistently saved setting whether to show icons/symbols or points for checked examples.';
+$string['privacy:metadata:showpresentationcounts'] = 'Persistently saved setting whether or not to show amount of graded presentations.';
+$string['privacy:metadata:showpresentationgrades'] = 'Persistently saved setting whether or not to show presentation grades.';
+$string['privacy:metadata:signature'] = 'Persistently saved setting whether or not to include a signature field.';
+$string['privacy:metadata:sumabs'] = 'Persistently saved setting whether or not to show absolute values.';
+$string['privacy:metadata:sumrel'] = 'Persistently saved setting whether or not to show percentage values.';
 $string['seperatenamecolumns'] = 'Split fullname into single columns';
 $string['seperatenamecolumns_help'] = 'If enabled, all fragments of the displayed fullname (i.e. first name and surname) will be split into single columns.';
 $string['showattendances'] = 'Show attendances';
@@ -89,16 +87,13 @@ $string['showpresentationgrades_help'] = 'Show the grade feedback given for stud
 $string['showsignature'] = ' include signature fields in XLSX and ODS files';
 $string['showsignature_help'] = 'If enabled areas reserved for students signatures will be included in XLSX and ODS exports. This is not available for TXT or XML exports.';
 $string['signature'] = 'Signature';
+$string['status'] = 'Status';
 $string['sumabs'] = 'Show x/y examples';
 $string['sumabs_help'] = 'Show how many examples have been checked in the whole course and for each checkmark.';
 $string['sumrel'] = 'Show % of examples/grades';
 $string['sumrel_help'] = 'Show relative values ( XX % ) of checked examples as well as grade calculated by checked examples for course in total and each checkmark.';
-$string['status'] = 'Status';
 $string['update'] = 'Update';
 $string['useroverview'] = 'Student Overview';
 $string['useroverview_alt'] = 'View checkmark userreport';
 $string['userview'] = 'Userview';
 $string['userview_alt'] = 'View my checkmark report';
-
-// Deprecated since Moodle 2.8!
-$string['xlsover256'] = 'XLS file format only supports 256 columns at maximum. The file you\'re about to generate exceeds this limitation. Please deselect some instances or avoid using XLS.';

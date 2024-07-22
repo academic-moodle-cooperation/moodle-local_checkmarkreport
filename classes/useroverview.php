@@ -22,7 +22,6 @@
  * @copyright 2020 Academic Moodle Cooperation {@link http://www.academic-moodle-cooperation.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * local_checkmarkreport_useroverview class, handles checkmarkreport useroverview content
@@ -296,7 +295,9 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                 $character = '';
                             }
                             $row['attendance'] = new html_table_cell($attendance);
-                            $row['attendance']->character = $character;
+                            // Changed this from dynamic properties to an attribute used for outputting the correct charater.
+                            // Dynamic properties are deprecated since PHP 8.2.
+                            $row['attendance']->attributes['output-character'] = $character;
                         }
                         if (!empty($showpresgrades) && $this->presentationsgraded()) {
                             if ($gradepresentation && $gradepresentation->presentationgradebook) {
@@ -884,7 +885,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             has_capability('moodle/site:viewfullnames', $context)) . "\n";
             if (!$this->column_is_hidden('points') && $showgrade) {
                     $grade = empty($row->coursesum) ? 0 : $row->coursesum;
-                $txt .= "Σ ".get_string('grade', 'grades')."\t".$grade.'/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
+                $txt .= "Σ ".get_string('modgrade', 'grades')."\t".$grade.'/'.(empty($row->maxgrade) ? 0 : $row->maxgrade)."\n";
             }
             if (!$this->column_is_hidden('checked') && $showabs) {
                 $txt .= "Σ ".get_string('examples', 'local_checkmarkreport')."\t".$row->checks.'/'.$row->maxchecks."\n";
@@ -1162,8 +1163,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         // We need this, to overwrite the images for attendance with simple characters!
                         /* If text to be written is numeric, it will be written in number format
                          so it can be used in calculations without further conversion. */
-                        if (!empty($cell->character)) {
-                            $worksheets[$userid]->write_string($y, $x, $cell->character, $format);
+                        if (!empty($cell->attributes['output-character'])) {
+                            $worksheets[$userid]->write_string($y, $x, $cell->attributes['output-character'], $format);
                         } else if (is_numeric($cell->text) && (!in_array($key, $textonlycolumns))) {
                             $worksheets[$userid]->write_number($y, $x, $cell->text, $format);
                         } else {

@@ -25,7 +25,6 @@
 
 
 namespace local_checkmarkreport;
-defined('MOODLE_INTERNAL') || die;
 
 /**
  * Class example

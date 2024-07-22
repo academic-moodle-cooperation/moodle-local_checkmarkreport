@@ -1,5 +1,10 @@
 CHANGELOG
 =========
+
+4.4.0 (2024-07-21)
+------------------
+* [UPDATE] #7750 Moodle 4.4.0 compatible version
+
 4.3.1 (2024-03-05)
 ------------------
 * [FIXED] #7836 Overridden attendance values not displayed correctly in .txt

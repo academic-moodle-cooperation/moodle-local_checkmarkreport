@@ -24,7 +24,6 @@
  */
 
 namespace local_checkmarkreport\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The (abstract) base class for checkmarkreports view events.
@@ -42,7 +41,7 @@ abstract class viewed_base extends \core\event\base {
      */
     protected function init() {
         $this->data['crud'] = 'r';
-        $this->data['edulevel'] = self::LEVEL_OTHER;
+        $this->data['edulevel'] = parent::LEVEL_OTHER;
     }
 
     /**

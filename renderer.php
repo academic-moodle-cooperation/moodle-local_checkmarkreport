@@ -23,8 +23,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Renderer class for checkmarkreports
  *
@@ -171,7 +169,7 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
     /**
      * Helper function to return link for resetting as table preferences if any columns are hidden
      *
-     * @param null $report Report for determining if any columns are hidden
+     * @param local_checkmarkreport_base $report Report for determining if any columns are hidden
      * @return string HTML for link if any columns are hidden, '' if not
      * @throws coding_exception
      */
@@ -193,10 +191,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      * and memory consumption reasons.
      *
      * @param html_table $table data to be rendered
-     * @param local_checkmarkreport_base $report optional if given table can hide columns
+     * @param local_checkmarkreport_base|null $report optional if given table can hide columns
      * @return string HTML code
      */
-    protected function table(html_table $table, local_checkmarkreport_base $report = null) {
+    protected function table(html_table $table, local_checkmarkreport_base|null $report = null) {
 
         if ($report == null) {
             $nohide = true;
@@ -476,10 +474,10 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
      *
      * @param string $column internal column name
      * @param string $columnstring displayed column name
-     * @param local_checkmarkreport_base $report needed to determine if the column is hidden
+     * @param local_checkmarkreport_base|null $report needed to determine if the column is hidden
      * @return string HTML snippet
      */
-    protected function get_toggle_links($column = '', $columnstring = '', local_checkmarkreport_base $report = null) {
+    protected function get_toggle_links($column = '', $columnstring = '', local_checkmarkreport_base|null $report = null) {
         $html = '';
         if (empty($report)) {
             return '';
