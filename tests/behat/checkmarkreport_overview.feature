@@ -71,15 +71,15 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
-      | Student 1             | 1         | student1@example.com  |
-      | Student 2             | 2         | student2@example.com  |
-      | Student 3             | 3         | student3@example.com  |
-      | Student 4             | 4         | student4@example.com  |
-      | Student 5             | 5         | student5@example.com  |
-      | Student 6             | 6         | student6@example.com  |
-      | Student 7             | 7         | student7@example.com  |
-      | Student 8             | 8         | student8@example.com  |
+      | First name / Last name | ID number | Email address         |
+      | Student 1              | 1         | student1@example.com  |
+      | Student 2              | 2         | student2@example.com  |
+      | Student 3              | 3         | student3@example.com  |
+      | Student 4              | 4         | student4@example.com  |
+      | Student 5              | 5         | student5@example.com  |
+      | Student 6              | 6         | student6@example.com  |
+      | Student 7              | 7         | student7@example.com  |
+      | Student 8              | 8         | student8@example.com  |
 
   @javascript
   Scenario: Teacher filters overview by group (2.2,2.5)
@@ -88,7 +88,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 1             | 1         | student1@example.com  |
       | Student 2             | 2         | student2@example.com  |
       | Student 3             | 3         | student3@example.com  |
@@ -100,21 +100,21 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     When I set the field "Groups" to "Group 1"
     And I press "Update"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 1             | 1         | student1@example.com  |
       | Student 5             | 5         | student5@example.com  |
       | Student 7             | 7         | student7@example.com  |
     When I set the field "Groups" to "Group 3"
     And I press "Update"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 3             | 3         | student3@example.com  |
       | Student 6             | 6         | student6@example.com  |
       | Student 7             | 7         | student7@example.com  |
     When I set the field "Groups" to "All Groups"
     And I press "Update"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 1             | 1         | student1@example.com  |
       | Student 2             | 2         | student2@example.com  |
       | Student 3             | 3         | student3@example.com  |
@@ -131,7 +131,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 1             | 1         | student1@example.com  |
       | Student 2             | 2         | student2@example.com  |
       | Student 3             | 3         | student3@example.com  |
@@ -143,7 +143,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     When I set the field "Groupings" to "Grouping 1"
     And I press "Update"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 1             | 1         | student1@example.com  |
       | Student 2             | 2         | student2@example.com  |
       | Student 5             | 5         | student5@example.com  |
@@ -151,7 +151,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     When I set the field "Groupings" to "Grouping 2"
     And I press "Update"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 3             | 3         | student3@example.com  |
       | Student 4             | 4         | student4@example.com  |
       | Student 6             | 6         | student6@example.com  |
@@ -159,7 +159,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     When I set the field "Groupings" to "All Groupings"
     And I press "Update"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 1             | 1         | student1@example.com  |
       | Student 2             | 2         | student2@example.com  |
       | Student 3             | 3         | student3@example.com  |
@@ -405,7 +405,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     Then I should not see "1 (10P)" in the "overview" "table"
     And I should not see "10 (10P)" in the "overview" "table"
     And the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 1             | 1         | student1@example.com  |
       | Student 2             | 2         | student2@example.com  |
       | Student 3             | 3         | student3@example.com  |
@@ -437,7 +437,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I follow "Checkmark report"
     And I follow "First name"
     Then the following should exist in the "overview" table:
-      | First name / Surname  | ID number | Email address         |
+      | First name / Last name  | ID number | Email address         |
       | Student 1             | 1         | student1@example.com  |
       | Student 2             | 2         | student2@example.com  |
       | Student 3             | 3         | student3@example.com  |
