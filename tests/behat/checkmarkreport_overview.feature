@@ -545,8 +545,12 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I am on "Course 1" course homepage
     And I navigate to "Reports" in current page administration
     And I follow "Checkmark report"
-    Then following ".XLSX" should download between "4096" and "10240" bytes
-    And following ".ODS" should download between "4096" and "10240" bytes
+    Then following ".XLSX" should download a file that:
+      | contains text | Student 1 |
+      | contains text | Student 2 |
+    And following ".ODS" should download a file that:
+      | contains text | Student 1 |
+      | contains text | Student 2 |
     # checking for size does not work unfortunately
     And I follow ".XML"
     # checking for size does not work unfortunately
