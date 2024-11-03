@@ -553,97 +553,97 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I follow ".TXT"
 
   @javascript
-    Scenario: Collapsing/expanding a column should not reset present filters
-      Given I log in as "teacher1"
-      And I am on "Course 1" course homepage
-      And I navigate to "Reports" in current page administration
-      And I follow "Checkmark report"
-      Then the following should exist in the "overview" table:
-        | First name / Last name | ID number | Email address         |
-        | Student 1              | 1         | student1@example.com  |
-        | Student 2              | 2         | student2@example.com  |
-        | Student 3              | 3         | student3@example.com  |
-        | Student 4              | 4         | student4@example.com  |
-        | Student 5              | 5         | student5@example.com  |
-        | Student 6              | 6         | student6@example.com  |
-        | Student 7              | 7         | student7@example.com  |
-        | Student 8              | 8         | student8@example.com  |
-      When I set the field "Groups" to "Group 1"
-      And I set the field "Groupings" to "Grouping 1"
-      And I set the field "Checkmarks" to "Checkmark 1"
-      And I press "Update"
-      Then the following should exist in the "overview" table:
-        | First name / Last name | ID number | Email address         |
-        | Student 1              | 1         | student1@example.com  |
-        | Student 5              | 5         | student5@example.com  |
-        | Student 7              | 7         | student7@example.com  |
-      And the following fields match these values:
-        | Groups      | Group 1       |
-        | Groupings   | Grouping 1    |
-        | Checkmarks  | Checkmark 1   |
-      When I follow "Hide First name / Last name"
-      Then the following should exist in the "overview" table:
-        | ID number | Email address         |
-        | 1         | student1@example.com  |
-        | 5         | student5@example.com  |
-        | 7         | student7@example.com  |
-      And the following fields match these values:
-        | Groups      | Group 1       |
-        | Groupings   | Grouping 1    |
-        | Checkmarks  | Checkmark 1   |
-      When I follow "Show First name / Last name"
-      Then the following should exist in the "overview" table:
-        | First name / Last name | ID number | Email address         |
-        | Student 1              | 1         | student1@example.com  |
-        | Student 5              | 5         | student5@example.com  |
-        | Student 7              | 7         | student7@example.com  |
-      And the following fields match these values:
-        | Groups      | Group 1       |
-        | Groupings   | Grouping 1    |
-        | Checkmarks  | Checkmark 1   |
+  Scenario: Collapsing/expanding a column should not reset present filters
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
+    And I follow "Checkmark report"
+    Then the following should exist in the "overview" table:
+      | First name / Last name | ID number | Email address         |
+      | Student 1              | 1         | student1@example.com  |
+      | Student 2              | 2         | student2@example.com  |
+      | Student 3              | 3         | student3@example.com  |
+      | Student 4              | 4         | student4@example.com  |
+      | Student 5              | 5         | student5@example.com  |
+      | Student 6              | 6         | student6@example.com  |
+      | Student 7              | 7         | student7@example.com  |
+      | Student 8              | 8         | student8@example.com  |
+    When I set the field "Groups" to "Group 1"
+    And I set the field "Groupings" to "Grouping 1"
+    And I set the field "Checkmarks" to "Checkmark 1"
+    And I press "Update"
+    Then the following should exist in the "overview" table:
+      | First name / Last name | ID number | Email address         |
+      | Student 1              | 1         | student1@example.com  |
+      | Student 5              | 5         | student5@example.com  |
+      | Student 7              | 7         | student7@example.com  |
+    And the following fields match these values:
+      | Groups      | Group 1       |
+      | Groupings   | Grouping 1    |
+      | Checkmarks  | Checkmark 1   |
+    When I follow "Hide First name / Last name"
+    Then the following should exist in the "overview" table:
+      | ID number | Email address         |
+      | 1         | student1@example.com  |
+      | 5         | student5@example.com  |
+      | 7         | student7@example.com  |
+    And the following fields match these values:
+      | Groups      | Group 1       |
+      | Groupings   | Grouping 1    |
+      | Checkmarks  | Checkmark 1   |
+    When I follow "Show First name / Last name"
+    Then the following should exist in the "overview" table:
+      | First name / Last name | ID number | Email address         |
+      | Student 1              | 1         | student1@example.com  |
+      | Student 5              | 5         | student5@example.com  |
+      | Student 7              | 7         | student7@example.com  |
+    And the following fields match these values:
+      | Groups      | Group 1       |
+      | Groupings   | Grouping 1    |
+      | Checkmarks  | Checkmark 1   |
   
   @javascript
-    Scenario: Single columns can be collapsed and expanded using the buttons in the table headers (2.21)
-      When I log in as "teacher1"
-      And I am on "Course 1" course homepage
-      And I navigate to "Reports" in current page administration
-      And I follow "Checkmark report"
-      Then the following should exist in the "overview" table:
-        | First name / Last name | ID number | Email address         |
-        | Student 1              | 1         | student1@example.com  |
-        | Student 2              | 2         | student2@example.com  |
-        | Student 3              | 3         | student3@example.com  |
-        | Student 4              | 4         | student4@example.com  |
-        | Student 5              | 5         | student5@example.com  |
-        | Student 6              | 6         | student6@example.com  |
-        | Student 7              | 7         | student7@example.com  |
-        | Student 8              | 8         | student8@example.com  |
-      When I follow "Hide First name / Last name"
-      Then the following should exist in the "overview" table:
-        | ID number | Email address         |
-        | 1         | student1@example.com  |
-        | 2         | student2@example.com  |
-        | 3         | student3@example.com  |
-        | 4         | student4@example.com  |
-        | 5         | student5@example.com  |
-        | 6         | student6@example.com  |
-        | 7         | student7@example.com  |
-        | 8         | student8@example.com  |
-      And I should not see "First name / Last name" in the "overview" "table"
-      When I follow "Hide ID number"
-      Then I should not see "First name / Last name" in the "overview" "table"
-      And I should not see "ID number" in the "overview" "table"
-      When I follow "Show First name / Last name"
-      Then I should see "First name / Last name" in the "overview" "table"
-      And I should not see "ID number" in the "overview" "table"
-      When I follow "Show ID number"
-      Then the following should exist in the "overview" table:
-        | First name / Last name | ID number | Email address         |
-        | Student 1              | 1         | student1@example.com  |
-        | Student 2              | 2         | student2@example.com  |
-        | Student 3              | 3         | student3@example.com  |
-        | Student 4              | 4         | student4@example.com  |
-        | Student 5              | 5         | student5@example.com  |
-        | Student 6              | 6         | student6@example.com  |
-        | Student 7              | 7         | student7@example.com  |
-        | Student 8              | 8         | student8@example.com  |
+  Scenario: Single columns can be collapsed and expanded using the buttons in the table headers (2.21)
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
+    And I follow "Checkmark report"
+    Then the following should exist in the "overview" table:
+      | First name / Last name | ID number | Email address         |
+      | Student 1              | 1         | student1@example.com  |
+      | Student 2              | 2         | student2@example.com  |
+      | Student 3              | 3         | student3@example.com  |
+      | Student 4              | 4         | student4@example.com  |
+      | Student 5              | 5         | student5@example.com  |
+      | Student 6              | 6         | student6@example.com  |
+      | Student 7              | 7         | student7@example.com  |
+      | Student 8              | 8         | student8@example.com  |
+    When I follow "Hide First name / Last name"
+    Then the following should exist in the "overview" table:
+      | ID number | Email address         |
+      | 1         | student1@example.com  |
+      | 2         | student2@example.com  |
+      | 3         | student3@example.com  |
+      | 4         | student4@example.com  |
+      | 5         | student5@example.com  |
+      | 6         | student6@example.com  |
+      | 7         | student7@example.com  |
+      | 8         | student8@example.com  |
+    And I should not see "First name / Last name" in the "overview" "table"
+    When I follow "Hide ID number"
+    Then I should not see "First name / Last name" in the "overview" "table"
+    And I should not see "ID number" in the "overview" "table"
+    When I follow "Show First name / Last name"
+    Then I should see "First name / Last name" in the "overview" "table"
+    And I should not see "ID number" in the "overview" "table"
+    When I follow "Show ID number"
+    Then the following should exist in the "overview" table:
+      | First name / Last name | ID number | Email address         |
+      | Student 1              | 1         | student1@example.com  |
+      | Student 2              | 2         | student2@example.com  |
+      | Student 3              | 3         | student3@example.com  |
+      | Student 4              | 4         | student4@example.com  |
+      | Student 5              | 5         | student5@example.com  |
+      | Student 6              | 6         | student6@example.com  |
+      | Student 7              | 7         | student7@example.com  |
+      | Student 8              | 8         | student8@example.com  |
