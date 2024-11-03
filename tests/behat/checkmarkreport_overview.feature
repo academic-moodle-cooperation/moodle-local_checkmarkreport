@@ -601,7 +601,7 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
       | Groups      | Group 1       |
       | Groupings   | Grouping 1    |
       | Checkmarks  | Checkmark 1   |
-  
+
   @javascript
   Scenario: Single columns can be collapsed and expanded using the buttons in the table headers (2.21)
     When I log in as "teacher1"
