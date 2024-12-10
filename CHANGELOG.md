@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+4.5.0 (2024-12-09)
+------------------
+* [UPDATE] #8016 Moodle 4.5.0 compatible version
+
 4.4.0 (2024-07-21)
 ------------------
 * [UPDATE] #7750 Moodle 4.4.0 compatible version
