@@ -1370,7 +1370,7 @@ class local_checkmarkreport_base {
      */
     public function add_xml_attendance_data(&$instnode, $instancedata, $instanceid) {
         if ($this->attendancestracked() && $this->tracksattendance($instanceid)) {
-            $instnode->setAttribute('attendant', $instancedata->attendance);
+            $instnode->setAttribute('attendant', $instancedata->attendance ?? -1);
         }
     }
 
