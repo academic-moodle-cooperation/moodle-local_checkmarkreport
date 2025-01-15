@@ -829,9 +829,13 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $instnode->setAttribute('name', $instance->name);
                 if (!$this->column_is_hidden('grade' . $instance->id) && !empty($showgrade)) {
                     $instnode->setAttribute('checkedgrade', empty($instancedata->grade) ? 0 : $instancedata->grade);
-                    if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
+                    if ($instancedata->finalgrade->overridden || (($instancedata->finalgrade->grade != $instancedata->grade) &&
+                        !is_null($instancedata->finalgrade->grade))) {
                         $instnode->setAttribute('overridden', true);
                         $instnode->setAttribute('grade', $instancedata->finalgrade->grade);
+                    } else {
+                        $instnode->setAttribute('overridden', 0);
+                        $instnode->setAttribute('grade', $instancedata->finalgrade->grade ?? -1);
                     }
                     $instnode->setAttribute('maxgrade', empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
                 }
