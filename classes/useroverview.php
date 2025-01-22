@@ -934,6 +934,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
                 if ($showexamples && !$this->column_is_hidden('examples')) {
                     $txt .= "Σ " . $instance->name;
+                } else if ($showgrade) {
+                    $txt .= "\t" . "Σ " . $instance->name;
                 }
                 if (!$this->column_is_hidden('checked')) {
                     if ($showabs && $showrel) {
@@ -965,6 +967,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                         $txt .= "\t" . $grade . '/' . (empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
                     } else if ($showrel) {
                         $txt .= "\t" . $percgrade . " %";
+                    } else if ($showgrade || $showexamples) {
+                        $txt .= "\t" . $grade . '/' . (empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade);
                     }
                     $txt .= "\n";
                 }
