@@ -16,3 +16,20 @@ workflow:
 include:
   - component: $CI_SERVER_FQDN/amc/moodle/moodle-ci/moodle-plugin-ci@4.5
   - component: $CI_SERVER_FQDN/amc/moodle/moodle-ci/moodle-devil-app@4.5
+
+.add-plugin: &add-plugin
+  before_script:
+    - cd ../..
+    - moodle-db-isready
+    - moodle-plugin-ci add-plugin --clone https://gitlab-ci-token:${CI_JOB_TOKEN}@${ADD_PLUGIN_CHECKMARK}
+    - moodle-plugin-ci install --moodle="moodle-upstream-core" --db-host=$DB_HOST --db-port=$DB_PORT
+    - eval $(failed setup-command)
+
+validate:
+  <<: *add-plugin
+test:postgres:
+  <<: *add-plugin
+test:mariadb:
+  <<: *add-plugin
+test:mysql:
+  <<: *add-plugin

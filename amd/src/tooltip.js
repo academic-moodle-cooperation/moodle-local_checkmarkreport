@@ -32,16 +32,17 @@ define(['core/popper', 'core/log'], function(Popper, log) {
      * @param {Event} e
      */
     function _showTooltip(e) {
+        let triggerEl;
         if (e.target.getAttribute('data-toggle') !== 'tooltip') {
-            var triggerEl = e.target.closest('[data-toggle=tooltip]');
+            triggerEl = e.target.closest('[data-toggle=tooltip]');
         } else {
-            var triggerEl = e.target;
+            triggerEl = e.target;
         }
-        var tooltipid = 'tooltip_' + triggerEl.getAttribute('id');
-        var tooltipEl = document.getElementById(tooltipid);
+        const tooltipid = 'tooltip_' + triggerEl.getAttribute('id');
+        let tooltipEl = document.getElementById(tooltipid);
 
         if (tooltipEl === null) {
-            var tooltipEl = document.createElement('div');
+            tooltipEl = document.createElement('div');
             tooltipEl.id = tooltipid;
             tooltipEl.classList.add('popover');
             tooltipEl.classList.add('bs-popover-auto');
@@ -58,10 +59,7 @@ define(['core/popper', 'core/log'], function(Popper, log) {
 
         new Popper(triggerEl, tooltipEl, {
             modifiers: {
-                placement: 'right'/*,
-                flip: {
-                    behavior: 'clockwise'
-                }*/
+                placement: 'right'
             }
         });
          tooltipEl.style.opacity = '1';
@@ -81,10 +79,11 @@ define(['core/popper', 'core/log'], function(Popper, log) {
      * @param {Event} e
      */
     function _hideTooltip(e) {
+        let tooltipId;
         if (e.target.getAttribute('data-toggle') !== 'tooltip') {
-            var tooltipId = 'tooltip_' + e.target.closest('[data-toggle=tooltip]').getAttribute('id');
+            tooltipId = 'tooltip_' + e.target.closest('[data-toggle=tooltip]').getAttribute('id');
         } else {
-            var tooltipId = 'tooltip_' + e.target.id;
+            tooltipId = 'tooltip_' + e.target.id;
         }
         var toolTipEl = document.getElementById(tooltipId);
 
