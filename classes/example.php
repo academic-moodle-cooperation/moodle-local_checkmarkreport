@@ -49,11 +49,11 @@ class example extends \mod_checkmark\example {
      * create an instance from id
      *
      * @param int $id
-     * @param bool $userid
+     * @param int $userid (optional) id of user to fetch data for
      * @return example|\mod_checkmark\example|null
      * @throws \dml_exception
      */
-    public static function from_id($id, $userid=false) {
+    public static function from_id($id, $userid = 0) {
         global $DB;
 
         if ($userid > 0) {

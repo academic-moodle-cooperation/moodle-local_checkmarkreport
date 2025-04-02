@@ -618,8 +618,6 @@ class local_checkmarkreport_base {
 
             $presentationpoints = $this->pointsforpresentations();
             if (!empty($presentationpoints)) {
-                list($prespointssql, $prespointsparams) = $DB->get_in_or_equal(array_keys($presentationpoints), SQL_PARAMS_NAMED,
-                        'presids');
                 if (in_array(0, $this->instances)) {
                     $presentationgrademax = array_sum($presentationpoints);
                 } else {
@@ -1012,7 +1010,7 @@ class local_checkmarkreport_base {
         ];
         $examples = $DB->get_records_sql_menu($sql, $params);
         $objexamples = [];
-        foreach ($examples as $key => $example) {
+        foreach (array_keys($examples) as $key) {
             $objexamples[$key] = \local_checkmarkreport\example::from_id($key, $userid);
         }
 
