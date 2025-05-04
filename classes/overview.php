@@ -245,7 +245,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $table->colclasses['presentationsgraded'] = 'presentationsgraded';
         }
 
-        $instances = $this->get_courseinstances();
+        $instances = $this->get_courseinstances_formatted_name();
         foreach ($instances as $instance) {
             $span = 0;
             $gradepresentation = $this->gradepresentations($instance->id);
@@ -449,7 +449,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     }
                 }
 
-                $instances = $this->get_courseinstances();
+                $instances = $this->get_courseinstances_formatted_name();
                 $namefields = \core_user\fields::for_name()->get_required_fields();
                 foreach ($instances as $instance) {
                     // Coursesum of course grade.
@@ -731,7 +731,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $course = $DB->get_record('course', ['id' => $this->courseid]);
         $xml = '';
         $examplenames = [];
-        $instances = $this->get_courseinstances();
+        $instances = $this->get_courseinstances_formatted_name();
 
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
@@ -905,10 +905,10 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         $txt = '';
         $examplenames = [];
-        $instances = $this->get_courseinstances();
+        $instances = $this->get_courseinstances_formatted_name();
         $course = $DB->get_record('course', ['id' => $this->courseid]);
         // Header.
-        $txt .= get_string('pluginname', 'local_checkmarkreport') . ': ' . $course->fullname . "\n";
+        $txt .= get_string('pluginname', 'local_checkmarkreport') . ': ' . format_string($course->fullname) . "\n";
         // Title.
         if (!$seperatenamecolumns && !$this->column_is_hidden('fullnameuser')) {
             $txt .= get_string('fullname');
@@ -950,7 +950,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $txt .= "\t# " . get_string('presentationgrade', 'checkmark');
         }
 
-        $instances = $this->get_courseinstances();
+        $instances = $this->get_courseinstances_formatted_name();
         $examplecounter = 1;
         foreach ($instances as $instance) {
             // Get example data!

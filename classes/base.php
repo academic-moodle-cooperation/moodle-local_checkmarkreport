@@ -1047,6 +1047,20 @@ class local_checkmarkreport_base {
     }
 
     /**
+     * Get all checkmark instances in course indexed by checkmark id with the name of the instance formetted.
+     * E.g. active Moodle filters are applied to the name like multilangv2.
+     *
+     * @return object[]|null
+     */
+    public function get_courseinstances_formatted_name() {
+        $instances = $this->get_courseinstances();
+        foreach ($instances as $key => $instance) {
+            $instances[$key]->name = format_string($instance->name);
+        }
+        return $instances;
+    }
+
+    /**
      * Get's the course id
      *
      * @return int course id
@@ -1250,6 +1264,7 @@ class local_checkmarkreport_base {
 
         $filename = get_string('pluginname', 'local_checkmarkreport') . '_' . $course->shortname;
         $filename = $this->replace_quote_chars($filename);
+        $filename = format_string($filename);
         $workbook->send($filename . '.ods');
         $workbook->close();
     }
@@ -1272,6 +1287,7 @@ class local_checkmarkreport_base {
 
         $filename = get_string('pluginname', 'local_checkmarkreport') . '_' . $course->shortname;
         $filename = $this->replace_quote_chars($filename);
+        $filename = format_string($filename);
         $workbook->send($filename);
         $workbook->close();
     }
@@ -1421,6 +1437,7 @@ class local_checkmarkreport_base {
      * @param string $filename filename for download
      */
     public function output_xml_with_headers($xml, $filename) {
+        $filename = format_string($filename);
         $str = $xml->saveXML();
         header("Content-type: application/xml; charset=utf-8");
         header('Content-Length: ' . strlen($str));
@@ -1438,6 +1455,7 @@ class local_checkmarkreport_base {
      * @param string $filename filename for download
      */
     public function output_text_with_headers($text, $filename) {
+        $filename = format_string($filename);
         header("Content-type: text/txt; charset=utf-8");
         header('Content-Length: ' . strlen($text));
         header('Content-Disposition: attachment;filename="' . $filename . '.txt";' .

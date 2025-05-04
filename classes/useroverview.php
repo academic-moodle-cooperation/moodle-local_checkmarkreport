@@ -193,7 +193,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $table->head[0] = new html_table_row();
         $table->head[0]->cells = $tableheaders;
 
-        $instances = $this->get_courseinstances();
+        $instances = $this->get_courseinstances_formatted_name();
         $i = 0;
 
         $attendantstr = strtolower(get_string('attendant', 'checkmark'));
@@ -733,7 +733,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $report = $xml->appendChild(new DOMElement('report'));
 
         $examplenames = [];
-        $instances = $this->get_courseinstances();
+        $instances = $this->get_courseinstances_formatted_name();
         foreach ($data as $userid => $row) {
             $user = $report->appendChild(new DOMElement('user'));
             $user->setAttribute('id', $userid);
@@ -875,10 +875,10 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
 
         $txt = '';
         $examplenames = [];
-        $instances = $this->get_courseinstances();
+        $instances = $this->get_courseinstances_formatted_name();
         $course = $DB->get_record('course', ['id' => $this->courseid]);
         // Header.
-        $txt .= get_string('pluginname', 'local_checkmarkreport') . ': ' . $course->fullname . "\n";
+        $txt .= get_string('pluginname', 'local_checkmarkreport') . ': ' . format_string($course->fullname) . "\n";
         // Data.
         foreach ($data as $row) {
             $txt .= get_string('fullname') . ': ' . fullname($row,
@@ -905,7 +905,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     || (!$this->column_is_hidden('points') && !empty($showgrade))) {
                 $txt .= "\n";
             }
-            $instances = $this->get_courseinstances();
+            $instances = $this->get_courseinstances_formatted_name();
             foreach ($instances as $instance) {
                 $txt .= $instance->name . "\n";
                 // Dynamically add examples!
