@@ -162,7 +162,7 @@ class local_checkmarkreport_reportfilterform extends moodleform {
             ];
             if ($checkmarks = get_all_instances_in_course('checkmark', $COURSE)) {
                 foreach ($checkmarks as $checkmark) {
-                    $checkmarkselects[$checkmark->id] = $checkmark->name;
+                    $checkmarkselects[$checkmark->id] = format_string($checkmark->name);
                 }
                 $instances = $mform->addElement('select', 'instances',
                         get_string('modulenameplural', 'checkmark'),
