@@ -1507,7 +1507,7 @@ class local_checkmarkreport_base {
      * A function that adds a tooltip to a cell
      *
      * @param html_table_cell $cell an html_table_cell instance
-     * @param int|null $item itam that should be rendered
+     * @param int|null $item item that should be rendered
      * @param string|null $user current users
      * @param int|null $datetime current time
      * @param string|null $grader grader string
