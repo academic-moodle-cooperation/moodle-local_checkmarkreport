@@ -1,13 +1,18 @@
 CHANGELOG
 =========
 
+5.0.0 (2025-05-22)
+------------------
+* Moodle 5.0.0 compatible version
+* [FEATURE] #8334 Multilang filter v2 is now supported
+
 4.5.0 (2024-12-10)
 ------------------
-* [UPDATE] #8016 Moodle 4.5.0 compatible version
+* Moodle 4.5.0 compatible version
 
 4.4.0 (2024-07-21)
 ------------------
-* [UPDATE] #7750 Moodle 4.4.0 compatible version
+* Moodle 4.4.0 compatible version
 
 4.3.1 (2024-03-05)
 ------------------
