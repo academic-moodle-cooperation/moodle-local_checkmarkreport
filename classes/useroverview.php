@@ -284,8 +284,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                                     $attendancestr = $attendantstr;
                                     $character = '✓';
                                 } else if (($att == 0) && ($att !== null)) {
-                                    $attendancestr = $attendantstr;
-                                    $character = '✓';
+                                    $attendancestr = $absentstr;
+                                    $character = '✗';
                                 }
 
                                 $attendance = checkmark_get_attendance_symbol($attendance) .
@@ -298,6 +298,12 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                             // Changed this from dynamic properties to an attribute used for outputting the correct charater.
                             // Dynamic properties are deprecated since PHP 8.2.
                             $row['attendance']->attributes['output-character'] = $character;
+                            $overridden = $userdata->instancedata[$instance->id]->finalatgrade->overridden;
+                            $locked = $userdata->instancedata[$instance->id]->finalatgrade->locked;
+
+                            if ($tracksattendance->attendancegradebook && ($overridden || $locked)) {
+                                local_checkmarkreport_base::add_cell_tooltip($row['attendance']);
+                            }
                         }
                         if (!empty($showpresgrades) && $this->presentationsgraded()) {
                             if ($gradepresentation && $gradepresentation->presentationgradebook) {
@@ -702,9 +708,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         }
 
         // Init JS!
-        $params = new \stdClass();
-        $params->id = $table->id;
-        $PAGE->requires->js_call_amd('local_checkmarkreport/report', 'initializer', [$params]);
+        $PAGE->requires->js_call_amd('local_checkmarkreport/tooltip', 'initializer');
 
         return $table;
     }
