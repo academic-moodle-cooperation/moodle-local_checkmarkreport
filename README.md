@@ -3,7 +3,7 @@ Checkmark Report
 
 This file is part of the local_checkmarkreport plugin for Moodle - <http://moodle.org/>
 
-*Author:*    Clemens Marx, Daniel Binder, Philipp Hager
+*Author:*    Philipp Hager, Daniel Binder, Clemens Marx
 
 *Copyright:* [Academic Moodle Cooperation](http://www.academic-moodle-cooperation.org)
 
