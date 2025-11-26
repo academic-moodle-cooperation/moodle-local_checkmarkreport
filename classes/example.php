@@ -34,7 +34,6 @@ namespace local_checkmarkreport;
  * @package local_checkmarkreport
  */
 class example extends \mod_checkmark\example {
-
     /**
      * function that returns the state
      *
@@ -68,7 +67,7 @@ class example extends \mod_checkmark\example {
         }
 
         $sql = "SELECT ex.id AS id, ex.checkmarkid, ex.name AS shortname, ex.grade,
-                       ".$DB->sql_concat('c.exampleprefix', 'ex.name')." AS name, c.exampleprefix AS prefix
+                       " . $DB->sql_concat('c.exampleprefix', 'ex.name') . " AS name, c.exampleprefix AS prefix
                        $checkfields
                   FROM {checkmark_examples} ex
                   JOIN {checkmark} c ON ex.checkmarkid = c.id
@@ -161,4 +160,3 @@ class example extends \mod_checkmark\example {
         }
     }
 }
-

@@ -50,8 +50,11 @@ function local_checkmarkreport_extend_navigation(global_navigation $nav) {
  * @throws coding_exception
  * @throws moodle_exception
  */
-function local_checkmarkreport_extend_navigation_course(navigation_node $parentnode,
-                                                        stdClass        $course, context_course $context) {
+function local_checkmarkreport_extend_navigation_course(
+    navigation_node $parentnode,
+    stdClass $course,
+    context_course $context
+) {
     // Find appropriate key where our link should come. Probably won't work, but at least try.
     global $PAGE, $USER;
 
@@ -88,12 +91,14 @@ function local_checkmarkreport_extend_navigation_course(navigation_node $parentn
     // Prepare our node!
     $url = new moodle_url('/local/checkmarkreport/index.php', ['id' => $PAGE->course->id]);
     $icon = new pix_icon('i/report', get_string('pluginname', 'local_checkmarkreport'));
-    $node = navigation_node::create(get_string('pluginname', 'local_checkmarkreport'),
+    $node = navigation_node::create(
+        get_string('pluginname', 'local_checkmarkreport'),
         $url,
         navigation_node::TYPE_CUSTOM,
         get_string('pluginname', 'local_checkmarkreport'),
         'checkmarkreport' . $PAGE->course->id,
-        $icon);
+        $icon
+    );
 
     if ($childnode = $parentnode->find('coursereports', \navigation_node::TYPE_CONTAINER)) {
         $node = $childnode->add_node($node);
@@ -103,7 +108,6 @@ function local_checkmarkreport_extend_navigation_course(navigation_node $parentn
     $node->nodetype = navigation_node::TYPE_SETTING;
     $node->collapse = true;
     $node->add_class('checkmarkreportlink');
-
 }
 
 /**
@@ -120,34 +124,42 @@ function local_checkmarkreport_get_tabs($coursecontext, $id) {
     $tabs = [];
     $availabletabs = [];
     if (has_capability('local/checkmarkreport:view_courseoverview', $coursecontext, $USER->id)) {
-        $tabs[] = new tabobject('overview',
-                $CFG->wwwroot . '/local/checkmarkreport/index.php?id=' . $id .
+        $tabs[] = new tabobject(
+            'overview',
+            $CFG->wwwroot . '/local/checkmarkreport/index.php?id=' . $id .
                 '&amp;tab=overview',
-                get_string('overview', 'local_checkmarkreport'),
-                get_string('overview_alt', 'local_checkmarkreport'),
-                false);
+            get_string('overview', 'local_checkmarkreport'),
+            get_string('overview_alt', 'local_checkmarkreport'),
+            false
+        );
         $availabletabs[] = 'overview';
     }
 
     if (has_capability('local/checkmarkreport:view_students_overview', $coursecontext, $USER->id)) {
-        $tabs[] = new tabobject('useroverview',
-                $CFG->wwwroot . '/local/checkmarkreport/index.php?id=' . $id .
+        $tabs[] = new tabobject(
+            'useroverview',
+            $CFG->wwwroot . '/local/checkmarkreport/index.php?id=' . $id .
                 '&amp;tab=useroverview',
-                get_string('useroverview', 'local_checkmarkreport'),
-                get_string('useroverview_alt', 'local_checkmarkreport'),
-                false);
+            get_string('useroverview', 'local_checkmarkreport'),
+            get_string('useroverview_alt', 'local_checkmarkreport'),
+            false
+        );
         $availabletabs[] = 'useroverview';
     }
 
     // Here we check for capability and enrolment, to prevent admins from getting empty views or errors!
-    if (has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id)
-            && is_enrolled($coursecontext, null, 'local/checkmarkreport:view_own_overview', true)) {
-        $tabs[] = new tabobject('userview',
-                $CFG->wwwroot . '/local/checkmarkreport/index.php?id=' . $id .
+    if (
+        has_capability('local/checkmarkreport:view_own_overview', $coursecontext, $USER->id)
+            && is_enrolled($coursecontext, null, 'local/checkmarkreport:view_own_overview', true)
+    ) {
+        $tabs[] = new tabobject(
+            'userview',
+            $CFG->wwwroot . '/local/checkmarkreport/index.php?id=' . $id .
                 '&amp;tab=userview',
-                get_string('userview', 'local_checkmarkreport'),
-                get_string('userview_alt', 'local_checkmarkreport'),
-                false);
+            get_string('userview', 'local_checkmarkreport'),
+            get_string('userview_alt', 'local_checkmarkreport'),
+            false
+        );
         $availabletabs[] = 'userview';
     }
 

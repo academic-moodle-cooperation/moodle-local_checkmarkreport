@@ -48,7 +48,7 @@ $PAGE->set_context($coursecontext);
 $PAGE->set_course($course);
 
 // Get Tabs according to capabilities!
-list($tabs, $availabletabs, $tab) = local_checkmarkreport_get_tabs($coursecontext, $id);
+[$tabs, $availabletabs, $tab] = local_checkmarkreport_get_tabs($coursecontext, $id);
 
 $PAGE->set_url('/local/checkmarkreport/index.php', ['id' => $id, 'tab' => $tab]);
 $output = $PAGE->get_renderer('local_checkmarkreport');
@@ -147,7 +147,7 @@ if ($tab == 'overview' || $tab == 'useroverview') {
                 'users' => $users,
         ]);
     }
-    $PAGE->set_url($PAGE->url.'&'.$arrays);
+    $PAGE->set_url($PAGE->url . '&' . $arrays);
     $mform->display();
 }
 
@@ -173,8 +173,10 @@ switch ($tab) {
         echo $output->footer();
         die;
     default:
-        $notification = $output->notification(get_string('incorrect_tab', 'local_checkmarkreport'),
-                'notifyproblem');
+        $notification = $output->notification(
+            get_string('incorrect_tab', 'local_checkmarkreport'),
+            'notifyproblem'
+        );
         echo $output->box($notification, 'generalbox centered');
         echo $output->footer();
         die;

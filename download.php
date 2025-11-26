@@ -62,7 +62,7 @@ $PAGE->set_url('/local/checkmarkreport/download.php?' . $arrays, [
 ]);
 
 // Get Tabs according to capabilities!
-list($tabs, $availabletabs, $tab) = local_checkmarkreport_get_tabs($coursecontext, $id);
+[$tabs, $availabletabs, $tab] = local_checkmarkreport_get_tabs($coursecontext, $id);
 
 $output = $PAGE->get_renderer('local_checkmarkreport');
 
@@ -101,8 +101,10 @@ switch ($tab) {
         echo $output->footer();
         die;
     default:
-        $notification = $output->notification(get_string('incorrect_tab', 'local_checkmarkreport'),
-                'notifyproblem');
+        $notification = $output->notification(
+            get_string('incorrect_tab', 'local_checkmarkreport'),
+            'notifyproblem'
+        );
         echo $output->box($notification, 'generalbox centered');
         echo $output->footer();
         die;

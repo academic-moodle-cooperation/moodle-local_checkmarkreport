@@ -125,8 +125,12 @@ class provider implements metadataprovider, preference_provider {
                 $value = transform::yesno($value);
             }
             if (isset($value)) {
-                writer::with_context($context)->export_user_preference('local_checkmarkreport', $key, $value,
-                        get_string($preference['string'], 'local_checkmarkreport'));
+                writer::with_context($context)->export_user_preference(
+                    'local_checkmarkreport',
+                    $key,
+                    $value,
+                    get_string($preference['string'], 'local_checkmarkreport')
+                );
             }
         }
     }

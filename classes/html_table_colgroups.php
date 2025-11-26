@@ -25,7 +25,7 @@
 
 namespace local_checkmarkreport;
 
-use html_table as html_table;
+use html_table;
 
 /**
  * Enhance Moodle's html_table with colgroups!

@@ -32,7 +32,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_checkmarkreport_userview extends local_checkmarkreport_useroverview implements renderable {
-
     /** @var string classes to assign to the reporttables */
     protected $tableclass = 'table table-condensed table-bordered userview';
 
