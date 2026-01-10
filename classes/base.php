@@ -49,6 +49,8 @@ class local_checkmarkreport_base {
     const FORMAT_XML = 3;
     /** plain text file format */
     const FORMAT_TXT = 4;
+    /** csv semicolon-separated format */
+    const FORMAT_CSV = 5;
     /** show all columns */
     const SHOW_ALL_COLUMNS = 'all';
 
@@ -1483,6 +1485,23 @@ class local_checkmarkreport_base {
         header('Content-Transfer-Encoding: binary');
         header('Content-Encoding: utf-8');
         echo $text;
+    }
+
+    /**
+     * Outputs CSV (semicolon-separated) for download with filename as specified!
+     *
+     * @param string $csv CSV content
+     * @param string $filename filename for download
+     */
+    public function output_csv_with_headers($csv, $filename) {
+        $filename = format_string($filename);
+        header("Content-type: text/csv; charset=utf-8");
+        header('Content-Length: ' . strlen($csv));
+        header('Content-Disposition: attachment;filename="' . $filename . '.csv";' .
+                'filename*="' . rawurlencode($filename) . '.csv"');
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Encoding: utf-8');
+        echo $csv;
     }
 
     /**

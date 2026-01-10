@@ -1233,15 +1233,22 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
      * @return string grade percentage (human readable)
      */
     protected function get_instance_percgrade($instancedata) {
+        if (is_null($instancedata->grade) && is_null($instancedata->finalgrade->grade)) {
+            return '-';
+        }
         if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
-            $grade = (empty($instancedata->finalgrade->grade) ? 0 : $instancedata->finalgrade->grade);
-            if ($instancedata->maxgrade > 0) {
-                $percgrade = round(100 * $grade / $instancedata->maxgrade, 2) . ' %';
-            } else {
+            if (is_null($instancedata->finalgrade->grade) || $instancedata->maxgrade <= 0) {
                 $percgrade = '-';
+            } else {
+                $grade = $instancedata->finalgrade->grade;
+                $percgrade = round(100 * $grade / $instancedata->maxgrade, 2) . ' %';
             }
         } else {
-            $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2) . ' %';
+            if (is_null($instancedata->grade) || empty($instancedata->percentgrade) || $instancedata->maxgrade <= 0) {
+                $percgrade = '-';
+            } else {
+                $percgrade = round($instancedata->percentgrade, 2) . ' %';
+            }
         }
 
         return $percgrade;
@@ -1367,5 +1374,299 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $y++;
             }
         }
+    }
+
+    /**
+     * get report data as CSV file with semicolon separator (sends to browser, forces download)
+     *
+     * @return void
+     */
+    public function get_csv() {
+        global $DB;
+        $data = $this->get_coursedata();
+        $course = $DB->get_record('course', ['id' => $this->courseid]);
+        $context = context_course::instance($this->courseid);
+
+        $showgrade = get_user_preferences('checkmarkreport_showgrade');
+        $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrel = get_user_preferences('checkmarkreport_sumrel');
+        $showexamples = get_user_preferences('checkmarkreport_showexamples');
+        $showpoints = get_user_preferences('checkmarkreport_showpoints');
+        $showattendances = get_user_preferences('checkmarkreport_showattendances');
+        $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
+        $showprescount = get_user_preferences('checkmarkreport_showpresentationcount');
+        $seperatenamecolumns = get_user_preferences('checkmarkreport_seperatenamecolumns');
+
+        $csv = '';
+        $examplenames = [];
+        $instances = $this->get_courseinstances_formatted_name();
+        $course = $DB->get_record('course', ['id' => $this->courseid]);
+
+        // Add UTF-8 BOM for proper encoding in Excel.
+        $csv .= "\xEF\xBB\xBF";
+
+        // Build column headers (single row, no merged cells).
+        $headers = [];
+
+        // Add user name columns.
+        if (!$seperatenamecolumns && !$this->column_is_hidden('fullnameuser')) {
+            $headers[] = get_string('fullname');
+        } else if ($seperatenamecolumns) {
+            $names = $this->get_name_header(has_capability('moodle/site:viewfullnames', $context), $seperatenamecolumns);
+            foreach ($names as $name) {
+                if (!$this->column_is_hidden($name)) {
+                    $headers[] = get_string($name);
+                }
+            }
+        }
+
+        // Add user identity fields.
+        $useridentity = \core_user\fields::for_identity($context)->get_required_fields();
+        foreach ($useridentity as $cur) {
+            if (!$this->column_is_hidden($cur)) {
+                $headers[] = \core_user\fields::get_display_name($cur);
+            }
+        }
+
+        // Add summary columns.
+        if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
+            $headers[] = 'Σ ' . get_string('modgrade', 'grades');
+        }
+        if (!$this->column_is_hidden('examples') && !empty($showabs)) {
+            $headers[] = 'Σ ' . get_string('examples', 'local_checkmarkreport');
+        }
+        if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
+            $headers[] = 'Σ % ' . get_string('examples', 'local_checkmarkreport')
+                . ' (Σ % ' . get_string('modgrade', 'grades') . ')';
+        }
+        if (!empty($showattendances) && $this->attendancestracked()) {
+            $headers[] = 'Σ ' . get_string('attendance', 'checkmark');
+        }
+        if (!$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded()) {
+            $headers[] = 'Σ ' . get_string('presentationgrade', 'checkmark');
+        }
+        if (!$this->column_is_hidden('presentationsgraded') && !empty($showprescount) && $this->presentationsgraded()) {
+            $headers[] = '# ' . get_string('presentationgrade', 'checkmark');
+        }
+
+        // Add instance-specific columns (with instance names in headers).
+        $examplecounter = 1;
+        foreach ($instances as $instance) {
+            // Get example data.
+            if (!isset($examplenames[$instance->id])) {
+                $examplenames[$instance->id] = $DB->get_records('checkmark_examples', ['checkmarkid' => $instance->id], 'id ASC');
+            }
+            if ($this->column_is_hidden('instance' . $instance->id)) {
+                foreach ($examplenames[$instance->id] as $key => $example) {
+                    $examplecounter++;
+                }
+                continue;
+            }
+
+            $gradepresentation = $this->gradepresentations($instance->id);
+            if ($gradepresentation && !$gradepresentation->presentationgrade) {
+                $gradepresentation = false;
+            }
+
+            if (!$this->column_is_hidden('grade' . $instance->id) && !empty($showgrade)) {
+                $headers[] = $instance->name . ': ' . get_string('modgrade', 'grades');
+            }
+            if (!$this->column_is_hidden('examples' . $instance->id) && !empty($showabs)) {
+                $headers[] = $instance->name . ': ' . get_string('examples', 'local_checkmarkreport');
+            }
+            if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
+                $headers[] = $instance->name . ': % ' . get_string('examples', 'local_checkmarkreport') .
+                    ' (% ' . get_string('modgrade', 'grades') . ')';
+            }
+            if (
+                !$this->column_is_hidden('attendance' . $instance->id) && !empty($showattendances) &&
+                $this->attendancestracked() && $this->tracksattendance($instance->id)
+            ) {
+                $headers[] = $instance->name . ': ' . get_string('attendance', 'checkmark');
+            }
+            if (
+                !$this->column_is_hidden('presentationgrade' . $instance->id) && !empty($showpresgrades) &&
+                $this->presentationsgraded() && $gradepresentation
+            ) {
+                $headers[] = $instance->name . ': ' . get_string('presentationgrade', 'checkmark');
+            }
+
+            // Add example columns with instance name.
+            if (!empty($showexamples)) {
+                foreach ($examplenames[$instance->id] as $key => $example) {
+                    if (!$this->column_is_hidden('example' . $examplecounter)) {
+                        $headers[] = $instance->name . ': ' . $example->name . ' (' . $example->grade . 'P)';
+                    }
+                    $examplecounter++;
+                }
+            }
+        }
+
+        // Write header row.
+        $csv .= implode(';', array_map([$this, 'escape_csv_value'], $headers)) . "\n";
+
+        // Data rows.
+        foreach ($data as $row) {
+            $rowdata = [];
+
+            // Add user name/identity fields.
+            if (!$seperatenamecolumns && !$this->column_is_hidden('fullnameuser')) {
+                $rowdata[] = fullname($row, has_capability('moodle/site:viewfullnames', $context));
+            } else if ($seperatenamecolumns) {
+                $names = $this->get_name_header(
+                    has_capability('moodle/site:viewfullnames', $context),
+                    $seperatenamecolumns
+                );
+                foreach ($names as $name) {
+                    if (!$this->column_is_hidden($name) && isset($row->{$name})) {
+                        $rowdata[] = $row->{$name};
+                    }
+                }
+            }
+
+            // Add user data fields.
+            foreach ($row->userdata as $key => $cur) {
+                if (!$this->column_is_hidden($key)) {
+                    $rowdata[] = $cur;
+                }
+            }
+
+            // Add summary data.
+            if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
+                $rowdata[] = (empty($row->coursesum) ? 0 : $row->coursesum) . ' / ' . (empty($row->maxgrade) ? 0 : $row->maxgrade);
+            }
+            if (!$this->column_is_hidden('examples') && !empty($showabs)) {
+                $rowdata[] = $row->checks . ' / ' . $row->maxchecks;
+            }
+            if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
+                if ($row->overridden) {
+                    $percgrade = round(100 * (empty($row->coursesum) ? 0 : $row->coursesum) / $row->maxgrade, 2);
+                } else {
+                    $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
+                }
+                $rowdata[] = $row->percentchecked . '% (' . $percgrade . '%)';
+            }
+            if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
+                if ($row->atoverridden) {
+                    $attendances = $row->courseatsum;
+                } else {
+                    $attendances = $row->attendances;
+                }
+                $rowdata[] = $attendances . ' / ' . $row->maxattendances;
+            }
+            if (
+                !$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded() &&
+                !empty($this->pointsforpresentations())
+            ) {
+                $presgrade = $row->coursepressum;
+                $rowdata[] = $this->display_grade($presgrade, $row->presentationgrademax);
+            }
+            if (!$this->column_is_hidden('presentationsgraded') && !empty($showprescount) && $this->presentationsgraded()) {
+                $rowdata[] = $this->display_grade($row->presentationsgraded, $row->presentationsgradedmax);
+            }
+
+            // Add instance-specific data.
+            $examplecount = 1;
+            foreach ($instances as $instance) {
+                $instancedata = $row->instancedata[$instance->id];
+                $gradepresentation = $this->gradepresentations($instance->id);
+                if ($gradepresentation && !$gradepresentation->presentationgrade) {
+                    $gradepresentation = false;
+                }
+
+                if (!$this->column_is_hidden('grade' . $instance->id) && !empty($showgrade)) {
+                    if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
+                        $rowdata[] = $this->display_grade($instancedata->finalgrade->grade, $instancedata->maxgrade);
+                    } else {
+                        $rowdata[] = $this->display_grade($instancedata->grade, $instancedata->maxgrade);
+                    }
+                }
+                if (!$this->column_is_hidden('examples' . $instance->id) && !empty($showabs)) {
+                    $rowdata[] = $instancedata->checked . ' / ' . $instancedata->maxchecked;
+                }
+                if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
+                    $percgrade = $this->get_instance_percgrade($instancedata);
+                    $rowdata[] = $instancedata->percentchecked . '% (' . $percgrade . ')';
+                }
+                if (
+                    !$this->column_is_hidden('attendance' . $instance->id) && !empty($showattendances) &&
+                    $this->attendancestracked() && $this->tracksattendance($instance->id)
+                ) {
+                    $tracksattendance = $this->tracksattendance($instance->id);
+                    if ($tracksattendance->attendancegradebook) {
+                        $att = $instancedata->finalatgrade->grade;
+                    } else {
+                        $att = $instancedata->attendance;
+                    }
+                    $attendance = '?';
+                    if ($att == 1) {
+                        $attendance = '✓';
+                    } else if (($att == 0) && ($att !== null)) {
+                        $attendance = '✗';
+                    }
+                    $rowdata[] = $attendance;
+                }
+                if (
+                    !$this->column_is_hidden('presentationgrade' . $instance->id) && !empty($showpresgrades) &&
+                    $this->presentationsgraded() && $gradepresentation
+                ) {
+                    if ($gradepresentation->presentationgradebook) {
+                        $presentationgrade = $instancedata->formattedpresgrade;
+                    } else {
+                        $presentationgrade = $this->display_grade(
+                            $instancedata->presentationgrade,
+                            $gradepresentation->presentationgrade
+                        );
+                    }
+                    $rowdata[] = $presentationgrade;
+                }
+                if (!empty($showexamples)) {
+                    foreach ($instancedata->examples as $key => $example) {
+                        if (!$this->column_is_hidden('example' . $examplecount)) {
+                            if (!empty($showpoints)) {
+                                $pointvalue = $example->get_points_for_export_with_colors();
+                                $rowdata[] = str_replace('<colorred>', '', $pointvalue);
+                            } else {
+                                $rowdata[] = $example->get_examplestate_for_export();
+                            }
+                        }
+                        $examplecount++;
+                    }
+                }
+            }
+
+            // Write data row.
+            $csv .= implode(';', array_map([$this, 'escape_csv_value'], $rowdata)) . "\n";
+        }
+
+        // Output the CSV file.
+        $filename = get_string('pluginname', 'local_checkmarkreport') . '_' . $course->shortname;
+        $filename = $this->replace_quote_chars($filename);
+        $this->output_csv_with_headers($csv, $filename);
+    }
+
+    /**
+     * Escape and quote CSV values for semicolon-separated export.
+     *
+     * @param mixed $value Value to escape
+     * @return string Escaped value ready for CSV
+     */
+    private function escape_csv_value($value): string {
+        // Handle empty/null values.
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        // Remove non-breaking spaces.
+        $value = str_replace(chr(194) . chr(160), '', (string)$value);
+        // Escape double quotes by doubling them.
+        $value = str_replace('"', '""', $value);
+
+        // Quote the value if it contains delimiter, quotes, or newlines.
+        if (strpos($value, ';') !== false || strpos($value, '"') !== false || strpos($value, "\n") !== false) {
+            $value = '"' . $value . '"';
+        }
+
+        return $value;
     }
 }

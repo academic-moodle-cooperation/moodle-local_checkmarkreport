@@ -1120,6 +1120,252 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
     }
 
     /**
+     * get report data as CSV file with semicolon separator (sends to browser, forces download)
+     *
+     * @return void
+     */
+    public function get_csv() {
+        global $DB;
+        $context = context_course::instance($this->courseid);
+        $data = $this->get_coursedata();
+        $course = $DB->get_record('course', ['id' => $this->courseid]);
+
+        $showgrade = get_user_preferences('checkmarkreport_showgrade');
+        $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrel = get_user_preferences('checkmarkreport_sumrel');
+        $showexamples = get_user_preferences('checkmarkreport_showexamples');
+        $showattendances = get_user_preferences('checkmarkreport_showattendances');
+        $showpresgrades = get_user_preferences('checkmarkreport_showpresentationgrades');
+        $showprescount = get_user_preferences('checkmarkreport_showpresentationcount');
+
+        $csv = '';
+        $examplenames = [];
+        $instances = $this->get_courseinstances_formatted_name();
+
+        // Add UTF-8 BOM for proper encoding in Excel.
+        $csv .= "\xEF\xBB\xBF";
+
+        // Header with title.
+        $title = get_string('pluginname', 'local_checkmarkreport') . ': ' . format_string($course->fullname);
+        $csv .= $this->escape_csv_value($title) . "\n";
+        $csv .= "\n";
+
+        // Data for each user.
+        $firstuser = true;
+        foreach ($data as $row) {
+            // Add empty line between users (except before first user).
+            if (!$firstuser) {
+                $csv .= "\n";
+            }
+            $firstuser = false;
+
+            // User name.
+            $csv .= $this->escape_csv_value(get_string('fullname') . ': ' . fullname(
+                $row,
+                has_capability('moodle/site:viewfullnames', $context)
+            )) . "\n";
+
+            // Summary data.
+            if (!$this->column_is_hidden('points') && $showgrade) {
+                $grade = empty($row->coursesum) ? 0 : $row->coursesum;
+                $gradetext = $grade . '/' . (empty($row->maxgrade) ? 0 : $row->maxgrade);
+                $csv .= $this->escape_csv_value("Σ " . get_string('modgrade', 'grades')) . ';' .
+                    $this->escape_csv_value($gradetext) . "\n";
+            }
+            if (!$this->column_is_hidden('checked') && $showabs) {
+                $checkstext = $row->checks . '/' . $row->maxchecks;
+                $csv .= $this->escape_csv_value("Σ " . get_string('examples', 'local_checkmarkreport')) . ';' .
+                    $this->escape_csv_value($checkstext) . "\n";
+            }
+            if ($showrel) {
+                $percenttext = $row->percentchecked . '%';
+                $csv .= $this->escape_csv_value("Σ % " . get_string('examples', 'local_checkmarkreport')) . ';' .
+                    $this->escape_csv_value($percenttext) . "\n";
+                if ($row->overridden) {
+                    $grade = empty($row->coursesum) ? 0 : $row->coursesum;
+                    $percgrade = round(100 * $grade / $row->maxgrade, 2);
+                } else {
+                    $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
+                }
+                $percgradetext = $percgrade . '%';
+                $csv .= $this->escape_csv_value("Σ % " . get_string('grade', 'local_checkmarkreport')) . ';' .
+                    $this->escape_csv_value($percgradetext) . "\n";
+            }
+
+            // Instance-specific data.
+            foreach ($instances as $instance) {
+                // Get example data.
+                if (!isset($examplenames[$instance->id])) {
+                    $examplenames[$instance->id] = $DB->get_records(
+                        'checkmark_examples',
+                        ['checkmarkid' => $instance->id],
+                        'id ASC'
+                    );
+                }
+                $instancedata = $row->instancedata[$instance->id];
+
+                // Instance header.
+                $csv .= "\n" . $this->escape_csv_value($instance->name) . "\n";
+
+                // Example details.
+                if (
+                    !empty($showexamples) && (!$this->column_is_hidden('examples')
+                            || !$this->column_is_hidden('checked')
+                            || (!$this->column_is_hidden('points') && $showgrade))
+                ) {
+                    foreach ($instancedata->examples as $key => $example) {
+                        $examplerow = '';
+                        if (!$this->column_is_hidden('examples')) {
+                            $examplerow .= $this->escape_csv_value($example->name . " (" . $example->grade . 'P)');
+                        }
+                        if (!$this->column_is_hidden('checked')) {
+                            $sep = empty($examplerow) ? '' : ';';
+                            $examplerow .= $sep . $this->escape_csv_value($example->get_examplestate_for_export());
+                        }
+                        if (!$this->column_is_hidden('points') && $showgrade) {
+                            $sep = empty($examplerow) ? '' : ';';
+                            $examplerow .= $sep . $this->escape_csv_value($example->get_checked_of_max_points());
+                        }
+                        if (!empty($examplerow)) {
+                            $csv .= $examplerow . "\n";
+                        }
+                    }
+                }
+
+                // Instance summary.
+                $summaryrow = '';
+                if ($showexamples && !$this->column_is_hidden('examples')) {
+                    $summaryrow .= $this->escape_csv_value("Σ " . $instance->name);
+                } else if ($showgrade) {
+                    $summaryrow .= ';' . $this->escape_csv_value("Σ " . $instance->name);
+                }
+
+                if (!$this->column_is_hidden('checked')) {
+                    if ($showabs && $showrel) {
+                        $checksummary = $instancedata->checked . '/' . $instancedata->maxchecked . ' (' .
+                            round($instancedata->percentchecked, 2) . '%)';
+                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($checksummary);
+                    } else if ($showabs) {
+                        $checksummary = $instancedata->checked . '/' . $instancedata->maxchecked;
+                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($checksummary);
+                    } else if ($showrel) {
+                        $percsummary = round($instancedata->percentchecked, 2) . '%';
+                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($percsummary);
+                    }
+                }
+                if (!$this->column_is_hidden('points')) {
+                    if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
+                        $grade = empty($instancedata->finalgrade->grade) ? 0 : $instancedata->finalgrade->grade;
+                        if (!empty($instancedata->maxgrade)) {
+                            $percgrade = round(100 * $grade / $instancedata->maxgrade, 2);
+                        } else {
+                            $percgrade = '-';
+                        }
+                    } else {
+                        $grade = empty($instancedata->grade) ? 0 : $instancedata->grade;
+                        $percgrade = round((empty($instancedata->percentgrade) ? 0 : $instancedata->percentgrade), 2);
+                    }
+                    if ($showabs && $showrel) {
+                        $maxgrade = empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade;
+                        $gradesummary = $grade . '/' . $maxgrade . '(' . $percgrade . " %)";
+                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($gradesummary);
+                    } else if ($showabs) {
+                        $maxgrade = empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade;
+                        $gradesummary = $grade . '/' . $maxgrade;
+                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($gradesummary);
+                    } else if ($showrel) {
+                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($percgrade . " %");
+                    } else if ($showgrade || $showexamples) {
+                        $maxgrade = empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade;
+                        $gradesummary = $grade . '/' . $maxgrade;
+                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($gradesummary);
+                    }
+                }
+
+                if (!empty($summaryrow)) {
+                    $csv .= $summaryrow . "\n";
+                }
+
+                // Attendance.
+                if (
+                    !$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()
+                        && $this->tracksattendance($instance->id)
+                ) {
+                    $att = $instancedata->attendance;
+                    $tracksattendance = $this->tracksattendance($instance->id);
+                    if ($tracksattendance->attendancegradebook) {
+                        $att = $instancedata->finalatgrade->grade;
+                    } else {
+                        $att = $instancedata->attendance;
+                    }
+                    $attendance = '?';
+                    if ($att == 1) {
+                        $attendance = '✓';
+                    } else if (($att == 0) && ($att !== null)) {
+                        $attendance = '✗';
+                    }
+                    $csv .= ';' . $this->escape_csv_value(get_string('attendance', 'checkmark') . ': ' . $attendance) . "\n";
+                }
+
+                // Presentation grade.
+                $gradepresentation = $this->gradepresentations($instance->id);
+                if ($gradepresentation && !$gradepresentation->presentationgrade) {
+                    $gradepresentation = false;
+                }
+                if (
+                    !$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded()
+                        && $gradepresentation
+                ) {
+                    $presentationgrade = false;
+                    if ($gradepresentation->presentationgradebook) {
+                        $presentationgrade = $instancedata->formattedpresgrade;
+                    } else {
+                        $presentationgrade = $this->display_grade(
+                            $instancedata->presentationgrade,
+                            $gradepresentation->presentationgrade
+                        );
+                    }
+
+                    if ($presentationgrade !== false) {
+                        $prestext = get_string('presentationgrade', 'checkmark') . ': ' . $presentationgrade;
+                        $csv .= ';' . $this->escape_csv_value($prestext) . "\n";
+                    }
+                }
+            }
+
+            // User totals.
+            if (!empty($showattendances) && $this->attendancestracked()) {
+                if ($row->atoverridden) {
+                    $attendances = $row->courseatsum;
+                } else {
+                    $attendances = $row->attendances;
+                }
+            }
+
+            if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
+                $atttext = 'Σ ' . get_string('attendance', 'checkmark') . ': ' . $attendances . '/' . $row->maxattendances;
+                $csv .= $this->escape_csv_value($atttext) . "\n";
+            }
+            if (
+                !$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded() &&
+                !empty($this->pointsforpresentations())
+            ) {
+                $presgrade = $this->display_grade($row->presentationgrade, $row->presentationgrademax);
+                $csv .= $this->escape_csv_value('Σ ' . get_string('presentationgrade', 'checkmark') . ': ' . $presgrade) . "\n";
+            }
+            if (!$this->column_is_hidden('presentationsgraded') && !empty($showprescount) && $this->presentationsgraded()) {
+                $prescount = $this->display_grade($row->presentationsgraded, $row->presentationsgradedmax);
+                $csv .= $this->escape_csv_value("# " . get_string('presentationgrade', 'checkmark') . ': ' . $prescount) . "\n";
+            }
+        }
+
+        // Output the CSV file.
+        $filename = get_string('pluginname', 'local_checkmarkreport') . '_' . $course->shortname;
+        $filename = $this->replace_quote_chars($filename);
+        $this->output_csv_with_headers($csv, $filename);
+    }
+
+    /**
      * Write report data to workbook
      *
      * @param MoodleExcelWorkbook|MoodleODSWorkbook $workbook object to write data into
@@ -1270,5 +1516,26 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 }
             }
         }
+    }
+
+    /**
+     * Escape and quote CSV values for semicolon-separated export.
+     *
+     * @param mixed $value Value to escape
+     * @return string Escaped value ready for CSV
+     */
+    private function escape_csv_value($value): string {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        $value = str_replace(chr(194) . chr(160), '', (string)$value);
+        $value = str_replace('"', '""', $value);
+
+        if (strpos($value, ';') !== false || strpos($value, '"') !== false || strpos($value, "\n") !== false) {
+            $value = '"' . $value . '"';
+        }
+
+        return $value;
     }
 }
