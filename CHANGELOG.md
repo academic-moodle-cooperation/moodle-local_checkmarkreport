@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+5.1.0 (2026-01-06)
+------------------
+* Moodle 5.1.0 compatible version
+* [FEATURE] #8536 Added export format CSV (;)
+* [FEATURE] #8537 Added export format CSV (tab)
+
 5.0.0 (2025-05-22)
 ------------------
 * Moodle 5.0.0 compatible version
