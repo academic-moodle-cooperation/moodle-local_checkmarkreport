@@ -1539,7 +1539,9 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             // Add summary data.
             if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
                 $rowdata[] = $this->format_fraction(
-                    (empty($row->coursesum) ? 0 : $row->coursesum), (empty($row->maxgrade) ? 0 : $row->maxgrade));
+                    (empty($row->coursesum) ? 0 : $row->coursesum),
+                    (empty($row->maxgrade) ? 0 : $row->maxgrade)
+                );
             }
             if (!$this->column_is_hidden('examples') && !empty($showabs)) {
                 $rowdata[] = $this->format_fraction($row->checks, $row->maxchecks);
@@ -1627,7 +1629,10 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $rowdata[] = $this->wrap_fraction_for_csv($presentationgrade);
                     } else {
                         $rowdata[] = $this->format_fraction(
-                            $instancedata->presentationgrade, $gradepresentation->presentationgrade, true);
+                            $instancedata->presentationgrade,
+                            $gradepresentation->presentationgrade,
+                            true
+                        );
                     }
                 }
                 if (!empty($showexamples)) {
