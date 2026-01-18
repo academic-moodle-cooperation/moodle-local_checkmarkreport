@@ -1377,11 +1377,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     }
 
     /**
-     * get report data as CSV file with semicolon separator (sends to browser, forces download)
+     * get report data as CSV file with configurable separator (sends to browser, forces download)
      *
+     * @param string $delimiter CSV field delimiter to use
      * @return void
      */
-    public function get_csv() {
+    public function get_csv(string $delimiter = ';') {
         global $DB;
         $data = $this->get_coursedata();
         $course = $DB->get_record('course', ['id' => $this->courseid]);
@@ -1437,7 +1438,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         }
         if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
             $headers[] = 'Σ % ' . get_string('examples', 'local_checkmarkreport')
-                . ' (Σ % ' . get_string('modgrade', 'grades') . ')';
+                . ' (' . get_string('grade', 'local_checkmarkreport') . ')';
         }
         if (!empty($showattendances) && $this->attendancestracked()) {
             $headers[] = 'Σ ' . get_string('attendance', 'checkmark');
@@ -1503,7 +1504,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         }
 
         // Write header row.
-        $csv .= implode(';', array_map([$this, 'escape_csv_value'], $headers)) . "\n";
+        $escapedheaders = [];
+        foreach ($headers as $header) {
+            $escapedheaders[] = $this->escape_csv_value($header, $delimiter);
+        }
+        $csv .= implode($delimiter, $escapedheaders) . "\n";
 
         // Data rows.
         foreach ($data as $row) {
@@ -1533,18 +1538,24 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
             // Add summary data.
             if (!$this->column_is_hidden('grade') && !empty($showgrade)) {
-                $rowdata[] = (empty($row->coursesum) ? 0 : $row->coursesum) . ' / ' . (empty($row->maxgrade) ? 0 : $row->maxgrade);
+                $rowdata[] = $this->format_fraction(
+                    (empty($row->coursesum) ? 0 : $row->coursesum), (empty($row->maxgrade) ? 0 : $row->maxgrade));
             }
             if (!$this->column_is_hidden('examples') && !empty($showabs)) {
-                $rowdata[] = $row->checks . ' / ' . $row->maxchecks;
+                $rowdata[] = $this->format_fraction($row->checks, $row->maxchecks);
             }
             if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
-                if ($row->overridden) {
+                if ($row->maxgrade > 0 && $row->coursesum >= 0) {
                     $percgrade = round(100 * (empty($row->coursesum) ? 0 : $row->coursesum) / $row->maxgrade, 2);
                 } else {
-                    $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
+                    $percgrade = '-';
                 }
-                $rowdata[] = $row->percentchecked . '% (' . $percgrade . '%)';
+                $percentchecked = round($row->percentchecked, 2);
+                if (is_numeric($percgrade)) {
+                    $rowdata[] = $percentchecked . '% (' . $percgrade . '%)';
+                } else {
+                    $rowdata[] = $percentchecked . '% (' . $percgrade . ')';
+                }
             }
             if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
                 if ($row->atoverridden) {
@@ -1552,17 +1563,17 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 } else {
                     $attendances = $row->attendances;
                 }
-                $rowdata[] = $attendances . ' / ' . $row->maxattendances;
+                $rowdata[] = $this->format_fraction($attendances, $row->maxattendances);
             }
             if (
                 !$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded() &&
                 !empty($this->pointsforpresentations())
             ) {
                 $presgrade = $row->coursepressum;
-                $rowdata[] = $this->display_grade($presgrade, $row->presentationgrademax);
+                $rowdata[] = $this->format_fraction($presgrade, $row->presentationgrademax, true);
             }
             if (!$this->column_is_hidden('presentationsgraded') && !empty($showprescount) && $this->presentationsgraded()) {
-                $rowdata[] = $this->display_grade($row->presentationsgraded, $row->presentationsgradedmax);
+                $rowdata[] = $this->format_fraction($row->presentationsgraded, $row->presentationsgradedmax);
             }
 
             // Add instance-specific data.
@@ -1576,17 +1587,18 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
                 if (!$this->column_is_hidden('grade' . $instance->id) && !empty($showgrade)) {
                     if ($instancedata->finalgrade->overridden || ($instancedata->finalgrade->grade != $instancedata->grade)) {
-                        $rowdata[] = $this->display_grade($instancedata->finalgrade->grade, $instancedata->maxgrade);
+                        $rowdata[] = $this->format_fraction($instancedata->finalgrade->grade, $instancedata->maxgrade, true);
                     } else {
-                        $rowdata[] = $this->display_grade($instancedata->grade, $instancedata->maxgrade);
+                        $rowdata[] = $this->format_fraction($instancedata->grade, $instancedata->maxgrade, true);
                     }
                 }
                 if (!$this->column_is_hidden('examples' . $instance->id) && !empty($showabs)) {
-                    $rowdata[] = $instancedata->checked . ' / ' . $instancedata->maxchecked;
+                    $rowdata[] = $this->format_fraction($instancedata->checked, $instancedata->maxchecked);
                 }
                 if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
                     $percgrade = $this->get_instance_percgrade($instancedata);
-                    $rowdata[] = $instancedata->percentchecked . '% (' . $percgrade . ')';
+                    $percchecked = round($instancedata->percentchecked, 2);
+                    $rowdata[] = $percchecked . '% (' . $percgrade . ')';
                 }
                 if (
                     !$this->column_is_hidden('attendance' . $instance->id) && !empty($showattendances) &&
@@ -1612,20 +1624,23 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 ) {
                     if ($gradepresentation->presentationgradebook) {
                         $presentationgrade = $instancedata->formattedpresgrade;
+                        $rowdata[] = $this->wrap_fraction_for_csv($presentationgrade);
                     } else {
-                        $presentationgrade = $this->display_grade(
-                            $instancedata->presentationgrade,
-                            $gradepresentation->presentationgrade
-                        );
+                        $rowdata[] = $this->format_fraction(
+                            $instancedata->presentationgrade, $gradepresentation->presentationgrade, true);
                     }
-                    $rowdata[] = $presentationgrade;
                 }
                 if (!empty($showexamples)) {
                     foreach ($instancedata->examples as $key => $example) {
                         if (!$this->column_is_hidden('example' . $examplecount)) {
                             if (!empty($showpoints)) {
                                 $pointvalue = $example->get_points_for_export_with_colors();
-                                $rowdata[] = str_replace('<colorred>', '', $pointvalue);
+                                $pointvalue = str_replace('<colorred>', '', $pointvalue);
+                                if ($example->is_forced_checked() || $example->is_forced_unchecked()) {
+                                    $rowdata[] = $this->wrap_bracket_text_for_csv($pointvalue);
+                                } else {
+                                    $rowdata[] = $pointvalue;
+                                }
                             } else {
                                 $rowdata[] = $example->get_examplestate_for_export();
                             }
@@ -1636,7 +1651,11 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
 
             // Write data row.
-            $csv .= implode(';', array_map([$this, 'escape_csv_value'], $rowdata)) . "\n";
+            $escapedrow = [];
+            foreach ($rowdata as $cell) {
+                $escapedrow[] = $this->escape_csv_value($cell, $delimiter);
+            }
+            $csv .= implode($delimiter, $escapedrow) . "\n";
         }
 
         // Output the CSV file.
@@ -1646,12 +1665,13 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
     }
 
     /**
-     * Escape and quote CSV values for semicolon-separated export.
+     * Escape and quote CSV values for delimited export.
      *
      * @param mixed $value Value to escape
+     * @param string $delimiter CSV field delimiter to use
      * @return string Escaped value ready for CSV
      */
-    private function escape_csv_value($value): string {
+    private function escape_csv_value($value, string $delimiter = ';'): string {
         // Handle empty/null values.
         if ($value === null || $value === '') {
             return '';
@@ -1663,10 +1683,85 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $value = str_replace('"', '""', $value);
 
         // Quote the value if it contains delimiter, quotes, or newlines.
-        if (strpos($value, ';') !== false || strpos($value, '"') !== false || strpos($value, "\n") !== false) {
+        if (strpos($value, $delimiter) !== false || strpos($value, '"') !== false || strpos($value, "\n") !== false) {
             $value = '"' . $value . '"';
         }
 
         return $value;
+    }
+
+    /**
+     * Wrap a value containing a fraction so Excel keeps it as text.
+     *
+     * @param string $value Value that may contain a fraction
+     * @return string Value wrapped if it contained a fraction, otherwise original value
+     */
+    private function wrap_fraction_for_csv($value) {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        if (strpos((string)$value, '/') === false) {
+            return $value;
+        }
+
+        $parts = preg_split('/\s*\/\s*/', (string)$value, 2);
+        $left = $parts[0] ?? '';
+        $right = $parts[1] ?? '';
+
+        return $this->format_fraction($left, $right);
+    }
+
+    /**
+     * Format a fraction as text to avoid Excel date conversion.
+     *
+     * @param mixed $numerator Numerator value
+     * @param mixed $denominator Denominator value
+     * @param bool $dashfornograde Whether to return '-' for no grade
+     * @return string Formatted fraction prefixed for text
+     */
+    private function format_fraction($numerator, $denominator, bool $dashfornograde = false): string {
+        if (
+            $dashfornograde && (
+                $numerator === null || $numerator === '' || $numerator === false ||
+                (is_numeric($numerator) && (float)$numerator < 0)
+            )
+        ) {
+            return '-';
+        }
+
+        $left = $this->normalize_fraction_part($numerator);
+        $right = $this->normalize_fraction_part($denominator);
+
+        // Using an ="..." wrapper forces Excel/Sheets to treat the value as text without coercion.
+        return '="' . $left . '/' . $right . '"';
+    }
+
+    /**
+     * Wrap overwritten example points with brackets and force text interpretation in spreadsheets.
+     *
+     * @param string $value Points value
+     * @return string Wrapped value
+     */
+    private function wrap_bracket_text_for_csv(string $value): string {
+        return '="(' . $value . ')"';
+    }
+
+    /**
+     * Normalize a fraction part to trim trailing zeros while keeping non-numeric values intact.
+     *
+     * @param mixed $value Value to normalize
+     * @return string Normalized value
+     */
+    private function normalize_fraction_part($value): string {
+        if ($value === null || $value === '') {
+            return '0';
+        }
+
+        if (is_numeric($value)) {
+            return (string)(0 + $value); // Cast removes trailing zeros like 20.00000 -> 20.
+        }
+
+        return (string)$value;
     }
 }

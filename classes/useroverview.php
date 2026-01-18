@@ -1120,11 +1120,12 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
     }
 
     /**
-     * get report data as CSV file with semicolon separator (sends to browser, forces download)
+     * get report data as CSV file with configurable separator (sends to browser, forces download)
      *
+     * @param string $delimiter CSV field delimiter to use
      * @return void
      */
-    public function get_csv() {
+    public function get_csv(string $delimiter = ';') {
         global $DB;
         $context = context_course::instance($this->courseid);
         $data = $this->get_coursedata();
@@ -1147,7 +1148,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
 
         // Header with title.
         $title = get_string('pluginname', 'local_checkmarkreport') . ': ' . format_string($course->fullname);
-        $csv .= $this->escape_csv_value($title) . "\n";
+        $csv .= $this->escape_csv_value($title, $delimiter) . "\n";
         $csv .= "\n";
 
         // Data for each user.
@@ -1163,24 +1164,24 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
             $csv .= $this->escape_csv_value(get_string('fullname') . ': ' . fullname(
                 $row,
                 has_capability('moodle/site:viewfullnames', $context)
-            )) . "\n";
+            ), $delimiter) . "\n";
 
             // Summary data.
             if (!$this->column_is_hidden('points') && $showgrade) {
                 $grade = empty($row->coursesum) ? 0 : $row->coursesum;
-                $gradetext = $grade . '/' . (empty($row->maxgrade) ? 0 : $row->maxgrade);
-                $csv .= $this->escape_csv_value("Σ " . get_string('modgrade', 'grades')) . ';' .
-                    $this->escape_csv_value($gradetext) . "\n";
+                $gradetext = $this->format_fraction($grade, (empty($row->maxgrade) ? 0 : $row->maxgrade));
+                $csv .= $this->escape_csv_value("Σ " . get_string('modgrade', 'grades'), $delimiter) . $delimiter .
+                    $this->escape_csv_value($gradetext, $delimiter) . "\n";
             }
             if (!$this->column_is_hidden('checked') && $showabs) {
-                $checkstext = $row->checks . '/' . $row->maxchecks;
-                $csv .= $this->escape_csv_value("Σ " . get_string('examples', 'local_checkmarkreport')) . ';' .
-                    $this->escape_csv_value($checkstext) . "\n";
+                $checkstext = $this->format_fraction($row->checks, $row->maxchecks);
+                $csv .= $this->escape_csv_value("Σ " . get_string('examples', 'local_checkmarkreport'), $delimiter) . $delimiter .
+                    $this->escape_csv_value($checkstext, $delimiter) . "\n";
             }
             if ($showrel) {
-                $percenttext = $row->percentchecked . '%';
-                $csv .= $this->escape_csv_value("Σ % " . get_string('examples', 'local_checkmarkreport')) . ';' .
-                    $this->escape_csv_value($percenttext) . "\n";
+                $percenttext = round($row->percentchecked, 2) . '%';
+                $csv .= $this->escape_csv_value("Σ % " . get_string('examples', 'local_checkmarkreport'), $delimiter) . $delimiter .
+                    $this->escape_csv_value($percenttext, $delimiter) . "\n";
                 if ($row->overridden) {
                     $grade = empty($row->coursesum) ? 0 : $row->coursesum;
                     $percgrade = round(100 * $grade / $row->maxgrade, 2);
@@ -1188,8 +1189,8 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
                 }
                 $percgradetext = $percgrade . '%';
-                $csv .= $this->escape_csv_value("Σ % " . get_string('grade', 'local_checkmarkreport')) . ';' .
-                    $this->escape_csv_value($percgradetext) . "\n";
+                $csv .= $this->escape_csv_value("Σ % " . get_string('grade', 'local_checkmarkreport'), $delimiter) . $delimiter .
+                    $this->escape_csv_value($percgradetext, $delimiter) . "\n";
             }
 
             // Instance-specific data.
@@ -1205,7 +1206,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 $instancedata = $row->instancedata[$instance->id];
 
                 // Instance header.
-                $csv .= "\n" . $this->escape_csv_value($instance->name) . "\n";
+                $csv .= "\n" . $this->escape_csv_value($instance->name, $delimiter) . "\n";
 
                 // Example details.
                 if (
@@ -1216,15 +1217,18 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     foreach ($instancedata->examples as $key => $example) {
                         $examplerow = '';
                         if (!$this->column_is_hidden('examples')) {
-                            $examplerow .= $this->escape_csv_value($example->name . " (" . $example->grade . 'P)');
+                            $examplerow .= $this->escape_csv_value($example->name . " (" . $example->grade . 'P)', $delimiter);
                         }
                         if (!$this->column_is_hidden('checked')) {
-                            $sep = empty($examplerow) ? '' : ';';
-                            $examplerow .= $sep . $this->escape_csv_value($example->get_examplestate_for_export());
+                            $sep = empty($examplerow) ? '' : $delimiter;
+                            $examplerow .= $sep . $this->escape_csv_value($example->get_examplestate_for_export(), $delimiter);
                         }
                         if (!$this->column_is_hidden('points') && $showgrade) {
-                            $sep = empty($examplerow) ? '' : ';';
-                            $examplerow .= $sep . $this->escape_csv_value($example->get_checked_of_max_points());
+                            $sep = empty($examplerow) ? '' : $delimiter;
+                            $examplerow .= $sep . $this->escape_csv_value(
+                                $this->wrap_fraction_for_csv($example->get_checked_of_max_points()),
+                                $delimiter
+                            );
                         }
                         if (!empty($examplerow)) {
                             $csv .= $examplerow . "\n";
@@ -1235,22 +1239,25 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 // Instance summary.
                 $summaryrow = '';
                 if ($showexamples && !$this->column_is_hidden('examples')) {
-                    $summaryrow .= $this->escape_csv_value("Σ " . $instance->name);
+                    $summaryrow .= $this->escape_csv_value("Σ " . $instance->name, $delimiter);
                 } else if ($showgrade) {
-                    $summaryrow .= ';' . $this->escape_csv_value("Σ " . $instance->name);
+                    $summaryrow .= $delimiter . $this->escape_csv_value("Σ " . $instance->name, $delimiter);
                 }
 
                 if (!$this->column_is_hidden('checked')) {
                     if ($showabs && $showrel) {
-                        $checksummary = $instancedata->checked . '/' . $instancedata->maxchecked . ' (' .
+                        $checksummary = $this->format_fraction($instancedata->checked, $instancedata->maxchecked) . ' (' .
                             round($instancedata->percentchecked, 2) . '%)';
-                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($checksummary);
+                        $summaryrow .= (empty($summaryrow) ? '' : $delimiter) .
+                            $this->escape_csv_value($checksummary, $delimiter);
                     } else if ($showabs) {
-                        $checksummary = $instancedata->checked . '/' . $instancedata->maxchecked;
-                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($checksummary);
+                        $checksummary = $this->format_fraction($instancedata->checked, $instancedata->maxchecked);
+                        $summaryrow .= (empty($summaryrow) ? '' : $delimiter) .
+                            $this->escape_csv_value($checksummary, $delimiter);
                     } else if ($showrel) {
                         $percsummary = round($instancedata->percentchecked, 2) . '%';
-                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($percsummary);
+                        $summaryrow .= (empty($summaryrow) ? '' : $delimiter) .
+                            $this->escape_csv_value($percsummary, $delimiter);
                     }
                 }
                 if (!$this->column_is_hidden('points')) {
@@ -1267,18 +1274,22 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     }
                     if ($showabs && $showrel) {
                         $maxgrade = empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade;
-                        $gradesummary = $grade . '/' . $maxgrade . '(' . $percgrade . " %)";
-                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($gradesummary);
+                        $gradesummary = $this->format_fraction($grade, $maxgrade) . '(' . $percgrade . " %)";
+                        $summaryrow .= (empty($summaryrow) ? '' : $delimiter) .
+                            $this->escape_csv_value($gradesummary, $delimiter);
                     } else if ($showabs) {
                         $maxgrade = empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade;
-                        $gradesummary = $grade . '/' . $maxgrade;
-                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($gradesummary);
+                        $gradesummary = $this->format_fraction($grade, $maxgrade);
+                        $summaryrow .= (empty($summaryrow) ? '' : $delimiter) .
+                            $this->escape_csv_value($gradesummary, $delimiter);
                     } else if ($showrel) {
-                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($percgrade . " %");
+                        $summaryrow .= (empty($summaryrow) ? '' : $delimiter) .
+                            $this->escape_csv_value($percgrade . " %", $delimiter);
                     } else if ($showgrade || $showexamples) {
                         $maxgrade = empty($instancedata->maxgrade) ? 0 : $instancedata->maxgrade;
-                        $gradesummary = $grade . '/' . $maxgrade;
-                        $summaryrow .= (empty($summaryrow) ? '' : ';') . $this->escape_csv_value($gradesummary);
+                        $gradesummary = $this->format_fraction($grade, $maxgrade);
+                        $summaryrow .= (empty($summaryrow) ? '' : $delimiter) .
+                            $this->escape_csv_value($gradesummary, $delimiter);
                     }
                 }
 
@@ -1304,7 +1315,10 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                     } else if (($att == 0) && ($att !== null)) {
                         $attendance = '✗';
                     }
-                    $csv .= ';' . $this->escape_csv_value(get_string('attendance', 'checkmark') . ': ' . $attendance) . "\n";
+                    $csv .= $delimiter . $this->escape_csv_value(
+                        get_string('attendance', 'checkmark') . ': ' . $attendance,
+                        $delimiter
+                    ) . "\n";
                 }
 
                 // Presentation grade.
@@ -1318,9 +1332,9 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
                 ) {
                     $presentationgrade = false;
                     if ($gradepresentation->presentationgradebook) {
-                        $presentationgrade = $instancedata->formattedpresgrade;
+                        $presentationgrade = $this->wrap_fraction_for_csv($instancedata->formattedpresgrade);
                     } else {
-                        $presentationgrade = $this->display_grade(
+                        $presentationgrade = $this->format_fraction(
                             $instancedata->presentationgrade,
                             $gradepresentation->presentationgrade
                         );
@@ -1328,7 +1342,7 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
 
                     if ($presentationgrade !== false) {
                         $prestext = get_string('presentationgrade', 'checkmark') . ': ' . $presentationgrade;
-                        $csv .= ';' . $this->escape_csv_value($prestext) . "\n";
+                        $csv .= $delimiter . $this->escape_csv_value($prestext, $delimiter) . "\n";
                     }
                 }
             }
@@ -1344,18 +1358,20 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
 
             if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
                 $atttext = 'Σ ' . get_string('attendance', 'checkmark') . ': ' . $attendances . '/' . $row->maxattendances;
-                $csv .= $this->escape_csv_value($atttext) . "\n";
+                $csv .= $this->escape_csv_value('="' . $atttext . '"', $delimiter) . "\n";
             }
             if (
                 !$this->column_is_hidden('presentationgrade') && !empty($showpresgrades) && $this->presentationsgraded() &&
                 !empty($this->pointsforpresentations())
             ) {
-                $presgrade = $this->display_grade($row->presentationgrade, $row->presentationgrademax);
-                $csv .= $this->escape_csv_value('Σ ' . get_string('presentationgrade', 'checkmark') . ': ' . $presgrade) . "\n";
+                $presgrade = $this->format_fraction($row->presentationgrade, $row->presentationgrademax);
+                $csv .= $this->escape_csv_value('Σ ' . get_string('presentationgrade', 'checkmark') .
+                    ': ' . $presgrade, $delimiter) . "\n";
             }
             if (!$this->column_is_hidden('presentationsgraded') && !empty($showprescount) && $this->presentationsgraded()) {
-                $prescount = $this->display_grade($row->presentationsgraded, $row->presentationsgradedmax);
-                $csv .= $this->escape_csv_value("# " . get_string('presentationgrade', 'checkmark') . ': ' . $prescount) . "\n";
+                $prescount = $this->format_fraction($row->presentationsgraded, $row->presentationsgradedmax);
+                $csv .= $this->escape_csv_value("# " . get_string('presentationgrade', 'checkmark') .
+                    ': ' . $prescount, $delimiter) . "\n";
             }
         }
 
@@ -1519,12 +1535,13 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
     }
 
     /**
-     * Escape and quote CSV values for semicolon-separated export.
+     * Escape and quote CSV values for delimited export.
      *
      * @param mixed $value Value to escape
+     * @param string $delimiter CSV field delimiter to use
      * @return string Escaped value ready for CSV
      */
-    private function escape_csv_value($value): string {
+    private function escape_csv_value($value, string $delimiter = ';'): string {
         if ($value === null || $value === '') {
             return '';
         }
@@ -1532,10 +1549,46 @@ class local_checkmarkreport_useroverview extends local_checkmarkreport_base impl
         $value = str_replace(chr(194) . chr(160), '', (string)$value);
         $value = str_replace('"', '""', $value);
 
-        if (strpos($value, ';') !== false || strpos($value, '"') !== false || strpos($value, "\n") !== false) {
+        if (strpos($value, $delimiter) !== false || strpos($value, '"') !== false || strpos($value, "\n") !== false) {
             $value = '"' . $value . '"';
         }
 
         return $value;
+    }
+
+    /**
+     * Wrap a value containing a fraction so Excel keeps it as text.
+     *
+     * @param string $value Value that may contain a fraction
+     * @return string Value wrapped if it contained a fraction, otherwise original value
+     */
+    private function wrap_fraction_for_csv($value) {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        if (strpos((string)$value, '/') === false) {
+            return $value;
+        }
+
+        $parts = preg_split('/\s*\/\s*/', (string)$value, 2);
+        $left = $parts[0] ?? '';
+        $right = $parts[1] ?? '';
+
+        return $this->format_fraction($left, $right);
+    }
+
+    /**
+     * Format a fraction as text to avoid Excel date conversion.
+     *
+     * @param mixed $numerator Numerator value
+     * @param mixed $denominator Denominator value
+     * @return string Formatted fraction prefixed for text
+     */
+    private function format_fraction($numerator, $denominator): string {
+        $left = ($numerator === null || $numerator === '') ? 0 : $numerator;
+        $right = ($denominator === null || $denominator === '') ? 0 : $denominator;
+
+        return "'" . $left . '/' . $right;
     }
 }

@@ -79,6 +79,9 @@ switch ($format) {
     case local_checkmarkreport_base::FORMAT_CSV:
         $formatreadable = 'CSV (;)';
         break;
+    case local_checkmarkreport_base::FORMAT_CSV_TAB:
+        $formatreadable = 'CSV (tab)';
+        break;
     default:
     case local_checkmarkreport_base::FORMAT_XLSX:
         $formatreadable = 'XLSX';
@@ -126,7 +129,10 @@ switch ($format) {
         $report->get_ods();
         break;
     case local_checkmarkreport_base::FORMAT_CSV:
-        $report->get_csv();
+        $report->get_csv(';');
+        break;
+    case local_checkmarkreport_base::FORMAT_CSV_TAB:
+        $report->get_csv("\t");
         break;
     default:
     case local_checkmarkreport_base::FORMAT_XLSX:

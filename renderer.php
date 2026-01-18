@@ -182,6 +182,12 @@ class local_checkmarkreport_renderer extends plugin_renderer_base {
             html_writer::link($uri, '.CSV (;)'),
             ['class' => 'downloadlink']
         );
+        $uri = new moodle_url($uri, ['format' => local_checkmarkreport_base::FORMAT_CSV_TAB]);
+        $downloadlinks .= html_writer::tag(
+            'span',
+            html_writer::link($uri, '.CSV (tab)'),
+            ['class' => 'downloadlink']
+        );
 
         return $downloadlinks;
     }

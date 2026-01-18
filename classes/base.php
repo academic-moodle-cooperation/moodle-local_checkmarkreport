@@ -51,6 +51,8 @@ class local_checkmarkreport_base {
     const FORMAT_TXT = 4;
     /** csv semicolon-separated format */
     const FORMAT_CSV = 5;
+    /** csv tab-separated format */
+    const FORMAT_CSV_TAB = 6;
     /** show all columns */
     const SHOW_ALL_COLUMNS = 'all';
 
