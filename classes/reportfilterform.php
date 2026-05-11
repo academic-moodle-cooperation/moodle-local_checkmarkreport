@@ -205,6 +205,8 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $exampleshelp = new help_icon('showexamples', 'local_checkmarkreport');
         $gradehelp = new help_icon('grade', 'local_checkmarkreport');
         $sumabshelp = new help_icon('sumabs', 'local_checkmarkreport');
+        $sumrelcheckedhelp = new help_icon('sumrelchecked', 'local_checkmarkreport');
+        $sumrelgradehelp = new help_icon('sumrelgrade', 'local_checkmarkreport');
         $sumrelhelp = new help_icon('sumrel', 'local_checkmarkreport');
         $break = html_writer::tag('div', '', ['class' => 'break']);
 
@@ -227,6 +229,28 @@ class local_checkmarkreport_reportfilterform extends moodleform {
         $formelement->_helpbutton = $OUTPUT->render($gradehelp);
         $addcolumns[] = $formelement;
         $mform->setDefault('grade', get_user_preferences('checkmarkreport_showgrade'));
+        if (!empty($this->_customdata['hideusers'])) {
+            // Add % checked examples.
+            $formelement =& $mform->createElement(
+                'advcheckbox',
+                'sumrelchecked',
+                '',
+                get_string('sumrelchecked', 'local_checkmarkreport')
+            );
+            $formelement->_helpbutton = $OUTPUT->render($sumrelcheckedhelp);
+            $addcolumns[] = $formelement;
+            $mform->setDefault('sumrelchecked', get_user_preferences('checkmarkreport_sumrelchecked'));
+            // Add % grade.
+            $formelement =& $mform->createElement(
+                'advcheckbox',
+                'sumrelgrade',
+                '',
+                get_string('sumrelgrade', 'local_checkmarkreport')
+            );
+            $formelement->_helpbutton = $OUTPUT->render($sumrelgradehelp);
+            $addcolumns[] = $formelement;
+            $mform->setDefault('sumrelgrade', get_user_preferences('checkmarkreport_sumrelgrade'));
+        }
         // Add x/y ex!
         $formelement =& $mform->createElement(
             'advcheckbox',

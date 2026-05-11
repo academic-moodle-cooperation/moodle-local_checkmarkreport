@@ -84,6 +84,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         $showexamples = get_user_preferences('checkmarkreport_showexamples', 1);
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrelchecked = get_user_preferences('checkmarkreport_sumrelchecked');
+        $showrelgrade = get_user_preferences('checkmarkreport_sumrelgrade');
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
@@ -178,6 +180,38 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             $table->colclasses['examples'] = 'examples';
         }
 
+        if (!empty($showrelchecked)) {
+            // Percent of checked course examples.
+            $text = 'Σ % ' . $this->get_sortlink('percentchecked', get_string('examples', 'local_checkmarkreport'), $PAGE->url);
+            $sortable[] = 'percentchecked';
+            $tableheaders['percentchecked'] = new html_table_cell($text);
+            $tableheaders['percentchecked']->header = true;
+            $tableheaders['percentchecked']->rowspan = 2;
+            $tableheaders2['percentchecked'] = null;
+            $tablecolumns[] = 'percentchecked';
+            $table->colgroups[] = [
+                    'span' => '1',
+                    'class' => 'percentchecked',
+            ];
+            $table->colclasses['percentchecked'] = 'percentchecked';
+        }
+
+        if (!empty($showrelgrade)) {
+            // Percent of course grade calculated by checked examples.
+            $text = 'Σ % ' . $this->get_sortlink('percentgrade', get_string('grade', 'local_checkmarkreport'), $PAGE->url);
+            $sortable[] = 'percentgrade';
+            $tableheaders['percentgrade'] = new html_table_cell($text);
+            $tableheaders['percentgrade']->header = true;
+            $tableheaders['percentgrade']->rowspan = 2;
+            $tableheaders2['percentgrade'] = null;
+            $tablecolumns[] = 'percentgrade';
+            $table->colgroups[] = [
+                    'span' => '1',
+                    'class' => 'percentgrade',
+            ];
+            $table->colclasses['percentgrade'] = 'percentgrade';
+        }
+
         if (!empty($showrel)) {
             // Percent of course examples.
             $text = 'Σ % ' .
@@ -264,7 +298,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $gradepresentation = false;
             }
             if (
-                !empty($showgrade) || !empty($showabs) || !empty($showrel)
+                !empty($showgrade) || !empty($showabs) || !empty($showrelchecked) || !empty($showrelgrade) || !empty($showrel)
                     || (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id))
                     || (!empty($showpresgrades) && $this->presentationsgraded() && $gradepresentation)
                     || !empty($showexamples)
@@ -298,6 +332,36 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $tableheaders2['examples' . $instance->id]->header = true;
                 $tablecolumns[] = 'examples';
                 $table->colclasses['examples' . $instance->id] = 'instance' . $instance->id . ' examples' . $instance->id;
+            }
+
+            if (!empty($showrelchecked)) {
+                $span++;
+                $text = '% ' . $this->get_sortlink(
+                    'percentchecked' . $instance->id,
+                    get_string('examples', 'local_checkmarkreport'),
+                    $PAGE->url
+                );
+                $sortable[] = 'percentchecked' . $instance->id;
+                $tableheaders2['percentchecked' . $instance->id] = new html_table_cell($text);
+                $tableheaders2['percentchecked' . $instance->id]->header = true;
+                $tablecolumns[] = 'percentchecked' . $instance->id;
+                $table->colclasses['percentchecked' . $instance->id] = 'instance' . $instance->id . ' percentchecked' .
+                        $instance->id;
+            }
+
+            if (!empty($showrelgrade)) {
+                $span++;
+                $text = '% ' . $this->get_sortlink(
+                    'percentgrade' . $instance->id,
+                    get_string('grade', 'local_checkmarkreport'),
+                    $PAGE->url
+                );
+                $sortable[] = 'percentgrade' . $instance->id;
+                $tableheaders2['percentgrade' . $instance->id] = new html_table_cell($text);
+                $tableheaders2['percentgrade' . $instance->id]->header = true;
+                $tablecolumns[] = 'percentgrade' . $instance->id;
+                $table->colclasses['percentgrade' . $instance->id] = 'instance' . $instance->id . ' percentgrade' .
+                        $instance->id;
             }
 
             // Percent of course examples.
@@ -363,7 +427,7 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
             }
             if (
-                !empty($showgrade) || !empty($showabs) || !empty($showrel)
+                !empty($showgrade) || !empty($showabs) || !empty($showrelchecked) || !empty($showrelgrade) || !empty($showrel)
                     || (!empty($showattendances) && $this->attendancestracked() && $this->tracksattendance($instance->id))
                     || (!empty($showpresgrades) && $this->presentationsgraded() && $gradepresentation)
                     || !empty($showexamples)
@@ -428,6 +492,15 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 // Coursesum of course examples.
                 if (!empty($showabs)) {
                     $row['examples'] = new html_table_cell($curuser->checks . ' / ' . $curuser->maxchecks);
+                }
+                if (!empty($showrelchecked)) {
+                    $row['percentchecked'] = $this->create_percentage_cell($curuser->percentchecked, $forexport);
+                }
+                if (!empty($showrelgrade)) {
+                    $row['percentgrade'] = $this->create_percentage_cell($this->get_course_percentgrade($curuser), $forexport);
+                    if ($curuser->overridden) {
+                        local_checkmarkreport_base::add_cell_tooltip($row['percentgrade']);
+                    }
                 }
                 // Percent of course examples.
                 if (!empty($showrel)) {
@@ -538,6 +611,39 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                         $coursesumtext = $curuser->instancedata[$instance->id]->checked . ' / ' .
                                 $curuser->instancedata[$instance->id]->maxchecked;
                         $row['examples' . $instance->id] = new html_table_cell($coursesumtext);
+                    }
+                    if (!empty($showrelchecked)) {
+                        if (empty($curuser->instancedata[$instance->id]->percentchecked)) {
+                            $perccheck = 0;
+                        } else {
+                            $perccheck = $curuser->instancedata[$instance->id]->percentchecked;
+                        }
+                        $row['percentchecked' . $instance->id] = $this->create_percentage_cell($perccheck, $forexport);
+                    }
+                    if (!empty($showrelgrade)) {
+                        $row['percentgrade' . $instance->id] = $this->create_percentage_cell(
+                            $this->get_instance_percentgrade($curuser->instancedata[$instance->id]),
+                            $forexport
+                        );
+                        $finalgrade = $curuser->instancedata[$instance->id]->finalgrade->grade;
+                        $grade = $curuser->instancedata[$instance->id]->grade;
+                        $locked = $curuser->instancedata[$instance->id]->finalgrade->locked;
+                        if (
+                            ($curuser->instancedata[$instance->id]->finalgrade->overridden
+                                        || $locked || ($grade != $finalgrade))
+                                && !is_null($curuser->instancedata[$instance->id]->finalgrade->grade)
+                        ) {
+                            $row['percentgrade' . $instance->id]->id = "u" . $curuser->id . "i" . $instance->id . "_rp";
+                            $dategraded = $curuser->instancedata[$instance->id]->finalgrade->dategraded;
+                            $usermodified = $curuser->instancedata[$instance->id]->finalgrade->usermodified;
+                            local_checkmarkreport_base::add_cell_tooltip(
+                                $row['percentgrade' . $instance->id],
+                                $instance->id,
+                                $users[$curuser->id],
+                                $dategraded,
+                                $users[$usermodified]
+                            );
+                        }
                     }
                     // Percent of course examples.
                     if (!empty($showrel)) {
@@ -807,6 +913,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrelchecked = get_user_preferences('checkmarkreport_sumrelchecked');
+        $showrelgrade = get_user_preferences('checkmarkreport_sumrelgrade');
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showexamples = get_user_preferences('checkmarkreport_showexamples');
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
@@ -855,14 +963,24 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 $user->setAttribute('checks', $row->checks);
                 $user->setAttribute('maxchecks', $row->maxchecks);
             }
+            if (!$this->column_is_hidden('percentchecked') && !empty($showrelchecked)) {
+                $user->setAttribute('percentchecked', $this->format_percentage_export_value($row->percentchecked));
+            }
+            if (!$this->column_is_hidden('percentgrade') && !empty($showrelgrade)) {
+                $user->setAttribute('percentgrade', $this->format_percentage_export_value($this->get_course_percentgrade($row)));
+            }
             if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
-                $user->setAttribute('percentchecked', round($row->percentchecked, 2) . '%');
+                if (empty($showrelchecked)) {
+                    $user->setAttribute('percentchecked', round($row->percentchecked, 2) . '%');
+                }
                 if ($row->overridden) {
                     $percgrade = round(empty($row->coursesum) ? 0 : 100 * $row->coursesum / $row->maxgrade, 2);
                 } else {
                     $percgrade = round((empty($row->percentgrade) ? 0 : $row->percentgrade), 2);
                 }
-                $user->setAttribute('percentgrade', $percgrade . '%');
+                if (empty($showrelgrade)) {
+                    $user->setAttribute('percentgrade', $percgrade . '%');
+                }
             }
             $instancesnode = $user->appendChild(new DOMElement('instances'));
             if (!$this->column_is_hidden('attendance') && !empty($showattendances) && $this->attendancestracked()) {
@@ -921,12 +1039,24 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                     $instnode->setAttribute('checks', $instancedata->checked);
                     $instnode->setAttribute('maxchecks', $instancedata->maxchecked);
                 }
+                if (!$this->column_is_hidden('percentchecked' . $instance->id) && !empty($showrelchecked)) {
+                    $instnode->setAttribute(
+                        'percentchecked',
+                        $this->format_percentage_export_value($instancedata->percentchecked)
+                    );
+                }
+                if (!$this->column_is_hidden('percentgrade' . $instance->id) && !empty($showrelgrade)) {
+                    $instnode->setAttribute(
+                        'percentgrade',
+                        $this->format_percentage_export_value($this->get_instance_percentgrade($instancedata))
+                    );
+                }
                 if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
                     $percgrade = $this->get_instance_percgrade($instancedata);
-                    if ($showabs) {
+                    if ($showabs && empty($showrelchecked)) {
                         $instnode->setAttribute('percentchecked', $instancedata->percentchecked . '%');
                     }
-                    if ($showgrade) {
+                    if ($showgrade && empty($showrelgrade)) {
                         $instnode->setAttribute('percentgrade', $percgrade);
                     }
                 }
@@ -974,6 +1104,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrelchecked = get_user_preferences('checkmarkreport_sumrelchecked');
+        $showrelgrade = get_user_preferences('checkmarkreport_sumrelgrade');
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showexamples = get_user_preferences('checkmarkreport_showexamples');
         $showattendances = get_user_preferences('checkmarkreport_showattendances');
@@ -1011,6 +1143,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         }
         if (!$this->column_is_hidden('examples') && !empty($showabs)) {
             $txt .= "\tΣ " . get_string('examples', 'local_checkmarkreport');
+        }
+        if (!$this->column_is_hidden('percentchecked') && !empty($showrelchecked)) {
+            $txt .= "\tΣ % " . get_string('examples', 'local_checkmarkreport');
+        }
+        if (!$this->column_is_hidden('percentgrade') && !empty($showrelgrade)) {
+            $txt .= "\tΣ % " . get_string('grade', 'local_checkmarkreport');
         }
         if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
             $txt .= "\t";
@@ -1055,6 +1193,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             if (!$this->column_is_hidden('examples' . $instance->id) && !empty($showabs)) {
                 $txt .= "\t" . $instance->name . ' ' . get_string('examples', 'local_checkmarkreport');
+            }
+            if (!$this->column_is_hidden('percentchecked' . $instance->id) && !empty($showrelchecked)) {
+                $txt .= "\t" . $instance->name . ' % ' . get_string('examples', 'local_checkmarkreport');
+            }
+            if (!$this->column_is_hidden('percentgrade' . $instance->id) && !empty($showrelgrade)) {
+                $txt .= "\t" . $instance->name . ' % ' . get_string('grade', 'local_checkmarkreport');
             }
             if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
                 $txt .= "\t";
@@ -1117,6 +1261,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!$this->column_is_hidden('examples') && !empty($showabs)) {
                 $txt .= "\t" . $row->checks . "/" . $row->maxchecks;
             }
+            if (!$this->column_is_hidden('percentchecked') && !empty($showrelchecked)) {
+                $txt .= "\t" . $this->format_percentage_export_value($row->percentchecked);
+            }
+            if (!$this->column_is_hidden('percentgrade') && !empty($showrelgrade)) {
+                $txt .= "\t" . $this->format_percentage_export_value($this->get_course_percentgrade($row));
+            }
             if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
                 if ($row->overridden) {
                     $percgrade = round(100 * (empty($row->coursesum) ? 0 : $row->coursesum) / $row->maxgrade, 2);
@@ -1166,6 +1316,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
                 if (!$this->column_is_hidden('examples' . $instance->id) && !empty($showabs)) {
                     $txt .= "\t" . $instancedata->checked . "/" . $instancedata->maxchecked;
+                }
+                if (!$this->column_is_hidden('percentchecked' . $instance->id) && !empty($showrelchecked)) {
+                    $txt .= "\t" . $this->format_percentage_export_value($instancedata->percentchecked);
+                }
+                if (!$this->column_is_hidden('percentgrade' . $instance->id) && !empty($showrelgrade)) {
+                    $txt .= "\t" . $this->format_percentage_export_value($this->get_instance_percentgrade($instancedata));
                 }
                 if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
                     $percgrade = $this->get_instance_percgrade($instancedata);
@@ -1252,6 +1408,87 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         }
 
         return $percgrade;
+    }
+
+    /**
+     * Returns a spreadsheet-ready cell containing a percentage.
+     *
+     * @param float $percent Percent value in human-readable scale, e.g. 2.35 for 2.35%.
+     * @param bool $forexport Whether the table is being built for XLSX/ODS export.
+     * @return html_table_cell
+     */
+    private function create_percentage_cell($percent, bool $forexport): html_table_cell {
+        $cell = new html_table_cell($this->format_percentage($percent));
+        if ($forexport) {
+            $cell->attributes['percentage'] = true;
+            $cell->attributes['percentage-value'] = $this->format_percentage_export_value($percent);
+        }
+
+        return $cell;
+    }
+
+    /**
+     * Formats a percentage for text-based output.
+     *
+     * @param float $percent Percent value in human-readable scale, e.g. 2.35 for 2.35%.
+     * @return string
+     */
+    private function format_percentage($percent): string {
+        return round((float)$percent, 2) . '%';
+    }
+
+    /**
+     * Formats a percentage as a numeric spreadsheet value.
+     *
+     * @param float $percent Percent value in human-readable scale, e.g. 2.35 for 2.35%.
+     * @return string Numeric value in spreadsheet scale, e.g. 0.0235.
+     */
+    private function format_percentage_export_value($percent): string {
+        $value = round((float)$percent, 2) / 100;
+        $value = rtrim(rtrim(sprintf('%.4F', $value), '0'), '.');
+
+        return $value === '' ? '0' : $value;
+    }
+
+    /**
+     * Returns the course grade percentage as a numeric percentage value.
+     *
+     * @param stdClass $row Course row data.
+     * @return float
+     */
+    private function get_course_percentgrade($row): float {
+        if (empty($row->maxgrade) || $row->coursesum < 0) {
+            return 0;
+        }
+
+        return round(100 * (empty($row->coursesum) ? 0 : $row->coursesum) / $row->maxgrade, 2);
+    }
+
+    /**
+     * Returns the instance grade percentage as a numeric percentage value.
+     *
+     * @param stdClass $instancedata Instance row data.
+     * @return float
+     */
+    private function get_instance_percentgrade($instancedata): float {
+        $finalgrade = $instancedata->finalgrade->grade;
+        $locked = $instancedata->finalgrade->locked;
+        if (
+            ($instancedata->finalgrade->overridden || $locked || ($finalgrade != $instancedata->grade))
+                && !is_null($finalgrade)
+        ) {
+            if (empty($instancedata->maxgrade)) {
+                return 0;
+            }
+
+            return round(100 * (empty($finalgrade) ? 0 : $finalgrade) / $instancedata->maxgrade, 2);
+        }
+
+        if (empty($instancedata->grade) || empty($instancedata->percentgrade) || empty($instancedata->maxgrade)) {
+            return 0;
+        }
+
+        return round($instancedata->percentgrade, 2);
     }
 
     /**
@@ -1363,6 +1600,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                      so it can be used in calculations without further conversion. */
                     if (!empty($cell->attributes['output-character'])) {
                         $worksheet->write_string($y, $x, strip_tags($cell->attributes['output-character']), $format);
+                    } else if (!empty($cell->attributes['percentage'])) {
+                        $worksheet->write_number($y, $x, $cell->attributes['percentage-value'], $format);
                     } else if (is_numeric($cell->text) && (!in_array($key, $textonlycolumns))) {
                         $worksheet->write_number($y, $x, $cell->text, $format);
                     } else {
@@ -1390,6 +1629,8 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
 
         $showgrade = get_user_preferences('checkmarkreport_showgrade');
         $showabs = get_user_preferences('checkmarkreport_sumabs');
+        $showrelchecked = get_user_preferences('checkmarkreport_sumrelchecked');
+        $showrelgrade = get_user_preferences('checkmarkreport_sumrelgrade');
         $showrel = get_user_preferences('checkmarkreport_sumrel');
         $showexamples = get_user_preferences('checkmarkreport_showexamples');
         $showpoints = get_user_preferences('checkmarkreport_showpoints');
@@ -1436,6 +1677,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
         if (!$this->column_is_hidden('examples') && !empty($showabs)) {
             $headers[] = 'Σ ' . get_string('examples', 'local_checkmarkreport');
         }
+        if (!$this->column_is_hidden('percentchecked') && !empty($showrelchecked)) {
+            $headers[] = 'Σ % ' . get_string('examples', 'local_checkmarkreport');
+        }
+        if (!$this->column_is_hidden('percentgrade') && !empty($showrelgrade)) {
+            $headers[] = 'Σ % ' . get_string('grade', 'local_checkmarkreport');
+        }
         if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
             $headers[] = 'Σ % ' . get_string('examples', 'local_checkmarkreport')
                 . ' (' . get_string('grade', 'local_checkmarkreport') . ')';
@@ -1474,6 +1721,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             }
             if (!$this->column_is_hidden('examples' . $instance->id) && !empty($showabs)) {
                 $headers[] = $instance->name . ': ' . get_string('examples', 'local_checkmarkreport');
+            }
+            if (!$this->column_is_hidden('percentchecked' . $instance->id) && !empty($showrelchecked)) {
+                $headers[] = $instance->name . ': % ' . get_string('examples', 'local_checkmarkreport');
+            }
+            if (!$this->column_is_hidden('percentgrade' . $instance->id) && !empty($showrelgrade)) {
+                $headers[] = $instance->name . ': % ' . get_string('grade', 'local_checkmarkreport');
             }
             if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
                 $headers[] = $instance->name . ': % ' . get_string('examples', 'local_checkmarkreport') .
@@ -1546,6 +1799,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
             if (!$this->column_is_hidden('examples') && !empty($showabs)) {
                 $rowdata[] = $this->format_fraction($row->checks, $row->maxchecks);
             }
+            if (!$this->column_is_hidden('percentchecked') && !empty($showrelchecked)) {
+                $rowdata[] = $this->format_percentage_export_value($row->percentchecked);
+            }
+            if (!$this->column_is_hidden('percentgrade') && !empty($showrelgrade)) {
+                $rowdata[] = $this->format_percentage_export_value($this->get_course_percentgrade($row));
+            }
             if (!$this->column_is_hidden('percentex') && !empty($showrel)) {
                 if ($row->maxgrade > 0 && $row->coursesum >= 0) {
                     $percgrade = round(100 * (empty($row->coursesum) ? 0 : $row->coursesum) / $row->maxgrade, 2);
@@ -1596,6 +1855,12 @@ class local_checkmarkreport_overview extends local_checkmarkreport_base implemen
                 }
                 if (!$this->column_is_hidden('examples' . $instance->id) && !empty($showabs)) {
                     $rowdata[] = $this->format_fraction($instancedata->checked, $instancedata->maxchecked);
+                }
+                if (!$this->column_is_hidden('percentchecked' . $instance->id) && !empty($showrelchecked)) {
+                    $rowdata[] = $this->format_percentage_export_value($instancedata->percentchecked);
+                }
+                if (!$this->column_is_hidden('percentgrade' . $instance->id) && !empty($showrelgrade)) {
+                    $rowdata[] = $this->format_percentage_export_value($this->get_instance_percentgrade($instancedata));
                 }
                 if (!$this->column_is_hidden('percentex' . $instance->id) && !empty($showrel)) {
                     $percgrade = $this->get_instance_percgrade($instancedata);

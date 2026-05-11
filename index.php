@@ -82,6 +82,12 @@ if ($tab == 'overview' || $tab == 'useroverview') {
         set_user_preference('checkmarkreport_showexamples', $data->showexamples);
         set_user_preference('checkmarkreport_showgrade', $data->grade);
         set_user_preference('checkmarkreport_sumabs', $data->sumabs);
+        if (isset($data->sumrelchecked)) {
+            set_user_preference('checkmarkreport_sumrelchecked', $data->sumrelchecked);
+        }
+        if (isset($data->sumrelgrade)) {
+            set_user_preference('checkmarkreport_sumrelgrade', $data->sumrelgrade);
+        }
         set_user_preference('checkmarkreport_sumrel', $data->sumrel);
         set_user_preference('checkmarkreport_showpoints', $data->showpoints);
         set_user_preference('checkmarkreport_showattendances', $data->showattendances);
