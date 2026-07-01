@@ -67,6 +67,14 @@ class provider implements metadataprovider, preference_provider {
                 'string' => 'privacy:metadata:sumrel',
                 'bool' => true,
             ],
+            'checkmarkreport_sumrelchecked' => [
+                'string' => 'privacy:metadata:sumrelchecked',
+                'bool' => true,
+            ],
+            'checkmarkreport_sumrelgrade' => [
+                'string' => 'privacy:metadata:sumrelgrade',
+                'bool' => true,
+            ],
             'checkmarkreport_showpoints' => [
                 'string' => 'privacy:metadata:showpoints',
                 'bool' => true,

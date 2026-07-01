@@ -217,6 +217,8 @@ Feature: The overview tab of checkmarkreport gives the teacher an overview over 
     And I follow "Checkmark report"
     Then the following fields match these values:
       | Show x/y examples | 0 |
+      | Show % of examples | 0 |
+      | Show % of grade | 0 |
       | Show % of examples/grades | 0 |
     And I set the following fields to these values:
       | Show x/y examples | 1 |
